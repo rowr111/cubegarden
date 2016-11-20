@@ -33,6 +33,8 @@
 *.su
 
 *.lst
+*.list
+*.srec
 *.map
 *.d
 
