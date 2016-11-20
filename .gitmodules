@@ -1,0 +1,6 @@
+[submodule "ChibiOS"]
+	path = ChibiOS
+	url = https://github.com/bunnie/ChibiOS
+[submodule "ugfx"]
+	path = ugfx
+	url = https://git.ugfx.io/uGFX/uGFX
