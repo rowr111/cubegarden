@@ -1,0 +1,1394 @@
+Open On-Chip Debugger 0.10.0-dev-00330-g5d5c9bc (2016-08-04-06:55)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+User : 13 11 command.c:544 command_print(): debug_level: 3
+Debug: 14 11 options.c:96 add_default_dirs(): bindir=/usr/local/bin
+Debug: 15 11 options.c:97 add_default_dirs(): pkgdatadir=/usr/local/share/openocd
+Debug: 16 11 options.c:98 add_default_dirs(): run_prefix=
+Debug: 17 11 configuration.c:42 add_script_search_dir(): adding /root/.openocd
+Debug: 18 11 configuration.c:42 add_script_search_dir(): adding /usr/local/share/openocd/site
+Debug: 19 11 configuration.c:42 add_script_search_dir(): adding /usr/local/share/openocd/scripts
+Debug: 20 12 configuration.c:82 find_file(): found sysfsgpio-rpi.cfg
+Debug: 21 12 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_interface sysfsgpio
+Debug: 22 12 command.c:143 script_debug(): command - interface ocd_interface sysfsgpio
+Debug: 24 12 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_jtag_nums'...
+Debug: 25 12 command.c:323 command_new(): BUG: command 'sysfsgpio_tck_num' does not have the '.usage' field filled out
+Debug: 26 12 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_tck_num'...
+Debug: 27 12 command.c:323 command_new(): BUG: command 'sysfsgpio_tms_num' does not have the '.usage' field filled out
+Debug: 28 12 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_tms_num'...
+Debug: 29 12 command.c:323 command_new(): BUG: command 'sysfsgpio_tdo_num' does not have the '.usage' field filled out
+Debug: 30 12 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_tdo_num'...
+Debug: 31 13 command.c:323 command_new(): BUG: command 'sysfsgpio_tdi_num' does not have the '.usage' field filled out
+Debug: 32 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_tdi_num'...
+Debug: 33 13 command.c:323 command_new(): BUG: command 'sysfsgpio_srst_num' does not have the '.usage' field filled out
+Debug: 34 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_srst_num'...
+Debug: 35 13 command.c:323 command_new(): BUG: command 'sysfsgpio_trst_num' does not have the '.usage' field filled out
+Debug: 36 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_trst_num'...
+Debug: 37 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_swd_nums'...
+Debug: 38 13 command.c:323 command_new(): BUG: command 'sysfsgpio_swclk_num' does not have the '.usage' field filled out
+Debug: 39 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_swclk_num'...
+Debug: 40 13 command.c:323 command_new(): BUG: command 'sysfsgpio_swdio_num' does not have the '.usage' field filled out
+Debug: 41 13 command.c:364 register_command_handler(): registering 'ocd_sysfsgpio_swdio_num'...
+Debug: 42 13 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select swd
+Debug: 43 13 command.c:143 script_debug(): command - ocd_transport ocd_transport select swd
+Debug: 44 14 command.c:323 command_new(): BUG: command 'swd' does not have the '.usage' field filled out
+Debug: 45 14 command.c:364 register_command_handler(): registering 'ocd_swd'...
+Debug: 46 14 bitbang.c:353 bitbang_swd_init(): bitbang_swd_init
+Debug: 47 14 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_sysfsgpio_swclk_num 20
+Debug: 48 14 command.c:143 script_debug(): command - sysfsgpio_swclk_num ocd_sysfsgpio_swclk_num 20
+User : 50 14 command.c:544 command_print(): SysfsGPIO num: swclk = 20
+Debug: 51 14 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_sysfsgpio_swdio_num 21
+Debug: 52 14 command.c:143 script_debug(): command - sysfsgpio_swdio_num ocd_sysfsgpio_swdio_num 21
+User : 54 14 command.c:544 command_print(): SysfsGPIO num: swdio = 21
+Debug: 55 15 configuration.c:82 find_file(): found /usr/local/share/openocd/scripts/target/kx.cfg
+Debug: 56 15 configuration.c:82 find_file(): found /usr/local/share/openocd/scripts/target/swj-dp.tcl
+Debug: 57 15 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 58 15 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 59 16 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 60 16 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 61 16 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 62 16 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 63 16 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 64 16 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 65 17 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 66 17 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 67 17 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_swd newdap kx cpu -irlen 4 -ircapture 0x1 -irmask 0xf -expected-id 0x2ba01477
+Debug: 68 17 command.c:143 script_debug(): command - ocd_swd ocd_swd newdap kx cpu -irlen 4 -ircapture 0x1 -irmask 0xf -expected-id 0x2ba01477
+Debug: 69 17 tcl.c:549 jim_newtap_cmd(): Creating New Tap, Chip: kx, Tap: cpu, Dotted: kx.cpu, 8 params
+Debug: 70 17 core.c:1304 jtag_tap_init(): Created Tap: kx.cpu @ abs position 0, irlen 0, capture: 0x0 mask: 0x0
+Debug: 71 18 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_target create kx.cpu cortex_m -chain-position kx.cpu
+Debug: 72 18 command.c:143 script_debug(): command - ocd_target ocd_target create kx.cpu cortex_m -chain-position kx.cpu
+Debug: 73 18 target.c:1883 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 74 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 75 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 76 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 77 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 78 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 79 18 command.c:364 register_command_handler(): registering 'ocd_arm'...
+Debug: 80 18 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 81 18 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 82 18 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 83 19 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 84 19 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 85 19 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 86 19 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 87 19 command.c:364 register_command_handler(): registering 'ocd_dap'...
+Debug: 88 19 command.c:364 register_command_handler(): registering 'ocd_tpiu'...
+Debug: 89 19 command.c:364 register_command_handler(): registering 'ocd_itm'...
+Debug: 90 19 command.c:364 register_command_handler(): registering 'ocd_itm'...
+Debug: 91 19 command.c:364 register_command_handler(): registering 'ocd_cortex_m'...
+Debug: 92 19 command.c:364 register_command_handler(): registering 'ocd_cortex_m'...
+Debug: 93 19 command.c:364 register_command_handler(): registering 'ocd_cortex_m'...
+Debug: 94 19 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 95 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 96 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 97 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 98 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 99 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 100 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 101 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 102 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 103 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 104 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 105 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 106 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 107 20 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 108 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 109 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 110 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 111 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 112 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 113 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 114 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 115 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 116 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 117 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 118 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 119 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 120 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 121 21 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 122 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 123 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 124 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 125 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 126 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 127 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 128 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 129 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 130 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 131 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 132 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 133 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 134 22 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 135 23 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 136 23 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 137 23 command.c:364 register_command_handler(): registering 'ocd_kx.cpu'...
+Debug: 138 23 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu configure -event examine-end 
+	kinetis mdm check_security
+
+Debug: 139 23 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu configure -event examine-end 
+	kinetis mdm check_security
+
+Debug: 140 23 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu configure -work-area-phys 0x20000000 -work-area-size 0x1000 -work-area-backup 0
+Debug: 141 23 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu configure -work-area-phys 0x20000000 -work-area-size 0x1000 -work-area-backup 0
+Debug: 142 23 target.c:1883 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 143 23 target.c:1883 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 144 24 target.c:1883 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 145 24 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_flash bank kx.flash kinetis 0 0 0 0 kx.cpu
+Debug: 146 24 command.c:143 script_debug(): command - ocd_flash ocd_flash bank kx.flash kinetis 0 0 0 0 kx.cpu
+Debug: 148 24 command.c:364 register_command_handler(): registering 'ocd_kinetis'...
+Debug: 149 24 command.c:364 register_command_handler(): registering 'ocd_kinetis'...
+Debug: 150 24 command.c:364 register_command_handler(): registering 'ocd_kinetis'...
+Debug: 151 24 command.c:364 register_command_handler(): registering 'ocd_kinetis'...
+Debug: 152 24 command.c:364 register_command_handler(): registering 'ocd_kinetis'...
+Info : 153 24 kinetis.c:536 kinetis_flash_bank_command(): add flash_bank kinetis kx.flash
+Debug: 154 25 tcl.c:999 handle_flash_bank_command(): 'kinetis' driver usage field missing
+Debug: 155 25 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_adapter_khz 1000
+Debug: 156 25 command.c:143 script_debug(): command - adapter_khz ocd_adapter_khz 1000
+Debug: 158 25 core.c:1631 jtag_config_khz(): handle jtag khz
+Debug: 159 25 core.c:1598 adapter_khz_to_speed(): convert khz to interface specific speed value
+Debug: 160 25 core.c:1598 adapter_khz_to_speed(): convert khz to interface specific speed value
+User : 161 25 command.c:544 command_print(): adapter speed: 1000 kHz
+Debug: 162 25 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_reset_config srst_nogate
+Debug: 163 25 command.c:143 script_debug(): command - reset_config ocd_reset_config srst_nogate
+User : 165 25 command.c:544 command_print(): none separate
+Debug: 166 25 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport select
+Debug: 167 25 command.c:143 script_debug(): command - ocd_transport ocd_transport select
+Debug: 168 26 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_cortex_m reset_config sysresetreq
+Debug: 169 26 command.c:143 script_debug(): command - ocd_cortex_m ocd_cortex_m reset_config sysresetreq
+User : 171 26 command.c:544 command_print(): cortex_m reset_config sysresetreq
+Debug: 172 26 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_init
+Debug: 173 26 command.c:143 script_debug(): command - init ocd_init
+Debug: 175 26 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_target init
+Debug: 176 27 command.c:143 script_debug(): command - ocd_target ocd_target init
+Debug: 178 27 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_target names
+Debug: 179 27 command.c:143 script_debug(): command - ocd_target ocd_target names
+Debug: 180 27 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu cget -event gdb-flash-erase-start
+Debug: 181 27 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu cget -event gdb-flash-erase-start
+Debug: 182 27 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu configure -event gdb-flash-erase-start reset init
+Debug: 183 28 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu configure -event gdb-flash-erase-start reset init
+Debug: 184 28 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu cget -event gdb-flash-write-end
+Debug: 185 28 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu cget -event gdb-flash-write-end
+Debug: 186 28 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_kx.cpu configure -event gdb-flash-write-end reset halt
+Debug: 187 28 command.c:143 script_debug(): command - ocd_kx.cpu ocd_kx.cpu configure -event gdb-flash-write-end reset halt
+Debug: 188 28 target.c:1308 handle_target_init_command(): Initializing targets...
+Debug: 189 28 command.c:364 register_command_handler(): registering 'ocd_target_request'...
+Debug: 190 28 command.c:364 register_command_handler(): registering 'ocd_trace'...
+Debug: 191 28 command.c:364 register_command_handler(): registering 'ocd_trace'...
+Debug: 192 29 command.c:364 register_command_handler(): registering 'ocd_fast_load_image'...
+Debug: 193 29 command.c:364 register_command_handler(): registering 'ocd_fast_load'...
+Debug: 194 29 command.c:364 register_command_handler(): registering 'ocd_profile'...
+Debug: 195 29 command.c:364 register_command_handler(): registering 'ocd_virt2phys'...
+Debug: 196 29 command.c:364 register_command_handler(): registering 'ocd_reg'...
+Debug: 197 29 command.c:364 register_command_handler(): registering 'ocd_poll'...
+Debug: 198 29 command.c:364 register_command_handler(): registering 'ocd_wait_halt'...
+Debug: 199 29 command.c:364 register_command_handler(): registering 'ocd_halt'...
+Debug: 200 29 command.c:364 register_command_handler(): registering 'ocd_resume'...
+Debug: 201 29 command.c:364 register_command_handler(): registering 'ocd_reset'...
+Debug: 202 29 command.c:364 register_command_handler(): registering 'ocd_soft_reset_halt'...
+Debug: 203 29 command.c:364 register_command_handler(): registering 'ocd_step'...
+Debug: 204 30 command.c:364 register_command_handler(): registering 'ocd_mdw'...
+Debug: 205 30 command.c:364 register_command_handler(): registering 'ocd_mdh'...
+Debug: 206 30 command.c:364 register_command_handler(): registering 'ocd_mdb'...
+Debug: 207 30 command.c:364 register_command_handler(): registering 'ocd_mww'...
+Debug: 208 30 command.c:364 register_command_handler(): registering 'ocd_mwh'...
+Debug: 209 30 command.c:364 register_command_handler(): registering 'ocd_mwb'...
+Debug: 210 30 command.c:364 register_command_handler(): registering 'ocd_bp'...
+Debug: 211 30 command.c:364 register_command_handler(): registering 'ocd_rbp'...
+Debug: 212 30 command.c:364 register_command_handler(): registering 'ocd_wp'...
+Debug: 213 30 command.c:364 register_command_handler(): registering 'ocd_rwp'...
+Debug: 214 30 command.c:364 register_command_handler(): registering 'ocd_load_image'...
+Debug: 215 30 command.c:364 register_command_handler(): registering 'ocd_dump_image'...
+Debug: 216 30 command.c:364 register_command_handler(): registering 'ocd_verify_image'...
+Debug: 217 31 command.c:364 register_command_handler(): registering 'ocd_test_image'...
+Debug: 218 31 command.c:364 register_command_handler(): registering 'ocd_reset_nag'...
+Debug: 219 31 command.c:364 register_command_handler(): registering 'ocd_ps'...
+Debug: 220 31 command.c:364 register_command_handler(): registering 'ocd_test_mem_access'...
+Info : 221 31 sysfsgpio.c:588 sysfsgpio_init(): SysfsGPIO JTAG/SWD bitbang driver
+Info : 222 31 sysfsgpio.c:600 sysfsgpio_init(): SWD only mode enabled (specify tck, tms, tdi and tdo gpios to add JTAG mode)
+Warn : 223 31 sysfsgpio.c:126 setup_sysfs_gpio(): gpio 20 is already exported
+Warn : 224 31 sysfsgpio.c:126 setup_sysfs_gpio(): gpio 21 is already exported
+Debug: 225 31 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 226 31 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 227 32 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Info : 228 32 core.c:1357 adapter_init(): This adapter doesn't support configurable speed
+Debug: 229 32 openocd.c:135 handle_init_command(): Debug Adapter init complete
+Debug: 230 33 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_transport init
+Debug: 231 33 command.c:143 script_debug(): command - ocd_transport ocd_transport init
+Debug: 233 33 transport.c:239 handle_transport_init(): handle_transport_init
+Debug: 234 33 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 235 33 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 236 33 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 237 34 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 238 34 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 239 34 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 240 35 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 241 35 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 242 35 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 243 35 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 244 35 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 245 35 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 246 35 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 247 35 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 248 36 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 249 36 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 250 36 openocd.c:148 handle_init_command(): Examining targets...
+Debug: 251 36 target.c:1501 target_call_event_callbacks(): target event 21 (examine-start)
+Debug: 252 36 arm_adi_v5.c:603 dap_dp_init():  
+Debug: 253 36 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 254 36 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 255 36 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 256 36 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 257 36 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 258 36 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 259 36 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 260 37 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 261 37 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000041
+Debug: 262 37 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 263 37 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 264 37 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 265 38 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 266 38 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 00000020
+Debug: 267 38 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 268 38 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 269 38 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 270 39 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = 00000040
+Debug: 271 39 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 272 39 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 273 39 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 274 39 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 275 39 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000000
+Debug: 276 39 arm_adi_v5.c:636 dap_dp_init(): DAP: wait CDBGPWRUPACK
+Debug: 277 40 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x20000000, value 0x20000000
+Debug: 278 40 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 279 40 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 280 40 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 281 40 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000040
+Debug: 282 40 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 283 40 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 284 40 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 285 41 arm_adi_v5.c:643 dap_dp_init(): DAP: wait CSYSPWRUPACK
+Debug: 286 41 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x80000000, value 0x80000000
+Debug: 287 41 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 288 41 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 289 41 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 290 41 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000040
+Debug: 291 41 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 292 41 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 293 42 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 294 42 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 295 42 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 296 42 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 297 42 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000040
+Debug: 298 42 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 299 42 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 300 43 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 301 43 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 302 43 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000001
+Debug: 303 43 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 304 43 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 305 43 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 306 44 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000041
+Debug: 307 44 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 308 44 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 309 44 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 310 44 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 311 44 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 312 44 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 313 44 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 314 45 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 315 45 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 316 45 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 317 45 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 318 46 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = e000ed00
+Debug: 319 46 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 320 47 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 321 47 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 322 48 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 323 48 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 24770011
+Debug: 324 48 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 325 48 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 326 48 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 327 48 arm_adi_v5.c:787 dap_find_ap(): Found AHB-AP at AP index: 0 (IDR=0x24770011)
+Debug: 328 48 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 329 48 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 330 49 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 331 49 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 332 49 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 333 49 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 334 49 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 335 49 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 336 49 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 337 50 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000020
+Debug: 338 50 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 339 50 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 340 50 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 341 50 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 342 50 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 343 50 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = 00000000
+Debug: 344 50 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 345 51 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 346 51 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 347 51 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 348 51 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = 24770011
+Debug: 349 51 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 350 51 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 351 52 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 352 52 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 353 52 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 23000020
+Debug: 354 52 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 355 52 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 356 52 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 357 53 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 358 53 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 359 53 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 360 53 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 361 53 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 362 54 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 23000020
+Debug: 363 54 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 364 54 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 365 54 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 366 54 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 367 55 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 00000000
+Debug: 368 55 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 369 55 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 370 55 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 371 55 arm_adi_v5.c:714 mem_ap_init(): MEM_AP Packed Transfers: enabled
+Debug: 372 55 arm_adi_v5.c:725 mem_ap_init(): MEM_AP CFG: large data 0, long address 0, big-endian 0
+Debug: 373 55 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 374 55 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 375 55 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 376 55 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 377 56 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 378 56 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 379 56 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 380 56 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 381 56 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 382 56 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000ed00
+Debug: 383 56 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 384 56 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 385 56 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 386 57 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 387 57 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 388 57 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000022
+Debug: 389 57 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 390 57 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 391 57 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 392 57 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 393 58 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 394 58 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 395 58 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 396 58 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 397 58 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 398 59 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 399 59 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 400 59 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 401 59 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 402 59 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 403 59 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 404 59 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 405 59 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 406 60 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 407 60 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 408 60 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 409 61 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 410 61 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 411 61 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 412 61 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 413 61 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 414 61 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 415 61 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 416 61 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 417 62 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 418 62 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 419 62 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 420 62 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 421 62 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 422 62 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 423 62 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 424 62 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 425 62 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 426 62 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 427 63 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 00000000
+Debug: 428 63 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 429 63 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 430 63 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 431 63 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 432 64 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = e000ed00
+Debug: 433 64 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 434 64 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 435 64 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Error: 436 64 arm_adi_v5.c:489 mem_ap_read(): Failed to read memory at 0xe000ed00
+Debug: 437 64 target.c:2230 target_read_u32(): address: 0xe000ed00 failed
+Debug: 438 64 openocd.c:150 handle_init_command(): target examination failed
+Debug: 439 64 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_flash init
+Debug: 440 65 command.c:143 script_debug(): command - ocd_flash ocd_flash init
+Debug: 441 65 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 442 65 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 443 65 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 444 65 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 445 65 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000002
+Debug: 446 65 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 447 65 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 448 65 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 449 66 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 450 66 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 451 66 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000edf0
+Debug: 452 66 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 453 66 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 454 66 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 455 66 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 456 67 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 457 67 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000010
+Debug: 458 67 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 459 67 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 460 67 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 461 68 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = e000ed00
+Debug: 462 68 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 463 68 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 464 68 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 465 68 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 466 69 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 467 69 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 468 69 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 469 69 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 470 69 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 471 69 target.c:1501 target_call_event_callbacks(): target event 0 (gdb-halt)
+User : 472 69 target.c:2579 handle_target(): Polling target kx.cpu failed, trying to reexamine
+Debug: 473 69 target.c:1501 target_call_event_callbacks(): target event 21 (examine-start)
+Debug: 474 69 arm_adi_v5.c:603 dap_dp_init():  
+Debug: 475 69 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 476 69 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 477 69 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 478 70 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 479 70 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 480 70 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 481 71 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 482 71 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 483 71 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 484 71 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 485 71 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 486 71 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 487 71 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 488 71 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 489 71 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 490 71 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 491 72 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 492 72 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 493 72 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 494 72 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 495 72 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 496 72 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 497 72 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 498 72 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 499 73 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 500 73 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 501 73 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 502 73 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 503 73 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 504 74 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 00000020
+Debug: 505 74 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 506 74 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 507 74 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 508 74 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = 00000000
+Debug: 509 74 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 510 75 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 511 75 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 512 75 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 513 75 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000000
+Debug: 514 75 arm_adi_v5.c:636 dap_dp_init(): DAP: wait CDBGPWRUPACK
+Debug: 515 75 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x20000000, value 0x20000000
+Debug: 516 75 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 517 75 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 518 75 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 519 76 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 520 76 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 521 76 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 522 76 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 523 76 arm_adi_v5.c:643 dap_dp_init(): DAP: wait CSYSPWRUPACK
+Debug: 524 76 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x80000000, value 0x80000000
+Debug: 525 76 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 526 76 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 527 76 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 528 77 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 529 77 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 530 77 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 531 77 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 532 77 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 533 77 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 534 77 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 535 78 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 536 78 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 537 78 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 538 78 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 539 78 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 540 79 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000001
+Debug: 541 79 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 542 79 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 543 79 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 544 80 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 545 80 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 546 80 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 547 80 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 548 80 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 549 80 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 550 80 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 551 80 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 552 80 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 553 80 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 554 80 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 555 81 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 556 81 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 557 81 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 558 81 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 559 81 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 560 81 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 561 82 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 24770011
+Debug: 562 82 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 563 82 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 564 82 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 565 82 arm_adi_v5.c:787 dap_find_ap(): Found AHB-AP at AP index: 0 (IDR=0x24770011)
+Debug: 566 82 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 567 82 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 568 82 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 569 83 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 570 83 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 571 83 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 572 83 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 573 83 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 574 83 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 575 84 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000020
+Debug: 576 84 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 577 84 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 578 84 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 579 84 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 580 84 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 581 84 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = 00000000
+Debug: 582 84 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 583 84 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 584 85 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 585 85 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 586 85 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = 24770011
+Debug: 587 85 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 588 85 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 589 85 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 590 86 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 591 86 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 23000020
+Debug: 592 86 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 593 86 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 594 86 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 595 87 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 596 87 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 597 87 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 598 87 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 599 87 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 600 88 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 23000020
+Debug: 601 88 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 602 88 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 603 88 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 604 88 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 605 89 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 00000000
+Debug: 606 89 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 607 89 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 608 89 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 609 89 arm_adi_v5.c:714 mem_ap_init(): MEM_AP Packed Transfers: enabled
+Debug: 610 89 arm_adi_v5.c:725 mem_ap_init(): MEM_AP CFG: large data 0, long address 0, big-endian 0
+Debug: 611 89 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 612 89 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 613 89 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 614 89 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 615 89 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 616 90 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 617 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 618 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 619 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 620 90 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000ed00
+Debug: 621 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 622 90 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 623 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 624 90 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 625 91 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 626 91 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000022
+Debug: 627 91 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 628 91 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 629 91 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 630 91 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 631 92 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 632 92 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 633 92 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 634 92 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 635 92 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 636 93 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 637 93 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 638 93 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 639 93 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 640 93 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 641 93 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 642 93 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 643 93 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 644 94 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 645 94 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 646 94 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 647 95 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 648 95 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 649 95 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 650 95 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 651 95 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 652 95 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 653 95 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 654 95 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 655 96 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 656 96 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 657 96 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 658 96 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 659 96 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 660 96 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 661 96 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 662 96 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 663 96 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 664 96 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 665 97 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 00000000
+Debug: 666 97 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 667 97 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 668 97 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 669 97 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 670 98 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = e000ed00
+Debug: 671 98 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 672 98 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 673 98 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Error: 674 98 arm_adi_v5.c:489 mem_ap_read(): Failed to read memory at 0xe000ed00
+Debug: 675 98 target.c:2230 target_read_u32(): address: 0xe000ed00 failed
+User : 676 98 target.c:2587 handle_target(): Examination failed, GDB will be halted. Polling again in 100ms
+Debug: 678 98 tcl.c:1065 handle_flash_init_command(): Initializing flash devices...
+Debug: 679 98 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 680 98 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 681 98 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 682 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 683 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 684 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 685 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 686 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 687 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 688 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 689 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 690 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 691 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 692 99 command.c:364 register_command_handler(): registering 'ocd_flash'...
+Debug: 693 99 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_mflash init
+Debug: 694 100 command.c:143 script_debug(): command - ocd_mflash ocd_mflash init
+Debug: 696 100 mflash.c:1377 handle_mflash_init_command(): Initializing mflash devices...
+Debug: 697 100 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_nand init
+Debug: 698 100 command.c:143 script_debug(): command - ocd_nand ocd_nand init
+Debug: 699 100 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 700 100 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 701 100 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 702 100 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 703 101 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000002
+Debug: 704 101 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 705 101 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 706 101 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 707 101 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 708 101 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 709 101 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000edf0
+Debug: 710 101 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 711 102 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 712 102 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 713 102 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 714 102 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 715 102 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000010
+Debug: 716 102 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 717 102 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 718 102 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 719 103 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = e000ed00
+Debug: 720 103 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 721 103 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 722 103 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 723 103 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 724 104 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 725 104 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 726 104 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 727 104 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 728 104 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 729 104 target.c:1501 target_call_event_callbacks(): target event 0 (gdb-halt)
+User : 730 104 target.c:2579 handle_target(): Polling target kx.cpu failed, trying to reexamine
+Debug: 731 104 target.c:1501 target_call_event_callbacks(): target event 21 (examine-start)
+Debug: 732 104 arm_adi_v5.c:603 dap_dp_init():  
+Debug: 733 104 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 734 104 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 735 104 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 736 105 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 737 105 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 738 105 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 739 106 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 740 106 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 741 106 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 742 106 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 743 106 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 744 107 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 745 107 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 746 107 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 747 107 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 748 107 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 749 107 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 750 107 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 751 107 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 752 107 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 753 108 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 754 108 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 755 108 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 756 108 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 757 108 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 758 108 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 759 108 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 760 109 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 761 109 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 762 109 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 00000020
+Debug: 763 109 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 764 109 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 765 109 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 766 110 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = 00000000
+Debug: 767 110 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 768 110 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 769 110 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 770 110 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 771 111 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000000
+Debug: 772 111 arm_adi_v5.c:636 dap_dp_init(): DAP: wait CDBGPWRUPACK
+Debug: 773 111 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x20000000, value 0x20000000
+Debug: 774 111 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 775 111 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 776 111 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 777 111 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 778 111 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 779 112 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 780 112 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 781 112 arm_adi_v5.c:643 dap_dp_init(): DAP: wait CSYSPWRUPACK
+Debug: 782 112 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x80000000, value 0x80000000
+Debug: 783 112 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 784 112 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 785 112 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 786 112 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 787 113 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 788 113 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 789 113 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 790 113 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 791 113 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 792 113 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 793 113 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 794 113 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 795 114 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 796 114 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 797 114 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 798 114 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000001
+Debug: 799 114 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 800 114 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 801 114 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 802 115 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 803 115 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 804 115 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 805 115 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 806 115 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 807 115 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 808 115 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 809 115 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 810 116 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 811 116 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 812 116 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 813 116 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 814 117 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 815 117 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 816 117 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 817 117 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 818 117 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 819 118 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 24770011
+Debug: 820 118 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 821 118 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 822 118 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 823 118 arm_adi_v5.c:787 dap_find_ap(): Found AHB-AP at AP index: 0 (IDR=0x24770011)
+Debug: 824 118 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 825 118 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 826 118 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 827 118 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 828 118 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 829 118 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 830 118 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 831 119 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 832 119 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 833 119 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000020
+Debug: 834 119 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 835 119 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 836 119 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 837 119 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 838 120 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 839 120 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = 00000000
+Debug: 840 120 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 841 120 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 842 120 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 843 120 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 844 121 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = 24770011
+Debug: 845 121 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 846 121 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 847 121 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 848 121 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 849 122 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 23000020
+Debug: 850 122 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 851 122 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 852 122 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 853 122 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 854 122 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 855 122 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 856 122 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 857 122 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 858 123 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 23000020
+Debug: 859 123 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 860 123 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 861 123 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 862 123 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 863 124 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 00000000
+Debug: 864 124 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 865 124 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 866 124 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 867 124 arm_adi_v5.c:714 mem_ap_init(): MEM_AP Packed Transfers: enabled
+Debug: 868 124 arm_adi_v5.c:725 mem_ap_init(): MEM_AP CFG: large data 0, long address 0, big-endian 0
+Debug: 869 124 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 870 124 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 871 124 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 872 125 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 873 125 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 874 125 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 875 125 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 876 125 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 877 125 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 878 126 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000ed00
+Debug: 879 126 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 880 126 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 881 126 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 882 126 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 883 126 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 884 126 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000022
+Debug: 885 126 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 886 126 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 887 127 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 888 127 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 889 127 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 890 127 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 891 127 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 892 127 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 893 128 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 894 128 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 895 128 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 896 128 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 897 128 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 898 128 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 899 128 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 900 128 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 901 128 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 902 129 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 903 129 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 904 130 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 905 130 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 906 130 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 907 130 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 908 130 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 909 131 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 910 131 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 911 131 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 912 131 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 913 131 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 914 131 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 915 131 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 916 131 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 917 131 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 918 131 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 919 132 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 920 132 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 921 132 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 922 132 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 923 132 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 00000000
+Debug: 924 132 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 925 133 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 926 133 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 927 133 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 928 133 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = e000ed00
+Debug: 929 133 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 930 133 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 931 134 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Error: 932 134 arm_adi_v5.c:489 mem_ap_read(): Failed to read memory at 0xe000ed00
+Debug: 933 134 target.c:2230 target_read_u32(): address: 0xe000ed00 failed
+User : 934 134 target.c:2587 handle_target(): Examination failed, GDB will be halted. Polling again in 300ms
+Debug: 936 134 tcl.c:495 handle_nand_init_command(): Initializing NAND devices...
+Debug: 937 134 command.c:143 script_debug(): command - ocd_command ocd_command type ocd_pld init
+Debug: 938 134 command.c:143 script_debug(): command - ocd_pld ocd_pld init
+Debug: 940 134 pld.c:205 handle_pld_init_command(): Initializing PLDs...
+Debug: 941 435 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 942 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 943 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 944 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 945 435 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000002
+Debug: 946 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 947 435 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 948 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 949 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 950 435 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 951 436 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000edf0
+Debug: 952 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 953 436 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 954 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 955 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 956 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 957 436 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000010
+Debug: 958 436 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 959 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 960 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 961 436 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = e000ed00
+Debug: 962 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 963 436 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 964 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 965 436 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 966 437 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 967 437 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 968 437 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 969 437 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 970 437 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 971 437 target.c:1501 target_call_event_callbacks(): target event 0 (gdb-halt)
+User : 972 437 target.c:2579 handle_target(): Polling target kx.cpu failed, trying to reexamine
+Debug: 973 437 target.c:1501 target_call_event_callbacks(): target event 21 (examine-start)
+Debug: 974 437 arm_adi_v5.c:603 dap_dp_init():  
+Debug: 975 437 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 976 437 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 977 437 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 978 437 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 979 437 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 980 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 981 438 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 982 438 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 983 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 984 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 985 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 986 438 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 987 438 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 988 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 989 438 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 990 438 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 991 438 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 992 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 993 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 994 438 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 995 439 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 996 439 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 997 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 998 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 999 439 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 1000 439 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1001 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1002 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1003 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1004 439 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 00000020
+Debug: 1005 439 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1006 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1007 439 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1008 440 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = 00000000
+Debug: 1009 440 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1010 440 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1011 440 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1012 440 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1013 440 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000000
+Debug: 1014 440 arm_adi_v5.c:636 dap_dp_init(): DAP: wait CDBGPWRUPACK
+Debug: 1015 440 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x20000000, value 0x20000000
+Debug: 1016 440 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1017 440 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1018 440 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1019 441 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1020 441 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1021 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1022 441 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1023 441 arm_adi_v5.c:643 dap_dp_init(): DAP: wait CSYSPWRUPACK
+Debug: 1024 441 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x80000000, value 0x80000000
+Debug: 1025 441 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1026 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1027 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1028 441 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1029 441 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1030 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1031 441 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1032 441 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1033 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1034 441 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1035 442 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1036 442 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1037 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1038 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1039 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1040 442 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000001
+Debug: 1041 442 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1042 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1043 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1044 442 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 1045 442 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1046 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1047 442 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1048 442 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1049 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1050 442 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1051 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1052 443 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 1053 443 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1054 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1055 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1056 443 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 1057 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1058 443 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1059 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1060 443 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1061 444 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 24770011
+Debug: 1062 444 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1063 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1064 444 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1065 444 arm_adi_v5.c:787 dap_find_ap(): Found AHB-AP at AP index: 0 (IDR=0x24770011)
+Debug: 1066 444 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1067 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1068 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1069 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1070 444 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1071 444 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1072 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1073 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1074 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1075 444 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000020
+Debug: 1076 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1077 444 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1078 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1079 444 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1080 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1081 445 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = 00000000
+Debug: 1082 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1083 445 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1084 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1085 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1086 445 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = 24770011
+Debug: 1087 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1088 445 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1089 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1090 445 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1091 446 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 23000020
+Debug: 1092 446 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1093 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1094 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1095 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1096 446 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 1097 446 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1098 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1099 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1100 446 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 23000020
+Debug: 1101 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1102 446 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1103 446 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1104 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1105 447 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 00000000
+Debug: 1106 447 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1107 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1108 447 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1109 447 arm_adi_v5.c:714 mem_ap_init(): MEM_AP Packed Transfers: enabled
+Debug: 1110 447 arm_adi_v5.c:725 mem_ap_init(): MEM_AP CFG: large data 0, long address 0, big-endian 0
+Debug: 1111 447 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1112 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1113 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1114 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1115 447 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1116 447 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1117 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1118 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1119 447 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1120 448 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000ed00
+Debug: 1121 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1122 448 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1123 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1124 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1125 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1126 448 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000022
+Debug: 1127 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1128 448 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1129 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1130 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1131 448 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 1132 448 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1133 448 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1134 449 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1135 449 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1136 449 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 1137 449 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 1138 449 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1139 449 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1140 449 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 1141 449 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 1142 449 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 1143 449 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1144 449 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1145 449 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1146 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1147 450 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 1148 450 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1149 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1150 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1151 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1152 450 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 1153 450 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1154 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1155 450 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 1156 450 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 1157 450 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1158 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1159 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1160 450 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1161 451 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1162 451 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1163 451 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1164 451 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1165 451 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 00000000
+Debug: 1166 451 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1167 451 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1168 451 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1169 451 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1170 451 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = e000ed00
+Debug: 1171 451 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1172 452 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1173 452 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Error: 1174 452 arm_adi_v5.c:489 mem_ap_read(): Failed to read memory at 0xe000ed00
+Debug: 1175 452 target.c:2230 target_read_u32(): address: 0xe000ed00 failed
+User : 1176 452 target.c:2587 handle_target(): Examination failed, GDB will be halted. Polling again in 700ms
+Debug: 1177 1253 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1178 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1179 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1180 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1181 1253 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000002
+Debug: 1182 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1183 1253 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1184 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1185 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1186 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1187 1253 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000edf0
+Debug: 1188 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1189 1253 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1190 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1191 1253 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1192 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1193 1254 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000010
+Debug: 1194 1254 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1195 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1196 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1197 1254 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = e000ed00
+Debug: 1198 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1199 1254 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1200 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1201 1254 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1202 1255 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 1203 1255 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 1204 1255 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1205 1255 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1206 1255 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 1207 1255 target.c:1501 target_call_event_callbacks(): target event 0 (gdb-halt)
+User : 1208 1255 target.c:2579 handle_target(): Polling target kx.cpu failed, trying to reexamine
+Debug: 1209 1255 target.c:1501 target_call_event_callbacks(): target event 21 (examine-start)
+Debug: 1210 1255 arm_adi_v5.c:603 dap_dp_init():  
+Debug: 1211 1255 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 1212 1255 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 1213 1255 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1214 1255 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1215 1255 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1216 1255 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1217 1256 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 1218 1256 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1219 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1220 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1221 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1222 1256 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 1223 1256 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1224 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1225 1256 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 1226 1256 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 1227 1256 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1228 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1229 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1230 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1231 1256 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1232 1256 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1233 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1234 1256 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1235 1257 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 1236 1257 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1237 1257 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1238 1257 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1239 1257 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1240 1257 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 00000020
+Debug: 1241 1257 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1242 1257 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1243 1257 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1244 1258 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = 00000000
+Debug: 1245 1258 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1246 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1247 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1248 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1249 1258 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000000
+Debug: 1250 1258 arm_adi_v5.c:636 dap_dp_init(): DAP: wait CDBGPWRUPACK
+Debug: 1251 1258 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x20000000, value 0x20000000
+Debug: 1252 1258 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1253 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1254 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1255 1258 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1256 1258 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1257 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1258 1258 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1259 1258 arm_adi_v5.c:643 dap_dp_init(): DAP: wait CSYSPWRUPACK
+Debug: 1260 1258 arm_adi_v5.h:428 dap_dp_poll_register(): DAP: poll 4, mask 0x80000000, value 0x80000000
+Debug: 1261 1258 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1262 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1263 1258 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1264 1259 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1265 1259 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1266 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1267 1259 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1268 1259 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1269 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1270 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1271 1259 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000000
+Debug: 1272 1259 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1273 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1274 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1275 1259 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1276 1260 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 4 = 50000001
+Debug: 1277 1260 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1278 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1279 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1280 1260 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 4 = f0000001
+Debug: 1281 1260 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1282 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1283 1260 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1284 1260 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1285 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1286 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1287 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1288 1260 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 1289 1260 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1290 1260 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1291 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1292 1261 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 1293 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1294 1261 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1295 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1296 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1297 1261 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 24770011
+Debug: 1298 1261 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1299 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1300 1261 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1301 1261 arm_adi_v5.c:787 dap_find_ap(): Found AHB-AP at AP index: 0 (IDR=0x24770011)
+Debug: 1302 1261 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1303 1261 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1304 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1305 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1306 1262 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1307 1262 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1308 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1309 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1310 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1311 1262 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000020
+Debug: 1312 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1313 1262 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1314 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1315 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1316 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1317 1262 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = 00000000
+Debug: 1318 1262 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1319 1262 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1320 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1321 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1322 1263 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 0 = 24770011
+Debug: 1323 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1324 1263 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1325 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1326 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1327 1263 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 23000020
+Debug: 1328 1263 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1329 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1330 1263 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1331 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1332 1264 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 000000f0
+Debug: 1333 1264 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1334 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1335 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1336 1264 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 23000020
+Debug: 1337 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1338 1264 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1339 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1340 1264 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1341 1265 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = 00000000
+Debug: 1342 1265 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1343 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1344 1265 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Debug: 1345 1265 arm_adi_v5.c:714 mem_ap_init(): MEM_AP Packed Transfers: enabled
+Debug: 1346 1265 arm_adi_v5.c:725 mem_ap_init(): MEM_AP CFG: large data 0, long address 0, big-endian 0
+Debug: 1347 1265 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1348 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1349 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1350 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1351 1265 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1352 1265 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1353 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1354 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1355 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1356 1265 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 4 = e000ed00
+Debug: 1357 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1358 1265 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1359 1265 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1360 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1361 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1362 1266 bitbang.c:506 bitbang_swd_write_reg(): OK AP write reg 0 = a2000022
+Debug: 1363 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1364 1266 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1365 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1366 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1367 1266 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg C = 00000000
+Debug: 1368 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1369 1266 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1370 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1371 1266 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1372 1267 bitbang.c:447 bitbang_swd_read_reg(): FAULT DP read reg C = ffffffff
+Debug: 1373 1267 bitbang.c:466 bitbang_swd_read_reg(): SWD_ACK_FAULT
+Debug: 1374 1267 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1375 1267 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1376 1267 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 04
+Debug: 1377 1267 bitbang.c:383 bitbang_swd_switch_seq(): bitbang_swd_switch_seq
+Debug: 1378 1267 bitbang.c:391 bitbang_swd_switch_seq(): JTAG-to-SWD
+Debug: 1379 1267 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1380 1267 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1381 1267 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1382 1267 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1383 1268 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg 0 = 2ba01477
+Debug: 1384 1268 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1385 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1386 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1387 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1388 1268 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 0 = 0000001e
+Debug: 1389 1268 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1390 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1391 1268 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Info : 1392 1268 adi_v5_swd.c:137 swd_connect(): SWD DPIDR 0x2ba01477
+Debug: 1393 1268 bitbang.c:479 bitbang_swd_write_reg(): bitbang_swd_write_reg
+Debug: 1394 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1395 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1396 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1397 1268 bitbang.c:506 bitbang_swd_write_reg(): OK DP write reg 8 = 00000000
+Debug: 1398 1268 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1399 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1400 1268 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1401 1269 bitbang.c:447 bitbang_swd_read_reg(): OK AP read reg 4 = 00000000
+Debug: 1402 1269 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1403 1269 bitbang.c:420 bitbang_swd_read_reg(): bitbang_swd_read_reg
+Debug: 1404 1269 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1405 1269 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1406 1269 bitbang.c:447 bitbang_swd_read_reg(): OK DP read reg C = e000ed00
+Debug: 1407 1269 bitbang.c:531 bitbang_swd_run_queue(): bitbang_swd_run_queue
+Debug: 1408 1269 bitbang.c:360 bitbang_exchange(): bitbang_exchange
+Debug: 1409 1269 bitbang.c:538 bitbang_swd_run_queue(): SWD queue return value: 00
+Error: 1410 1269 arm_adi_v5.c:489 mem_ap_read(): Failed to read memory at 0xe000ed00
+Debug: 1411 1269 target.c:2230 target_read_u32(): address: 0xe000ed00 failed
+User : 1412 1269 target.c:2587 handle_target(): Examination failed, GDB will be halted. Polling again in 1500ms
