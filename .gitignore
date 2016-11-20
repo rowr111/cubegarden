@@ -32,5 +32,9 @@
 *.dSYM/
 *.su
 
+*.lst
+*.map
+*.d
+
 # emacs files
 *~
