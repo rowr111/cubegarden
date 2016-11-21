@@ -37,6 +37,7 @@
 *.srec
 *.map
 *.d
+*.dmp
 
 # emacs files
 *~

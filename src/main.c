@@ -20,6 +20,8 @@
 #include "shellcfg.h"
 #include "shell.h"
 
+#include "oled.h"
+#include "gfx.h"
 #include "orchard-events.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
@@ -162,8 +164,12 @@ int main(void) {
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
 
 
+  // init I2C objects for graphics
   i2cObjectInit(&I2CD2);
   i2cStart(&I2CD2, &i2c2_config);
+
+  oledStart();
+  gfxInit();
   
   /*
    * Normal main() thread activity, spawning shells.

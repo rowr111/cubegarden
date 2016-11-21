@@ -113,6 +113,12 @@ LDSCRIPT= ../ld/MK22FN128.ld
 #OPENSDA = opensda
 #include $(OPENSDA)/build.mk
 
+# uGFX includes
+GFXLIB =../ugfx
+include $(GFXLIB)/gfx.mk
+include $(GFXLIB)/boards/base/Kosagi-XZ/board.mk
+include $(GFXLIB)/drivers/gdisp/SSD1306/driver.mk
+
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CSRC = \
@@ -125,11 +131,13 @@ CSRC = \
        $(BOARDSRC) \
        $(STREAMSSRC) \
        $(SHELLSRC) \
+       $(GFXSRC) \
        main.c \
        orchard-vectors.c \
        shellcfg.c \
        gitversion.c \
        xmodem.c \
+       oled.c \
        $(wildcard cmd-*.c) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -163,7 +171,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(STREAMSINC) $(SHELLINC) \
+         $(STREAMSINC) $(SHELLINC) $(GFXINC) \
          -Isda
 
 #

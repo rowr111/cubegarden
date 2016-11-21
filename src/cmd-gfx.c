@@ -5,6 +5,8 @@
 #include "shell.h"
 #include "chprintf.h"
 
+#include "oled.h"
+
 // 011_1100
 #define SSD1306_ADDR  0x3C
 
@@ -16,12 +18,12 @@ void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[])
   (void)argv;
   uint8_t tx[2], rx[2];
   msg_t retval;
-  int i;
 
   if (argc <= 0) {
     chprintf(chp, "Usage: gfx [verb]:"SHELL_NEWLINE_STR);
     chprintf(chp, "    id        SSD1306 ID"SHELL_NEWLINE_STR);
     chprintf(chp, "    reset     Reset display"SHELL_NEWLINE_STR);
+    chprintf(chp, "    banner    Display a banner"NL);
     return;
   }
 
@@ -41,6 +43,10 @@ void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     palClearPad(IOPORT1, 18);
     chThdSleepMilliseconds(1);
     palSetPad(IOPORT1, 18);
+  }
+
+  else if (!strcasecmp(argv[0], "banner")) {
+    oledBanner();
   }
   
   else {

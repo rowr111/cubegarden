@@ -43,7 +43,7 @@ void chgSetSafety(void) {
   uint8_t tx[2];
 
   tx[0] = FAN5421_SAFE_ADR;
-  tx[1] = 0x60; // 1150mA, 4.2V
+  tx[1] = 0x62; // 1150mA, 4.24V
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
@@ -133,7 +133,7 @@ void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
   else if (!strcasecmp(argv[0], "auto")) {
     // now set current targets
     tx[0] = FAN5421_IBAT_ADR;
-    tx[1] = 0x6 << 3 | 0x2; // 1150mA, termination at 146mA (~C/10)
+    tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
     i2cAcquireBus(&I2CD1);
     retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
@@ -152,7 +152,8 @@ void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
     
     // target "float" voltage
     tx[0] = FAN5421_OREG_ADR;
-    tx[1] = (0x22 << 2); // target 4.18 float voltage
+    //    tx[1] = (0x22 << 2); // target 4.18 float voltage
+    tx[1] = (0x1e << 2); // target 4.10 float voltage
     i2cAcquireBus(&I2CD1);
     retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
