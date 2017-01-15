@@ -43,12 +43,23 @@ void chgSetSafety(void) {
   uint8_t tx[2];
 
   tx[0] = FAN5421_SAFE_ADR;
-  tx[1] = 0x62; // 1150mA, 4.24V
+  //  tx[1] = 0x62; // 1150mA, 4.24V
+  tx[1] = 0x03; // 550mA, 4.26V
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
 }
 
+void chgAutoParams(void) {
+  uint8_t tx[2];
+  
+  tx[0] = FAN5421_IBAT_ADR;
+  //  tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
+  tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+}
 
 static void chg_cb(void *arg) {
   (void) arg;
@@ -56,6 +67,23 @@ static void chg_cb(void *arg) {
   chEvtBroadcastI(&chg_keepalive_event);
   chVTSetI(&chg_vt, MS2ST(1000), chg_cb, NULL);
   chSysUnlockFromISR();
+}
+
+void chgStart(void) {
+  uint8_t tx[2], rx[1];
+
+  tx[0] = FAN5421_CTL1_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  tx[1] = rx[0] & 0xFB; // bit 2 low to start charging
+  tx[0] = FAN5421_CTL1_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  
+  chVTSet(&chg_vt, MS2ST(1000), chg_cb, NULL);
 }
 
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
@@ -133,7 +161,8 @@ void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
   else if (!strcasecmp(argv[0], "auto")) {
     // now set current targets
     tx[0] = FAN5421_IBAT_ADR;
-    tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
+    //    tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
+    tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
     i2cAcquireBus(&I2CD1);
     retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);

@@ -40,6 +40,11 @@ void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    reset     reset FPGA"SHELL_NEWLINE_STR);
     chprintf(chp, "    stat      config state"NL);
     chprintf(chp, "    config    load config"NL);
+    chprintf(chp, "    simin     SIM state in"NL);
+    chprintf(chp, "    simout    SIM state out"NL);
+    chprintf(chp, "    simstat   report SIM insertion status"NL);
+    chprintf(chp, "    sim1      select SIM1"NL);
+    chprintf(chp, "    sim2      select SIM2"NL);
     return;
   }
 
@@ -68,6 +73,36 @@ void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[])
     fpgaReconfig();
   }
 
+  else if (!strcasecmp(argv[0], "simin")) {
+    palClearPad(IOPORT1, 19); 
+  }
+
+  else if (!strcasecmp(argv[0], "simout")) {
+    palSetPad(IOPORT1, 19); // signal inverted by hardware, so low is driven to iphone
+  }
+  
+  else if (!strcasecmp(argv[0], "simstat")) {
+    if( palReadPad(IOPORT3, 0) == PAL_LOW ) {
+      chprintf(chp, "SIM1 is absent"NL ); // low is absent
+    } else {
+      chprintf(chp, "SIM1 is present"NL );
+    }
+
+    if( palReadPad(IOPORT3, 1) == PAL_LOW ) {
+      chprintf(chp, "SIM2 is absent"NL );
+    } else {
+      chprintf(chp, "SIM2 is present"NL );
+    }
+  }
+
+  else if (!strcasecmp(argv[0], "sim1")) {
+    palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
+  }
+  
+  else if (!strcasecmp(argv[0], "sim2")) {
+    palSetPad(IOPORT3, 9); // set SIM_SEL, selecting sim2
+  }
+  
   else {
     chprintf(chp, "Unrecognized command: %s"NL, argv[0]);
   }

@@ -44,6 +44,7 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
  */
 void testCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capRCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -51,10 +52,12 @@ void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void uploadCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
   {"i2c", i2cCommand},
+  {"captest", capTestCommand},
   {"c", capWCommand},
   {"cr", capRCommand},
   {"chg", chgCommand},
@@ -62,6 +65,7 @@ static const ShellCommand commands[] = {
   {"fpga", fpgaCommand},
   {"upload", uploadCommand},
   {"gfx", gfxCommand},
+  {"spi", spiCommand},
   {NULL, NULL}
 };
 

@@ -28,16 +28,19 @@ void oledGfxEnd() {
 }
 
 void oledBanner(void) {
-  coord_t width;
+  coord_t width, fontheight;
   font_t font;
   
   oledGfxStart();
   width = gdispGetWidth();
   font = gdispOpenFont("UI2");
+  fontheight = gdispGetFontMetric(font, fontHeight);
   
   gdispClear(Black);
-  gdispDrawStringBox(0, 0, width, gdispGetFontMetric(font, fontHeight),
-                     "XZ EVT1", font, White, justifyCenter);
+  gdispDrawStringBox(0, fontheight, width, fontheight * 2,
+                     "Introspection Engine", font, White, justifyCenter);
+  gdispDrawStringBox(0, fontheight * 2, width, fontheight * 3,
+                     "EVT1", font, White, justifyCenter);
   gdispFlush();
   gdispCloseFont(font);
   oledGfxEnd();

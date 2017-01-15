@@ -50,6 +50,22 @@ static const SPIConfig spi_config = {
   KINETIS_SPI_TAR_8BIT_FAST
 };
 
+// roughly 1MHz 
+#define KINETIS_SPI_TAR_SYSCLK_DIV_64(n) \
+    SPIx_CTARn_FMSZ(((n) - 1)) | \
+    SPIx_CTARn_PBR(0) | \
+    SPIx_CTARn_BR(0x5) | \
+    SPIx_CTARn_CSSCK(0x5) | \
+    SPIx_CTARn_ASC(0x7) | \
+    SPIx_CTARn_DT(0x7)
+
+static const SPIConfig spi2_config = {
+  NULL,
+  IOPORT3,
+  2,
+  KINETIS_SPI_TAR_SYSCLK_DIV_64(16) // 16-bit frame size
+};
+
 static const I2CConfig i2c_config = {
   100000
 };
@@ -98,6 +114,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 }
 
 void chgSetSafety(void);
+void chgAutoParams(void);
+void chgStart(void);
 void ggOn(void);
 void spiRuntSetup(SPIDriver *spip);
 /*
@@ -142,6 +160,8 @@ int main(void) {
   
   spiUnselect(&SPID2);
 
+  spiStart(&SPID1, &spi2_config);
+
   shellInit();
 
   chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
@@ -162,7 +182,8 @@ int main(void) {
   
 
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
-
+  chgAutoParams(); // set auto charge parameters
+  chgStart();
 
   // init I2C objects for graphics
   i2cObjectInit(&I2CD2);
@@ -170,6 +191,12 @@ int main(void) {
 
   oledStart();
   gfxInit();
+
+  oledBanner();
+
+  palClearPad(IOPORT1, 19); // clear SIM_DET_SYNTH, simulates SIM "in"
+  palClearPad(IOPORT2, 19); // clear WLAN_RESET
+  palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
   
   /*
    * Normal main() thread activity, spawning shells.
