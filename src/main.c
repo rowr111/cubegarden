@@ -23,23 +23,18 @@
 #include "oled.h"
 #include "gfx.h"
 #include "orchard-events.h"
+#include "ui.h"
+#include "touch.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
+struct evt_table orchard_events;
+
 extern const char *gitversion;
-
-static uint8_t done_state = 0;
-/* Triggered when done goes low, white LED stops flashing */
-static void extcb1(EXTDriver *extp, expchannel_t channel) {
-  (void)extp;
-  (void)channel;
-
-  done_state = 1;
-}
 
 static const EXTConfig extcfg = {
   {
-   {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, extcb1, PORTA, 1}
+   {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0}
   }
 };
 
@@ -90,24 +85,31 @@ static const SerialConfig serialConfig = {
 
 extern virtual_timer_t chg_vt;
 extern event_source_t chg_keepalive_event;
-void chg_keepalive_handler(eventid_t id);
+void chgKeepaliveHandler(eventid_t id);
+
+extern virtual_timer_t ui_vt;
+extern event_source_t ui_timer_event;
 
 static thread_t *eventThr = NULL;
 static THD_WORKING_AREA(waOrchardEventThread, 0x900);
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;
-  struct evt_table orchard_events;
-
   chRegSetThreadName("Orchard Event Threads");
 
   evtTableInit(orchard_events, 32);
-  evtTableHook(orchard_events, chg_keepalive_event, chg_keepalive_handler);
+  orchardEventsStart();
+  
+  evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
+  evtTableHook(orchard_events, ui_timer_event, uiHandler);
+  evtTableHook(orchard_events, touch_event, touchHandler);
 
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
-  evtTableUnhook(orchard_events, chg_keepalive_event, chg_keepalive_handler);
+  evtTableUnhook(orchard_events, touch_event, touchHandler);
+  evtTableUnhook(orchard_events, ui_timer_event, uiHandler);
+  evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
 
   chSysLock();
   chThdExitS(MSG_OK);
@@ -115,7 +117,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
 void chgSetSafety(void);
 void chgAutoParams(void);
-void chgStart(void);
+void chgStart(int force);
 void ggOn(void);
 void spiRuntSetup(SPIDriver *spip);
 /*
@@ -145,10 +147,6 @@ int main(void) {
   palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
   palSetPad(IOPORT3, 8); // set BATT_SRST
 
-  /*
-   * Activates the EXT driver 1.
-   */
-  //  extStart(&EXTD1, &extcfg);
   sdStart(&SD4, &serialConfig);
   
   i2cObjectInit(&I2CD1);
@@ -172,19 +170,8 @@ int main(void) {
 
   chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
 
-  
   chEvtObjectInit(&chg_keepalive_event);
-  eventThr = chThdCreateStatic(waOrchardEventThread,
-			       sizeof(waOrchardEventThread),
-			       (LOWPRIO + 2),
-			       orchard_event_thread,
-			       NULL);
   
-
-  ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
-  chgAutoParams(); // set auto charge parameters
-  chgStart();
-
   // init I2C objects for graphics
   i2cObjectInit(&I2CD2);
   i2cStart(&I2CD2, &i2c2_config);
@@ -197,6 +184,28 @@ int main(void) {
   palClearPad(IOPORT1, 19); // clear SIM_DET_SYNTH, simulates SIM "in"
   palClearPad(IOPORT2, 19); // clear WLAN_RESET
   palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
+  uicfg.simsel = 1;
+
+  ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
+  chgAutoParams(); // set auto charge parameters
+  chgStart(1);
+
+  touchStart();
+
+  /*
+   * Activates the EXT driver 1.
+   */
+  extInit();
+  extStart(&EXTD1, &extcfg);
+  
+  uiStart();
+
+  // this hooks all the events, so start it only after all events are initialized
+  eventThr = chThdCreateStatic(waOrchardEventThread,
+			       sizeof(waOrchardEventThread),
+			       (NORMALPRIO - 1),
+			       orchard_event_thread,
+			       NULL);
   
   /*
    * Normal main() thread activity, spawning shells.

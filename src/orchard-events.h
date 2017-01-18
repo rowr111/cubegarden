@@ -66,4 +66,6 @@ struct evt_table {
 #define evtListeners(table)                                                 \
     table.listeners
 
+void orchardEventsStart(void);
+
 #endif /* __ORCHARD_EVENTS__ */

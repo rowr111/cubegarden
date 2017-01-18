@@ -134,10 +134,13 @@ CSRC = \
        $(GFXSRC) \
        main.c \
        orchard-vectors.c \
+       orchard-events.c \
        shellcfg.c \
        gitversion.c \
        xmodem.c \
        oled.c \
+       touch.c \
+       ui.c \
        $(wildcard cmd-*.c) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
