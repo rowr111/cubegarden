@@ -1,0 +1,9 @@
+// 010_1000
+#define CAP1208_ADDR  0x28
+// 111_1000
+#define RH6010_ADDR  0xf0
+
+#define STC3115_ADDR 0x70
+#define FAN5421_ADDR 0x6A
+#define LC709203_ADDR 0x0B
+
