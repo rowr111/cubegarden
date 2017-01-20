@@ -117,14 +117,24 @@ void uiHandler(eventid_t id) {
     fontlinespace = fontheight; // line space a bit closer than the total height of font reported
     
     // put cfg ui here
+    //// TODO: add self-test UI here
     if( state_line == 1) {
       gdispDrawString(0, cur_line, ">", font, White);
       if( uiinput.right == 1 ) {
+	touch_debounce = MS2ST(2000);
 	if(uicfg.simsel == 1) {
 	  // action here
+	  palSetPad(IOPORT1, 19); // sim OUT
+	  palSetPad(IOPORT3, 9); // set SIM_SEL, selecting sim2
+	  chThdSleepMilliseconds(1000);
+	  palClearPad(IOPORT1, 19); // sim IN
 	  uicfg.simsel = 2;
 	} else { 
 	  // action here
+	  palSetPad(IOPORT1, 19); // sim OUT
+	  palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
+	  chThdSleepMilliseconds(1000);
+	  palClearPad(IOPORT1, 19); // sim IN
 	  uicfg.simsel = 1;
 	}
 	uiinput.right = 0;

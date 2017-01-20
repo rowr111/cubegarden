@@ -33,6 +33,7 @@
 #define KINETIS_MCG_MODE            KINETIS_MCG_MODE_PEE
 #define KINETIS_XTAL_FREQUENCY      8000000UL
 #define KINETIS_SYSCLK_FREQUENCY    95977472UL
+// ^^^ correct based on 32.768kHz * 2929 DCO DXM32=1, DRST_DRS=11, FRDIV=000 so divide by 1
 #endif
 
 /* FEI mode - 48 MHz with internal 32.768 kHz crystal */
@@ -73,6 +74,13 @@
 #define KINETIS_SERIAL_USE_LPUART0            TRUE
 #define KINETIS_SERIAL_UART3_PRIORITY         12
 
+#define KINETIS_SERIAL_USE_UART0              TRUE
+#define KINETIS_SERIAL_UART0_PRIORITY         11
+#define KINETIS_SERIAL_USE_UART1              TRUE
+#define KINETIS_SERIAL_UART1_PRIORITY         11
+#define KINETIS_SERIAL_USE_UART2              TRUE
+#define KINETIS_SERIAL_UART2_PRIORITY         11
+
 /*
  * I2C driver settings.
  */
@@ -85,7 +93,7 @@
 /*
  * EXTI driver system settings.
  */
-#define KINETIS_EXTI_NUM_CHANNELS               1
+#define KINETIS_EXTI_NUM_CHANNELS               8
 #define KINETIS_EXT_PORTA_IRQ_PRIORITY          3
 #define KINETIS_EXT_PORTB_IRQ_PRIORITY          3
 #define KINETIS_EXT_PORTC_IRQ_PRIORITY          3

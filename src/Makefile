@@ -141,6 +141,7 @@ CSRC = \
        oled.c \
        touch.c \
        ui.c \
+       gps.c \
        $(wildcard cmd-*.c) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

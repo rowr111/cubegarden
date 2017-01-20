@@ -6,6 +6,7 @@
 
 #define STUCK_TIMEOUT MS2ST(2000)  // two second max time for stuckage
 #define TOUCH_DEBOUNCE MS2ST(300)
+extern unsigned int touch_debounce;
 
 // data to be displayed on the main status monitor
 typedef struct ui_monitor {
@@ -24,6 +25,7 @@ typedef struct ui_monitor {
 typedef struct ui_config {
   unsigned int simsel;
   unsigned int alarmon;
+  unsigned int selftest;
 } ui_config;
 
 typedef struct ui_battery {

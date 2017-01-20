@@ -53,6 +53,8 @@ void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void uploadCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void serialCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void gpsCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -66,6 +68,8 @@ static const ShellCommand commands[] = {
   {"upload", uploadCommand},
   {"gfx", gfxCommand},
   {"spi", spiCommand},
+  {"ser", serialCommand},
+  {"gps", gpsCommand},
   {NULL, NULL}
 };
 

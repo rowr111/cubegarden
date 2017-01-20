@@ -25,6 +25,8 @@
 #include "orchard-events.h"
 #include "ui.h"
 #include "touch.h"
+#include "sermon.h"
+#include "gps.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -34,7 +36,8 @@ extern const char *gitversion;
 
 static const EXTConfig extcfg = {
   {
-   {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0}
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, gpsCb, PORTA, 13},
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0},
   }
 };
 
@@ -103,10 +106,12 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, ui_timer_event, uiHandler);
   evtTableHook(orchard_events, touch_event, touchHandler);
+  evtTableHook(orchard_events, gps_event, gpsHandler);
 
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, gps_event, gpsHandler);
   evtTableUnhook(orchard_events, touch_event, touchHandler);
   evtTableUnhook(orchard_events, ui_timer_event, uiHandler);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
@@ -196,9 +201,13 @@ int main(void) {
    * Activates the EXT driver 1.
    */
   extInit();
+  extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
   
   uiStart();
+
+  serMonStart();  // serial bus monitoring subsystem
+  gpsStart();  // start GPS monitoring
 
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,

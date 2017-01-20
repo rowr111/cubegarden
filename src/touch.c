@@ -12,6 +12,8 @@
 
 event_source_t touch_event;
 
+unsigned int touch_debounce = TOUCH_DEBOUNCE;
+
 static uint8_t touch_state = 0;
 static uint32_t stuck_start = 0;
 static uint32_t stuck_time = 0;
@@ -96,37 +98,43 @@ void touchHandler(eventid_t id) {
 
   // update the UI touch records
   if( touch & (1 << 1) ) {
-    if( chVTTimeElapsedSinceX(uiinput.left_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.left_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.left = 1;
     }
     uiinput.left_last = chVTGetSystemTime();
   }
   if( touch & (1 << 4) ) {
-    if( chVTTimeElapsedSinceX(uiinput.right_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.right_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.right = 1;
     }
     uiinput.right_last = chVTGetSystemTime();
   }
   if( touch & (1 << 2) ) {
-    if( chVTTimeElapsedSinceX(uiinput.up_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.up_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.up = 1;
     }
     uiinput.up_last = chVTGetSystemTime();
   }
   if( touch & (1 << 3) ) {
-    if( chVTTimeElapsedSinceX(uiinput.down_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.down_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.down = 1;
     }
     uiinput.down_last = chVTGetSystemTime();
   }
   if( touch & (1 << 7) ) {
-    if( chVTTimeElapsedSinceX(uiinput.a_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.a_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.a = 1;
     }
     uiinput.a_last = chVTGetSystemTime();
   }
   if( touch & (1 << 6) ) {
-    if( chVTTimeElapsedSinceX(uiinput.b_last) > TOUCH_DEBOUNCE ) {
+    if( chVTTimeElapsedSinceX(uiinput.b_last) > touch_debounce ) {
+      touch_debounce = TOUCH_DEBOUNCE;
       uiinput.b = 1;
     }
     uiinput.b_last = chVTGetSystemTime();
