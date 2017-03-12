@@ -55,6 +55,7 @@ void uiHandler(eventid_t id) {
   coord_t fontlinespace;
   coord_t cur_line = 0;
   font_t font;
+  font_t font_small;
   char str[32];
   char substr[8];
   int i;
@@ -209,8 +210,8 @@ void uiHandler(eventid_t id) {
   } else if( ui_state == STATE_GRAPH ) {
     gdispClear(Black);
 
-    font = gdispOpenFont("fixed_5x8"); // can fit 32 chars wide
-    fontheight = gdispGetFontMetric(font, fontHeight);
+    font_small = gdispOpenFont("fixed_5x8"); // can fit 32 chars wide
+    fontheight = gdispGetFontMetric(font_small, fontHeight);
     switch(uimon.status) {
     case UI_DARK:
       chsnprintf(substr, sizeof(substr), "DARK");
@@ -230,9 +231,8 @@ void uiHandler(eventid_t id) {
 
     chsnprintf(str, sizeof(str), " %4dmV %s  -----s %3d%%", uibat.batt_mv, substr, uibat.batt_soc / 10 );
     gdispDrawStringBox(0, 0, width, fontheight,
-		       str, font, White, justifyLeft);
+		       str, font_small, White, justifyLeft);
     cur_line += fontheight;
-    gdispCloseFont(font);
     
     font = gdispOpenFont("fixed_7x14"); // can fit 18 chars wide
     fontheight = gdispGetFontMetric(font, fontHeight);
@@ -241,68 +241,85 @@ void uiHandler(eventid_t id) {
     chsnprintf(str, sizeof(str), "cell" );
     gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
 		       str, font, White, justifyLeft);
-    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+    for( i = 0, maxval = 0; i < LOGLEN; i++ ) {
       if( uigraph.cell_events[i] > maxval )
 	maxval = uigraph.cell_events[i];
     }
-    for( i = 0; i < LOGLEN - 1; i++ ) {
-      gdispDrawLine(LEGEND_WIDTH + i,
-        cur_line + GRAPH_HEIGHT - (uigraph.cell_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        LEGEND_WIDTH + i + 1,
-        cur_line + GRAPH_HEIGHT - (uigraph.cell_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        White);
+    if( maxval != 0 ) {
+      for( i = 0; i < LOGLEN - 1; i++ ) {
+	gdispDrawLine(LEGEND_WIDTH + i,
+         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         LEGEND_WIDTH + i + 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         White);
+      }
+    } else {
+      gdispDrawStringBox(LEGEND_WIDTH, cur_line, width - LEGEND_WIDTH, GRAPH_HEIGHT, "(dark)", font_small, White, justifyCenter);
     }
     cur_line += GRAPH_HEIGHT;
 
     chsnprintf(str, sizeof(str), "gps " );
     gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
 		       str, font, White, justifyLeft);
-    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+    for( i = 0, maxval = 0; i < LOGLEN; i++ ) {
       if( uigraph.gps_events[i] > maxval )
 	maxval = uigraph.gps_events[i];
     }
-    for( i = 0; i < LOGLEN - 1; i++ ) {
-      gdispDrawLine(LEGEND_WIDTH + i,
-        cur_line + GRAPH_HEIGHT - (uigraph.gps_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        LEGEND_WIDTH + i + 1,
-        cur_line + GRAPH_HEIGHT - (uigraph.gps_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        White);
-    }
+    if( maxval != 0 ) {
+      for( i = 0; i < LOGLEN - 1; i++ ) {
+	gdispDrawLine(LEGEND_WIDTH + i,
+         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         LEGEND_WIDTH + i + 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         White);
+      }
+    } else {
+      gdispDrawStringBox(LEGEND_WIDTH, cur_line, width - LEGEND_WIDTH, GRAPH_HEIGHT, "(dark)", font_small, White, justifyCenter);
+    }       
     cur_line += GRAPH_HEIGHT;
 
     chsnprintf(str, sizeof(str), "wifi" );
     gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
 		       str, font, White, justifyLeft);
-    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+    for( i = 0, maxval = 0; i < LOGLEN; i++ ) {
       if( uigraph.wifi_events[i] > maxval )
 	maxval = uigraph.wifi_events[i];
     }
-    for( i = 0; i < LOGLEN - 1; i++ ) {
-      gdispDrawLine(LEGEND_WIDTH + i,
-        cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        LEGEND_WIDTH + i + 1,
-        cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        White);
+    if( maxval != 0 ) {
+      for( i = 0; i < LOGLEN - 1; i++ ) {
+	gdispDrawLine(LEGEND_WIDTH + i,
+         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         LEGEND_WIDTH + i + 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         White);
+      }
+    } else {
+      gdispDrawStringBox(LEGEND_WIDTH, cur_line, width - LEGEND_WIDTH, GRAPH_HEIGHT, "(dark)", font_small, White, justifyCenter);
     }
     cur_line += GRAPH_HEIGHT;
 
     chsnprintf(str, sizeof(str), "bt  " );
     gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
 		       str, font, White, justifyLeft);
-    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+    for( i = 0, maxval = 0; i < LOGLEN; i++ ) {
       if( uigraph.bt_events[i] > maxval )
 	maxval = uigraph.bt_events[i];
     }
-    for( i = 0; i < LOGLEN - 1; i++ ) {
-      gdispDrawLine(LEGEND_WIDTH + i,
-        cur_line + GRAPH_HEIGHT - (uigraph.bt_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        LEGEND_WIDTH + i + 1,
-        cur_line + GRAPH_HEIGHT - (uigraph.bt_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
-        White);
+    if( maxval != 0 ) {
+      for( i = 0; i < LOGLEN - 1; i++ ) {
+	gdispDrawLine(LEGEND_WIDTH + i,
+         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         LEGEND_WIDTH + i + 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         White);
+      }
+    } else {
+      gdispDrawStringBox(LEGEND_WIDTH, cur_line, width - LEGEND_WIDTH, GRAPH_HEIGHT, "(dark)", font_small, White, justifyCenter);
     }
     cur_line += GRAPH_HEIGHT;
     
     gdispCloseFont(font);
+    gdispCloseFont(font_small);
   }
   
   gdispFlush();
