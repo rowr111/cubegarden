@@ -27,6 +27,8 @@
 #include "touch.h"
 #include "sermon.h"
 #include "gps.h"
+#include "spmi.h"
+#include "fpga_config.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -38,6 +40,7 @@ static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, gpsCb, PORTA, 13},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, spmiCb, PORTD, 7},
   }
 };
 
@@ -107,10 +110,12 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, ui_timer_event, uiHandler);
   evtTableHook(orchard_events, touch_event, touchHandler);
   evtTableHook(orchard_events, gps_event, gpsHandler);
+  evtTableHook(orchard_events, spmi_event, spmiHandler);
 
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, spmi_event, spmiHandler);
   evtTableUnhook(orchard_events, gps_event, gpsHandler);
   evtTableUnhook(orchard_events, touch_event, touchHandler);
   evtTableUnhook(orchard_events, ui_timer_event, uiHandler);
@@ -189,7 +194,6 @@ int main(void) {
   palClearPad(IOPORT1, 19); // clear SIM_DET_SYNTH, simulates SIM "in"
   palClearPad(IOPORT2, 19); // clear WLAN_RESET
   palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
-  uicfg.simsel = 1;
 
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
@@ -208,6 +212,7 @@ int main(void) {
 
   serMonStart();  // serial bus monitoring subsystem
   gpsStart();  // start GPS monitoring
+  spmiStart();
 
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
@@ -215,6 +220,9 @@ int main(void) {
 			       (NORMALPRIO - 1),
 			       orchard_event_thread,
 			       NULL);
+
+  chThdSleepMilliseconds(250);
+  fpgaReconfig(); // fire up the FPGA as part of boot
   
   /*
    * Normal main() thread activity, spawning shells.

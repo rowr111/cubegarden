@@ -34,14 +34,14 @@ void serMonStart(void) {
   sdStart(&SD2, &serialConfig);
   sdStart(&SD3, &serialConfig);
   
-  palSetPad(IOPORT5, 0); // configure to monitor the Rx; 1 is Tx
-  sermon.wifi_txrx = SER_TX;
-  
-  palClearPad(IOPORT2, 16); // configure to monitor the Rx; 1 is Tx
-  sermon.bt_txrx = SER_RX;
+  palSetPad(IOPORT5, 0);
+  sermon.wifi_txrx = SER_TX;  // tx is chattier
+
+  palSetPad(IOPORT2, 16);
+  sermon.bt_txrx = SER_TX;  // tx is chattier
 
   palClearPad(IOPORT4, 2); // configure to monitor the Rx; 1 is Tx
-  sermon.bb_txrx = SER_RX;
+  sermon.bb_txrx = SER_RX; // haven't researched this one yet
 
   // start by monitoring wifi
   sermon.cl_uart = WIFI_SD;

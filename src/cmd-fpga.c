@@ -30,6 +30,23 @@ void fpgaReconfig(void) {
     fpgaProgramPage(&SPID2, 0, fpga_config_size, (uint8_t *) fpga_config);
 }
 
+void buzzer(int state) {
+  uint16_t tx[3];
+  uint16_t rx[3];
+
+  spiSelect(&SPID1);
+  if( state == 0 )
+    tx[0] = 0xBABE;
+  else
+    tx[0] = 0xDEAD;
+
+  spiStartExchange(&SPID1, 1, tx, rx);
+  while(SPID1.state != SPI_READY)
+    chThdYield();
+  spiUnselect(&SPID1);
+  
+}
+
 void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argc;
@@ -45,6 +62,8 @@ void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    simstat   report SIM insertion status"NL);
     chprintf(chp, "    sim1      select SIM1"NL);
     chprintf(chp, "    sim2      select SIM2"NL);
+    chprintf(chp, "    buzzon    buzzer on"NL);
+    chprintf(chp, "    buzzoff   buzzer off"NL);
     return;
   }
 
@@ -101,6 +120,14 @@ void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[])
   
   else if (!strcasecmp(argv[0], "sim2")) {
     palSetPad(IOPORT3, 9); // set SIM_SEL, selecting sim2
+  }
+
+  else if (!strcasecmp(argv[0], "buzzon")) {
+    buzzer(1);
+  }
+
+  else if (!strcasecmp(argv[0], "buzzoff")) {
+    buzzer(0);
   }
   
   else {

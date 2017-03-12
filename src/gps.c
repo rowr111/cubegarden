@@ -6,6 +6,7 @@
 #include "chprintf.h"
 
 #include "gps.h"
+#include "ui.h"
 
 #define NL SHELL_NEWLINE_STR
 
@@ -28,6 +29,11 @@ void gpsHandler(eventid_t id) {
   uint32_t temp;
 
   gpsEventCount++;
+  chMtxLock(&uigraph.log_mutex);
+  if( uigraph.gps_events[uigraph.log_index] < LOGMAX )
+    uigraph.gps_events[uigraph.log_index]++;
+  chMtxUnlock(&uigraph.log_mutex);
+  
   temp = gpsLastTime;
   gpsLastTime = ST2MS(chVTGetSystemTime());
   gpsElapsedTime = gpsLastTime - temp;

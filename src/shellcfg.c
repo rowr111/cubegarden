@@ -55,6 +55,7 @@ void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void serialCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void gpsCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void spmiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -70,6 +71,7 @@ static const ShellCommand commands[] = {
   {"spi", spiCommand},
   {"ser", serialCommand},
   {"gps", gpsCommand},
+  {"spmi", spmiCommand},
   {NULL, NULL}
 };
 

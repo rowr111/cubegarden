@@ -15,13 +15,39 @@ ui_monitor  uimon;
 ui_config   uicfg;
 ui_battery  uibat;
 ui_input    uiinput;
+ui_graph    uigraph;
 
 #define STATE_MON 0
 #define STATE_CFG 1
-static uint8_t ui_state = STATE_MON;
+#define STATE_GRAPH 2
+
+static uint8_t ui_state = STATE_GRAPH;
 static uint8_t state_line = 1;
 #define CONFIG_LINES 2
 
+#define GRAPH_HEIGHT 14
+#define LEGEND_WIDTH 32
+#define GRAPH_WIDTH 96
+
+void updateUI(void) {
+
+  //  chMtxLock(&uigraph.log_mutex);
+  
+  if( ST2MS(chVTTimeElapsedSinceX( uigraph.last_log_time )) < uicfg.log_interval )
+    return;
+
+  uigraph.last_log_time = chVTGetSystemTime();
+
+  uigraph.log_index = (uigraph.log_index + 1) % LOGLEN;
+
+  uigraph.gps_events[uigraph.log_index] = 0;
+  uigraph.bt_events[uigraph.log_index] = 0;
+  uigraph.wifi_events[uigraph.log_index] = 0;
+  uigraph.cell_events[uigraph.log_index] = 0;
+  
+  //  chMtxUnlock(&uigraph.log_mutex);
+}
+ 
 void uiHandler(eventid_t id) {
   (void) id;
 
@@ -30,16 +56,22 @@ void uiHandler(eventid_t id) {
   coord_t cur_line = 0;
   font_t font;
   char str[32];
+  char substr[8];
+  int i;
+  uint16_t maxval;
 
-  // this should go in a separate monitor timer thread, eventually -- just for demo now
-  uimon.dark_time = ST2MS(chVTGetSystemTime());
-  
+  chMtxLock(&uigraph.log_mutex);  ////// lock uigraph
+    
+  updateUI();
+
   // rising edge detect on uiinput.a
   if( uiinput.a == 1 ) {
     if( ui_state == STATE_MON )
       ui_state = STATE_CFG;
+    else if( ui_state == STATE_CFG )
+      ui_state = STATE_GRAPH;
     else
-      ui_state = STATE_MON;
+      ui_state = STATE_MON; 
 
     uiinput.a = 0;
   }
@@ -70,8 +102,7 @@ void uiHandler(eventid_t id) {
 		       str, font, White, justifyLeft);
     cur_line += fontlinespace;
 
-    chsnprintf(str, sizeof(str), "Dark for: %dh%dm%ds", (uimon.dark_time / 3600000),
-	       (uimon.dark_time / 60000) % 60, (uimon.dark_time / 1000) % 60 );
+    chsnprintf(str, sizeof(str), "Test state: %s", "BAD" ); // eventually update to pass/fail once we get there...
     gdispDrawStringBox(0, cur_line, width, cur_line + fontheight,
 		       str, font, White, justifyLeft);
     cur_line += fontlinespace;
@@ -175,10 +206,108 @@ void uiHandler(eventid_t id) {
     cur_line += fontlinespace;
     
     gdispCloseFont(font);
+  } else if( ui_state == STATE_GRAPH ) {
+    gdispClear(Black);
+
+    font = gdispOpenFont("fixed_5x8"); // can fit 32 chars wide
+    fontheight = gdispGetFontMetric(font, fontHeight);
+    switch(uimon.status) {
+    case UI_DARK:
+      chsnprintf(substr, sizeof(substr), "DARK");
+      break;
+    case UI_LIVE:
+      chsnprintf(substr, sizeof(substr), "LIVE");
+      break;
+    case UI_ALRM:
+      chsnprintf(substr, sizeof(substr), "ALRM");
+      break;
+    case UI_NOTE:
+      chsnprintf(substr, sizeof(substr), "NOTE");
+      break;
+    default:
+      chsnprintf(substr, sizeof(substr), "????");
+    }
+
+    chsnprintf(str, sizeof(str), " %4dmV %s  -----s %3d%%", uibat.batt_mv, substr, uibat.batt_soc / 10 );
+    gdispDrawStringBox(0, 0, width, fontheight,
+		       str, font, White, justifyLeft);
+    cur_line += fontheight;
+    gdispCloseFont(font);
+    
+    font = gdispOpenFont("fixed_7x14"); // can fit 18 chars wide
+    fontheight = gdispGetFontMetric(font, fontHeight);
+    fontlinespace = fontheight - 4; // line space a bit closer than the total height of font reported
+
+    chsnprintf(str, sizeof(str), "cell" );
+    gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
+		       str, font, White, justifyLeft);
+    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+      if( uigraph.cell_events[i] > maxval )
+	maxval = uigraph.cell_events[i];
+    }
+    for( i = 0; i < LOGLEN - 1; i++ ) {
+      gdispDrawLine(LEGEND_WIDTH + i,
+        cur_line + GRAPH_HEIGHT - (uigraph.cell_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        LEGEND_WIDTH + i + 1,
+        cur_line + GRAPH_HEIGHT - (uigraph.cell_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        White);
+    }
+    cur_line += GRAPH_HEIGHT;
+
+    chsnprintf(str, sizeof(str), "gps " );
+    gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
+		       str, font, White, justifyLeft);
+    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+      if( uigraph.gps_events[i] > maxval )
+	maxval = uigraph.gps_events[i];
+    }
+    for( i = 0; i < LOGLEN - 1; i++ ) {
+      gdispDrawLine(LEGEND_WIDTH + i,
+        cur_line + GRAPH_HEIGHT - (uigraph.gps_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        LEGEND_WIDTH + i + 1,
+        cur_line + GRAPH_HEIGHT - (uigraph.gps_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        White);
+    }
+    cur_line += GRAPH_HEIGHT;
+
+    chsnprintf(str, sizeof(str), "wifi" );
+    gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
+		       str, font, White, justifyLeft);
+    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+      if( uigraph.wifi_events[i] > maxval )
+	maxval = uigraph.wifi_events[i];
+    }
+    for( i = 0; i < LOGLEN - 1; i++ ) {
+      gdispDrawLine(LEGEND_WIDTH + i,
+        cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        LEGEND_WIDTH + i + 1,
+        cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        White);
+    }
+    cur_line += GRAPH_HEIGHT;
+
+    chsnprintf(str, sizeof(str), "bt  " );
+    gdispDrawStringBox(0, cur_line, width, GRAPH_HEIGHT,
+		       str, font, White, justifyLeft);
+    for( i = 0, maxval = 1; i < LOGLEN; i++ ) {
+      if( uigraph.bt_events[i] > maxval )
+	maxval = uigraph.bt_events[i];
+    }
+    for( i = 0; i < LOGLEN - 1; i++ ) {
+      gdispDrawLine(LEGEND_WIDTH + i,
+        cur_line + GRAPH_HEIGHT - (uigraph.bt_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        LEGEND_WIDTH + i + 1,
+        cur_line + GRAPH_HEIGHT - (uigraph.bt_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+        White);
+    }
+    cur_line += GRAPH_HEIGHT;
+    
+    gdispCloseFont(font);
   }
   
   gdispFlush();
   oledGfxEnd();
+  chMtxUnlock(&uigraph.log_mutex);  ////////// unlock uigraph
   
 }
 
@@ -190,8 +319,41 @@ static void ui_cb(void *arg) {
   chSysUnlockFromISR();
 }
 
+#define BT_SD    (&SD1)
+#define WIFI_SD  (&SD2)
 
 void uiStart(void) {
+  int i;
+  
   chEvtObjectInit(&ui_timer_event);
   chVTSet(&ui_vt, MS2ST(60), ui_cb, NULL);
+
+  uimon.gps_ok = UI_NOT_OK;
+  uimon.cell_ok = UI_NOT_OK;
+  uimon.wifi_ok = UI_NOT_OK;
+  uimon.bt_ok = UI_NOT_OK;
+  uimon.status = UI_LIVE;
+
+  chMtxObjectInit(&uigraph.log_mutex);
+  chMtxLock(&uigraph.log_mutex);
+  for( i = 0; i < LOGLEN; i++ ) {
+    uigraph.gps_events[i] = 0;
+    uigraph.bt_events[i] = 0;
+    uigraph.wifi_events[i] = 0;
+    uigraph.cell_events[i] = 0;
+  }
+  uigraph.log_index = 0;
+  
+  uigraph.last_log_time = chVTGetSystemTime(); // time in system time
+  chMtxUnlock(&uigraph.log_mutex);
+
+  // set config defaults
+  uicfg.simsel = 1;
+  uicfg.selftest = 0;
+  uicfg.notifyon = 1;
+  uicfg.alarmon = 1;
+  uicfg.alarmtime = 60;
+  uicfg.darkdelay = 5;
+  uicfg.log_interval = 2000;
+
 }
