@@ -2,6 +2,7 @@
 #define UI_LIVE 1
 #define UI_ALRM 2
 #define UI_NOTE 3
+#define UI_LIVE_DEBOUNCE 4
 
 #define UI_NOT_OK 0
 #define UI_OK 1
@@ -10,6 +11,9 @@
 #define TOUCH_DEBOUNCE MS2ST(300)
 extern unsigned int touch_debounce;
 
+#define TIME_STATES 5
+extern unsigned int time_map[TIME_STATES]; // time options, in seconds
+
 // data to be displayed on the main status monitor
 typedef struct ui_monitor {
   unsigned int gps_ok;  // indicates self-test pass or fail
@@ -17,6 +21,8 @@ typedef struct ui_monitor {
   unsigned int wifi_ok;
   unsigned int bt_ok;
   unsigned int status;     // options are: LIVE DARK ALRM NOTE
+  systime_t state_entry_time;
+  systime_t state_debounce_time;
 } ui_monitor;
 
 #define LOGLEN 96
@@ -31,13 +37,14 @@ typedef struct ui_graph {
   mutex_t log_mutex;
 } ui_graph;
 
+#define NOTIFY_TIME 800
 typedef struct ui_config {
   unsigned int simsel;
   unsigned int selftest;
   unsigned int notifyon;  // transition notification (short beep into/out of dark)
   unsigned int alarmon;   // alarm on (longer alarm coming out of dark)
-  unsigned int alarmtime; // duration of alarm: 5s, 10s, 30s, 1m
-  unsigned int darkdelay; // time till auto-dark: 5s, 10s, 30s, 1m
+  unsigned int alarmtime; // duration of alarm, index into time_map
+  unsigned int darkdelay; // time till auto-dark, index into time_map
   uint32_t log_interval;  // nominally once every 2000ms
 } ui_config;
 

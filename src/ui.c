@@ -7,6 +7,9 @@
 #include "gfx.h"
 #include "oled.h"
 #include "ui.h"
+#include "fpga_config.h"
+
+unsigned int time_map[TIME_STATES] = {2, 5, 10, 30, 3600}; // time options, in seconds
 
 virtual_timer_t ui_vt;
 event_source_t ui_timer_event;
@@ -23,11 +26,32 @@ ui_graph    uigraph;
 
 static uint8_t ui_state = STATE_GRAPH;
 static uint8_t state_line = 1;
-#define CONFIG_LINES 2
+#define CONFIG_LINES 3
+static uint8_t state2_line = 1;
+#define CONFIG2_LINES 2
 
 #define GRAPH_HEIGHT 14
 #define LEGEND_WIDTH 32
 #define GRAPH_WIDTH 96
+
+static int log_has_event(uint16_t *events, unsigned int search_window_ms) {
+  int i;
+  int num_log_entries;
+  int has_event = 0;
+
+  num_log_entries = search_window_ms / uicfg.log_interval;
+  if( num_log_entries == 0 )
+    num_log_entries = 1;
+  if( num_log_entries > LOGLEN )
+    num_log_entries = LOGLEN;
+
+  for( i = 0; i < num_log_entries; i++ ) {
+    if( events[( ((int)uigraph.log_index) - (1 + i) + LOGLEN) % LOGLEN] != 0 )
+      has_event = 1;
+  }
+
+  return has_event;
+}
 
 void updateUI(void) {
 
@@ -60,6 +84,7 @@ void uiHandler(eventid_t id) {
   char substr[8];
   int i;
   uint16_t maxval;
+  int dark = 0;
 
   chMtxLock(&uigraph.log_mutex);  ////// lock uigraph
     
@@ -81,6 +106,7 @@ void uiHandler(eventid_t id) {
   width = gdispGetWidth();
   
   if( ui_state == STATE_MON ) {
+#if 0    
     gdispClear(Black);
 
     font = gdispOpenFont("fixed_5x8"); // can fit 32 chars wide
@@ -118,7 +144,80 @@ void uiHandler(eventid_t id) {
 	       uimon.wifi_ok == UI_OK ? " OK " : "BAD" );
     gdispDrawStringBox(0, cur_line, width, cur_line + fontheight,
 		       str, font, White, justifyLeft);
+#else
+    if( uiinput.down == 1 ) {
+      state2_line++;
+      if( state2_line == (CONFIG2_LINES + 1) )
+	state2_line = 1;
+      uiinput.down = 0;
+    }
+    if( uiinput.up == 1 ) {
+      state2_line--;
+      if( state2_line == 0 )
+	state2_line = CONFIG2_LINES;
+      uiinput.up = 0;
+    }
     
+    gdispClear(Black);
+
+    font = gdispOpenFont("fixed_5x8"); // can fit 32 chars wide
+    fontheight = gdispGetFontMetric(font, fontHeight);
+    chsnprintf(str, sizeof(str), " %4dmV              %3d%%", uibat.batt_mv, uibat.batt_soc / 10 );
+    gdispDrawStringBox(0, 0, width, fontheight,
+		       str, font, White, justifyLeft);
+    cur_line += fontheight;
+    gdispCloseFont(font);
+    
+    font = gdispOpenFont("fixed_7x14"); // can fit 18 chars wide
+    fontheight = gdispGetFontMetric(font, fontHeight);
+    fontlinespace = fontheight; // line space a bit closer than the total height of font reported
+
+    switch(uimon.status) {
+    case UI_DARK:
+      chsnprintf(substr, sizeof(substr), "DARK");
+      break;
+    case UI_LIVE:
+    case UI_LIVE_DEBOUNCE:
+      chsnprintf(substr, sizeof(substr), "LIVE");
+      break;
+    case UI_ALRM:
+      chsnprintf(substr, sizeof(substr), "ALRM");
+      break;
+    case UI_NOTE:
+      chsnprintf(substr, sizeof(substr), "NOTE");
+      break;
+    default:
+      chsnprintf(substr, sizeof(substr), "????");
+    }
+    chsnprintf(str, sizeof(str), "%s for %ds", substr, ST2MS(chVTTimeElapsedSinceX( uimon.state_entry_time )) / 1000 );
+    gdispFillStringBox(0, cur_line, width, fontlinespace, str, font, Black, White, justifyCenter);
+    cur_line += fontlinespace;
+
+    if( state2_line == 1) {
+      gdispDrawString(0, cur_line, ">", font, White);
+      if( uiinput.right == 1 ) {
+	uicfg.alarmtime = (uicfg.alarmtime + 1) % TIME_STATES;
+	uiinput.right = 0;
+      }
+    }
+    chsnprintf(str, sizeof(str), " Alarm time: %ds", time_map[uicfg.alarmtime]);
+    gdispDrawString(0, cur_line, str, font, White);
+    cur_line += fontlinespace;
+
+    if( state2_line == 2) {
+      gdispDrawString(0, cur_line, ">", font, White);
+      if( uiinput.right == 1 ) {
+	uicfg.darkdelay = (uicfg.darkdelay + 1) % (TIME_STATES - 1);  // don't allow the longer setting
+	uiinput.right = 0;
+      }
+    }
+    chsnprintf(str, sizeof(str), " Dark delay: %ds", time_map[uicfg.darkdelay]);
+    gdispDrawString(0, cur_line, str, font, White);
+    cur_line += fontlinespace;
+    
+    gdispCloseFont(font);
+    
+#endif
     
   } else if( ui_state == STATE_CFG ) {
     if( uiinput.down == 1 ) {
@@ -148,8 +247,28 @@ void uiHandler(eventid_t id) {
     fontheight = gdispGetFontMetric(font, fontHeight);
     fontlinespace = fontheight; // line space a bit closer than the total height of font reported
     
+    switch(uimon.status) {
+    case UI_DARK:
+      chsnprintf(substr, sizeof(substr), "DARK");
+      break;
+    case UI_LIVE:
+    case UI_LIVE_DEBOUNCE:
+      chsnprintf(substr, sizeof(substr), "LIVE");
+      break;
+    case UI_ALRM:
+      chsnprintf(substr, sizeof(substr), "ALRM");
+      break;
+    case UI_NOTE:
+      chsnprintf(substr, sizeof(substr), "NOTE");
+      break;
+    default:
+      chsnprintf(substr, sizeof(substr), "????");
+    }
+    chsnprintf(str, sizeof(str), "%s for %ds", substr, ST2MS(chVTTimeElapsedSinceX( uimon.state_entry_time )) / 1000 );
+    gdispFillStringBox(0, cur_line, width, fontlinespace, str, font, Black, White, justifyCenter);
+    cur_line += fontlinespace;
+    
     // put cfg ui here
-    //// TODO: add self-test UI here
     if( state_line == 1) {
       gdispDrawString(0, cur_line, ">", font, White);
       if( uiinput.right == 1 ) {
@@ -205,7 +324,29 @@ void uiHandler(eventid_t id) {
       gdispFillString(gdispGetStringWidth(" Alarm: ON ", font) , cur_line, "OFF", font, Black, White);
     }
     cur_line += fontlinespace;
-    
+
+    if( state_line == 3) {
+      gdispDrawString(0, cur_line, ">", font, White);
+      if( uiinput.right == 1 ) {
+	if(uicfg.notifyon == 1) {
+	  uicfg.notifyon = 0;
+	} else {
+	  // action here
+	  uicfg.notifyon = 1;
+	}
+	uiinput.right = 0;
+      }
+    }
+    gdispDrawString(0, cur_line, " Notify: ", font, White);
+    if( uicfg.notifyon == 1 ) {
+      gdispFillString(gdispGetStringWidth(" Notify: ", font) , cur_line, "ON", font, Black, White);
+      gdispFillString(gdispGetStringWidth(" Notify: ON ", font) , cur_line, "OFF", font, White, Black);
+    } else {
+      gdispFillString(gdispGetStringWidth(" Notify: ", font) , cur_line, "ON", font, White, Black);
+      gdispFillString(gdispGetStringWidth(" Notify: ON ", font) , cur_line, "OFF", font, Black, White);
+    }
+    cur_line += fontlinespace;
+
     gdispCloseFont(font);
   } else if( ui_state == STATE_GRAPH ) {
     gdispClear(Black);
@@ -217,6 +358,7 @@ void uiHandler(eventid_t id) {
       chsnprintf(substr, sizeof(substr), "DARK");
       break;
     case UI_LIVE:
+    case UI_LIVE_DEBOUNCE:
       chsnprintf(substr, sizeof(substr), "LIVE");
       break;
     case UI_ALRM:
@@ -229,7 +371,8 @@ void uiHandler(eventid_t id) {
       chsnprintf(substr, sizeof(substr), "????");
     }
 
-    chsnprintf(str, sizeof(str), " %4dmV %s  -----s %3d%%", uibat.batt_mv, substr, uibat.batt_soc / 10 );
+    chsnprintf(str, sizeof(str), " %4dmV %s  %5ds %3d%%", uibat.batt_mv, substr,
+	       ST2MS(chVTTimeElapsedSinceX( uimon.state_entry_time )) / 1000, uibat.batt_soc / 10 );
     gdispDrawStringBox(0, 0, width, fontheight,
 		       str, font_small, White, justifyLeft);
     cur_line += fontheight;
@@ -248,9 +391,9 @@ void uiHandler(eventid_t id) {
     if( maxval != 0 ) {
       for( i = 0; i < LOGLEN - 1; i++ ) {
 	gdispDrawLine(LEGEND_WIDTH + i,
-         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          LEGEND_WIDTH + i + 1,
-         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.cell_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          White);
       }
     } else {
@@ -268,9 +411,9 @@ void uiHandler(eventid_t id) {
     if( maxval != 0 ) {
       for( i = 0; i < LOGLEN - 1; i++ ) {
 	gdispDrawLine(LEGEND_WIDTH + i,
-         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          LEGEND_WIDTH + i + 1,
-         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.gps_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          White);
       }
     } else {
@@ -288,9 +431,9 @@ void uiHandler(eventid_t id) {
     if( maxval != 0 ) {
       for( i = 0; i < LOGLEN - 1; i++ ) {
 	gdispDrawLine(LEGEND_WIDTH + i,
-         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          LEGEND_WIDTH + i + 1,
-         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.wifi_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          White);
       }
     } else {
@@ -308,18 +451,79 @@ void uiHandler(eventid_t id) {
     if( maxval != 0 ) {
       for( i = 0; i < LOGLEN - 1; i++ ) {
 	gdispDrawLine(LEGEND_WIDTH + i,
-         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[(i+uigraph.log_index+1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          LEGEND_WIDTH + i + 1,
-         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 1)) / maxval - 1,
+         cur_line + GRAPH_HEIGHT - (uigraph.bt_events[((i+uigraph.log_index+1) + 1) % LOGLEN] * (GRAPH_HEIGHT - 2)) / maxval - 1,
          White);
       }
     } else {
       gdispDrawStringBox(LEGEND_WIDTH, cur_line, width - LEGEND_WIDTH, GRAPH_HEIGHT, "(dark)", font_small, White, justifyCenter);
     }
     cur_line += GRAPH_HEIGHT;
-    
+
     gdispCloseFont(font);
     gdispCloseFont(font_small);
+  }
+
+  dark = 1;
+  if( log_has_event(uigraph.gps_events, time_map[uicfg.darkdelay] * 1000) )
+    dark = 0;
+  if( log_has_event(uigraph.bt_events, time_map[uicfg.darkdelay] * 1000) )
+    dark = 0;
+  if( log_has_event(uigraph.wifi_events, time_map[uicfg.darkdelay] * 1000) )
+    dark = 0;
+  if( log_has_event(uigraph.cell_events, time_map[uicfg.darkdelay] * 1000) )
+    dark = 0;
+
+  if( dark == 0 && uimon.status == UI_DARK ) {
+    if( uicfg.alarmon ) {
+      uimon.status = UI_ALRM;
+      buzzer(1);
+      buzzer(1);
+    } else {
+      uimon.status = UI_NOTE;
+      if( uicfg.notifyon ) {
+	buzzer(1); // write twice, is the protocol flakey?
+	buzzer(1);
+      }
+    }
+    uimon.state_entry_time = chVTGetSystemTime();
+  }
+  if( uimon.status == UI_LIVE_DEBOUNCE ) {
+    if( dark == 0 )
+      uimon.status = UI_LIVE;
+    else {
+      if( ST2MS(chVTTimeElapsedSinceX( uimon.state_debounce_time )) > time_map[uicfg.darkdelay] * 1000 ) {
+	uimon.status = UI_DARK;
+	uimon.state_entry_time = chVTGetSystemTime();
+      }
+    }
+  }
+  if( dark == 1 && uimon.status == UI_LIVE ) {
+    uimon.status = UI_LIVE_DEBOUNCE;
+    uimon.state_debounce_time = chVTGetSystemTime();
+  }
+    
+  // now implement UI_ALRM, UI_NOTE transitions, using the elapsed function
+  if( uimon.status == UI_ALRM ) {
+    buzzer(1);
+    if( ST2MS(chVTTimeElapsedSinceX( uimon.state_entry_time )) > time_map[uicfg.alarmtime] * 1000 ) {
+      uimon.status = UI_LIVE;
+      uimon.state_entry_time = chVTGetSystemTime();
+      buzzer(0);
+      buzzer(0);
+      buzzer(0);
+    }
+  }
+  if( uimon.status == UI_NOTE ) {
+    buzzer(1);
+    if( ST2MS(chVTTimeElapsedSinceX( uimon.state_entry_time )) > NOTIFY_TIME ) {
+      uimon.status = UI_LIVE;
+      uimon.state_entry_time = chVTGetSystemTime();
+      buzzer(0);
+      buzzer(0);
+      buzzer(0);
+    }
   }
   
   gdispFlush();
@@ -350,7 +554,9 @@ void uiStart(void) {
   uimon.wifi_ok = UI_NOT_OK;
   uimon.bt_ok = UI_NOT_OK;
   uimon.status = UI_LIVE;
-
+  uimon.state_entry_time = chVTGetSystemTime();
+  uimon.state_debounce_time = chVTGetSystemTime();
+  
   chMtxObjectInit(&uigraph.log_mutex);
   chMtxLock(&uigraph.log_mutex);
   for( i = 0; i < LOGLEN; i++ ) {
@@ -369,8 +575,8 @@ void uiStart(void) {
   uicfg.selftest = 0;
   uicfg.notifyon = 1;
   uicfg.alarmon = 1;
-  uicfg.alarmtime = 60;
-  uicfg.darkdelay = 5;
+  uicfg.alarmtime = 1;
+  uicfg.darkdelay = 0;
   uicfg.log_interval = 2000;
 
 }

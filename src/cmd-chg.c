@@ -97,7 +97,8 @@ void chgAutoParams(void) {
   // target "float" voltage
   tx[0] = FAN5421_OREG_ADR;
   //    tx[1] = (0x22 << 2); // target 4.18 float voltage
-  tx[1] = (0x19 << 2); // target 4.00 float voltage
+  // tx[1] = (0x19 << 2); // target 4.00 float voltage
+  tx[1] = (0x1E << 2); // target 4.10v float voltage
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
