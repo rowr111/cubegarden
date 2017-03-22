@@ -6,4 +6,4 @@
 	url = https://github.com/bunnie/ChibiOS-Contrib
 [submodule "ugfx"]
 	path = ugfx
-	url = https://github.com/bunnie/chibios-xz
+	url = https://github.com/bunnie/ugfx-xz
