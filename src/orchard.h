@@ -9,9 +9,12 @@ void halt(void);
 #define ORCHARD_OS_VERSION_MAJOR      1
 #define ORCHARD_OS_VERSION_MINOR      0
 
-#define serialDriver                  (&SD1)
+#define serialDriver                  (&SD4)
 #define stream_driver                 ((BaseSequentialStream *)serialDriver)
-extern void *stream;
+
+#define stream (BaseSequentialStream *)&SD4
+
+//extern void *stream;
 
 #define i2cDriver                     (&I2CD1)
 #define accelAddr                     0x1c

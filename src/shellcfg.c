@@ -49,13 +49,9 @@ void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capRCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void fpgaCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void uploadCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void serialCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void gpsCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void spmiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -65,13 +61,9 @@ static const ShellCommand commands[] = {
   {"cr", capRCommand},
   {"chg", chgCommand},
   {"gg", ggCommand},
-  {"fpga", fpgaCommand},
-  {"upload", uploadCommand},
   {"gfx", gfxCommand},
   {"spi", spiCommand},
-  {"ser", serialCommand},
-  {"gps", gpsCommand},
-  {"spmi", spmiCommand},
+  {"fx", fxCommand},
   {NULL, NULL}
 };
 

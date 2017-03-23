@@ -27,7 +27,8 @@ MEMORY
 {
   flash0   : org = 0x00000000, len = 0x180
   flashcfg : org = 0x00000400, len = 0x10
-  flash    : org = 0x00000410, len = 128k - 0x410
+  flash    : org = 0x00000410, len = 128k - 0x410 - 32k
+  flashram : org = 0x00018000, len = 32k
   ram0     : org = 0x1FFFE000, len = 24k
     ram1     : org = 0x00000000, len = 0
     ram2     : org = 0x00000000, len = 0
@@ -68,6 +69,10 @@ __ram6_end__            = __ram6_start__ + __ram6_size__;
 __ram7_start__          = ORIGIN(ram7);
 __ram7_size__           = LENGTH(ram7);
 __ram7_end__            = __ram7_start__ + __ram7_size__;
+
+__storage_start__       = ORIGIN(flashram);
+__storage_size__        = LENGTH(flashram);
+__storage_end__         = __storage_start__ + __storage_size__ - 1;
 
 ENTRY(Reset_Handler)
 

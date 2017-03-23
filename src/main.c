@@ -25,12 +25,16 @@
 #include "orchard-events.h"
 #include "ui.h"
 #include "touch.h"
-#include "sermon.h"
-#include "gps.h"
-#include "spmi.h"
-#include "fpga_config.h"
+#include "hal.h"
+#include "orchard-effects.h"
+#include "storage.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
+
+#define LED_COUNT 32
+#define UI_LED_COUNT 32
+static uint8_t fb[LED_COUNT * 3];
+static uint8_t ui_fb[LED_COUNT * 3];
 
 struct evt_table orchard_events;
 
@@ -38,9 +42,7 @@ extern const char *gitversion;
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, gpsCb, PORTA, 13},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, spmiCb, PORTD, 7},
   }
 };
 
@@ -82,7 +84,7 @@ extern void programDumbRleFile(void);
 
 #define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(2048)
 
-#define stream (BaseSequentialStream *)&SD4
+//#define stream (BaseSequentialStream *)&SD4
 
 static const SerialConfig serialConfig = {
   115200,
@@ -109,14 +111,10 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, ui_timer_event, uiHandler);
   evtTableHook(orchard_events, touch_event, touchHandler);
-  evtTableHook(orchard_events, gps_event, gpsHandler);
-  evtTableHook(orchard_events, spmi_event, spmiHandler);
 
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
-  evtTableUnhook(orchard_events, spmi_event, spmiHandler);
-  evtTableUnhook(orchard_events, gps_event, gpsHandler);
   evtTableUnhook(orchard_events, touch_event, touchHandler);
   evtTableUnhook(orchard_events, ui_timer_event, uiHandler);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
@@ -156,28 +154,33 @@ int main(void) {
   // IOPORT1 = PORTA, IOPORT2 = PORTB, etc...
   palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
   palSetPad(IOPORT3, 8); // set BATT_SRST
+  
+  palClearPad(IOPORT1, 19); // clear RADIO_RESET, taking radio out of reset
+  palSetPad(IOPORT5, 0); // turn off red LED
 
   sdStart(&SD4, &serialConfig);
+  // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
   
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);
   chgSetSafety(); // has to be first thing written to the battery controller
 
-  spiStart(&SPID2, &spi_config);
-  spiRuntSetup(&SPID2);  // setup our custom runt driver for the fifo-less SPI1 interface
-  
-  spiUnselect(&SPID2);
-
-  spiStart(&SPID1, &spi2_config);
-
   shellInit();
 
   chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
-  chprintf(stream, "XZ bootloader.  Based on build %s"SHELL_NEWLINE_STR,
+  chprintf(stream, "bunnie-BM17 bootloader.  Based on build %s"SHELL_NEWLINE_STR,
 	   gitversion);
   chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
 	   chCoreGetStatusX());
 
+  flashStart();
+  addEntropy(SIM->UIDL);  // something unique to each device
+  addEntropy(SIM->UIDML);
+  addEntropy(SIM->UIDMH);
+  
+  geneStart();  // this has to start after random pool is initied
+  configStart();
+  
   chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
 
   chEvtObjectInit(&chg_keepalive_event);
@@ -190,10 +193,6 @@ int main(void) {
   gfxInit();
 
   oledBanner();
-
-  palClearPad(IOPORT1, 19); // clear SIM_DET_SYNTH, simulates SIM "in"
-  palClearPad(IOPORT2, 19); // clear WLAN_RESET
-  palClearPad(IOPORT3, 9); // clear SIM_SEL, selecting sim1
 
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
@@ -210,10 +209,6 @@ int main(void) {
   
   uiStart();
 
-  serMonStart();  // serial bus monitoring subsystem
-  gpsStart();  // start GPS monitoring
-  spmiStart();
-
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
 			       sizeof(waOrchardEventThread),
@@ -221,8 +216,13 @@ int main(void) {
 			       orchard_event_thread,
 			       NULL);
 
-  chThdSleepMilliseconds(250);
-  fpgaReconfig(); // fire up the FPGA as part of boot
+  palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
+  palSetPad(IOPORT3, 2); // power on +5V
+  ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
+  effectsStart();
+
+  chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
+      __storage_start__, __storage_end__, __storage_size__);
   
   /*
    * Normal main() thread activity, spawning shells.

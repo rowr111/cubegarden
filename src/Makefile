@@ -83,7 +83,7 @@ endif
 #
 
 # Define project name here
-PROJECT = xz
+PROJECT = bm17
 
 # Imported source files and paths
 CHIBIOS = ../ChibiOS
@@ -95,7 +95,7 @@ include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k22
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K22x/platform.mk
-include ../boards/KOSAGI_XZ/board.mk
+include ../boards/KOSAGI_BM17/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
@@ -119,6 +119,18 @@ include $(GFXLIB)/gfx.mk
 include $(GFXLIB)/boards/base/Kosagi-XZ/board.mk
 include $(GFXLIB)/drivers/gdisp/SSD1306/driver.mk
 
+# libfixmath
+LIBFIXMATH = ../libfixmath
+include $(LIBFIXMATH)/build.mk
+
+# libfixmatrix
+LIBFIXMATRIX = ../libfixmatrix
+include $(LIBFIXMATRIX)/build.mk
+
+#C90TFS Freescale Flash drivers
+LIBC90TFS = ../C90TFS
+include $(LIBC90TFS)/build.mk
+
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CSRC = \
@@ -137,13 +149,20 @@ CSRC = \
        orchard-events.c \
        shellcfg.c \
        gitversion.c \
-       xmodem.c \
        oled.c \
        touch.c \
        ui.c \
-       gps.c \
-       spmi.c \
+       led.c \
+       hsvrgb.c \
+       orchard-math.c \
+       genes.c \
+       flash.c \
+       storage.c \
+       userconfig.c \
        $(wildcard cmd-*.c) \
+       $(LIBFIXMATHSRC) \
+       $(LIBFIXMATRIXSRC) \
+       $(LIBC90TFSSRC) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -170,13 +189,13 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC =
+ASMSRC = ws2812b_ll.s
 ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(STREAMSINC) $(SHELLINC) $(GFXINC) \
+         $(STREAMSINC) $(SHELLINC) $(GFXINC) $(LIBFIXMATHINC) $(LIBC90TFSINC) \
          -Isda
 
 #
@@ -240,7 +259,7 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a fpga_config.o
+ULIBS = lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a
 
 #
 # End of user defines
@@ -255,15 +274,3 @@ gitversion.c: $(XZSRC)/.git/HEAD $(XZSRC)/.git/index
 gitversion.h: $(XZSRC)/.git/HEAD $(XZSRC)/.git/index
 	echo "#define GIT_COMMIT_SHA \"$(shell git rev-parse HEAD)\"" > $@
 
-fpga_config.o: fpga_config.bin
-	@echo Converting $<
-	objcopy -I binary -O elf32-littlearm \
-	--rename-section .data=.fpga.data,contents,alloc,load,readonly,data \
-	--redefine-sym _binary_$*_bin_start=$* \
-	--redefine-sym _binary_$*_bin_end=$*_end \
-	--redefine-sym _binary_$*_bin_size=$*_size_sym \
-	$(<) $(@)
-	@echo "extern const uint8_t" $(*)"[];" > $(*).h
-	@echo "extern const uint8_t" $(*)_end"[];" >> $(*).h
-	@echo "extern const uint8_t" $(*)_size_sym"[];" >> $(*).h
-	@echo "#define $(*)_size ((int)$(*)_size_sym)" >> $(*).h
