@@ -72,6 +72,8 @@ endif
 # Enables the use of FPU on Cortex-M4 (no, softfp, hard).
 ifeq ($(USE_FPU),)
   USE_FPU = hard
+#  USE_OPT += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+#  DDEFS += -DCORTEX_USE_FPU=TRUE
 endif
 
 #
@@ -259,7 +261,8 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a
+ULIBS = lib/libm.a lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a 
+#ULIBS = lib/libm.a lib/libc_nano.a lib/libg_nano.a lib/libgcc.a 
 
 #
 # End of user defines

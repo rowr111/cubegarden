@@ -215,6 +215,9 @@ static void do_lightgene(struct effects_config *config) {
   uint32_t i;
   uint32_t tau;
   uint32_t curtime, indextime;
+  //float time, space;
+  //float twopi;
+  //float spacetime;
   fix16_t time, space;
   fix16_t twopi;
   fix16_t spacetime;
@@ -283,26 +286,32 @@ static void do_lightgene(struct effects_config *config) {
     // sign of rate is determined by cd_dir
 
     twopi = fix16_mul( fix16_from_int(2), fix16_pi );
+    //twopi = 3.14159265359 * 2.0;
     // space = 2pi * diploid.cd_period * (i / (count-1))
-    space = fix16_mul(twopi, fix16_mul( fix16_from_int(diploid.cd_period),
-					 fix16_div(fix16_from_int(i), fix16_from_int(count-1)) ));
+        space = fix16_mul(twopi, fix16_mul( fix16_from_int(diploid.cd_period),
+                fix16_div(fix16_from_int(i), fix16_from_int(count-1)) ));
+	//space = twopi * diploid.cd_period * ((float)i / ((float)count - 1.0));
 
     // time = 2pi * (indextime) / tau
     time = fix16_mul(twopi, fix16_div( fix16_from_int(indextime), fix16_from_int(tau) ));
+    //time = twopi * (float) indextime / (float) tau;
 
     //    time = fix16_from_int(0);
     
     // space +/- time based on direction
     if( diploid.cd_dir > 128 ) {
       spacetime = fix16_add( space, time );
+      //spacetime = space + time;
     } else {
       spacetime = fix16_sub( space, time );
+      //spacetime = space - time;
     }
 
     // hsv.v = 127 * (1 + cos(spacetime))
     hsvC.v = (uint8_t) fix16_to_int( fix16_mul( fix16_from_int(127),
 						fix16_add( fix16_from_int(1),
 							   fix16_cos(spacetime))));
+    //hsvC.v = (uint8_t) 127.0 * (1.0 + cosf(spacetime));
 
     if( diploid.nonlin > 127 )
       // add some nonlinearity to gamma-correct brightness
@@ -664,6 +673,31 @@ static uint32_t asb_l(int i) {
   return -i;
 }
 orchard_effects("directedRainbow", directedRainbowFB);
+#endif
+
+#if 0
+static int testlevel = 0;
+static void fxTest(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int i;
+  Color c;
+  int loop = config->loop;
+
+  if( chVTTimeElapsedSinceX(reftime) > MS2ST(20) ) {
+    chprintf(stream, "%d\n\r", testlevel);
+    reftime = chVTGetSystemTime();
+    testlevel++;
+    testlevel %= 256;
+  }
+  
+  for( i = 0; i < count; i++ ) {
+    c.r = testlevel; c.g = 0; c.b = testlevel;
+    ledSetColor(fb, i, c, 0);
+  }
+
+}
+orchard_effects("_test", fxTest);
 #endif
 
 #define DROP_INT 600
