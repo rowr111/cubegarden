@@ -1,5 +1,7 @@
 #define OLED_I2C  (&I2CD2)
 
+extern mutex_t orchard_gfxMutex;
+
 void oledAcquireBus(void);
 void oledReleaseBus(void);
 void oledCmd(uint8_t cmd);

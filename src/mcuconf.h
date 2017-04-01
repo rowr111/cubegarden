@@ -109,6 +109,11 @@
 #define KINETIS_SPI_SPI1_IRQ_PRIORITY           4
 
 /*
+ * ADC driver system settings.
+ */
+#define KINETIS_ADC_USE_ADC0                  TRUE
+
+/*
  * Processor specific widths of each port.
  * Smaller numbers can be used if only lower pins in a port are being used to
  * generate interrupts. Can be set to 0 if a port is unused.

@@ -8,7 +8,6 @@
 #include "stdlib.h"
 #include "orchard-math.h"
 #include "fixmath.h"
-#include "ui.h"
 
 #include "genes.h"
 #include "storage.h"

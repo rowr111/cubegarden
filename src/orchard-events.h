@@ -68,4 +68,113 @@ struct evt_table {
 
 void orchardEventsStart(void);
 
+extern event_source_t rf_pkt_rdy;
+
+// BM radio protocol events
+extern event_source_t radio_page;
+extern event_source_t radio_sex_req;
+extern event_source_t radio_sex_ack;
+extern event_source_t radio_app;
+
+/// Orchard App events
+
+typedef enum _OrchardAppEventType {
+  keyEvent,
+  appEvent,
+  timerEvent,
+  uiEvent,
+  adcEvent,
+  radioEvent,
+  accelEvent,
+} OrchardAppEventType;
+
+/* ------- */
+
+typedef enum _OrchardAppEventKeyFlag {
+  keyUp = 0,
+  keyDown = 1,
+} OrchardAppEventKeyFlag;
+
+typedef enum _OrchardAppEventKeyCode {
+  keyLeft = 0x80,
+  keyRight = 0x81,
+  keySelect = 0x82,
+  keyCW = 0x83,
+  keyCCW = 0x84,
+} OrchardAppEventKeyCode;
+
+typedef struct _OrchardUiEvent {
+  uint8_t   code;
+  uint8_t   flags;
+} OrchardUiEvent;
+
+typedef enum _OrchardUiEventCode {
+  uiComplete = 0x01,
+} OrchardUiEventCode;
+
+typedef enum _OrchardUiEventFlags {
+  uiOK = 0x01,
+  uiCancel,
+  uiError,
+} OrchardUiEventFlags;
+
+typedef struct _OrchardAdcEvent {
+  uint8_t   code;
+  uint8_t   flags;
+} OrchardAdcEvent;
+
+typedef struct _OrchardAccelEvent {
+  uint8_t   code;
+} OrchardAccelEvent;
+
+typedef enum _OrchardAdcEventCode {
+  adcCodeTemp = 0x01,
+  adcCodeMic,
+  adcCodeUsbdet,
+} OrchardAdcEventCode;
+
+// note: no ADC flags yet
+
+typedef enum _OrchardAccelEventCode {
+  accelCodeBump = 0x01,
+  accelCodePL,  // portrat/landscape trigger
+} OrchardAccelEventCode;
+  
+typedef struct _OrchardAppKeyEvent {
+  uint8_t   code;
+  uint8_t   flags;
+} OrchardAppKeyEvent;
+
+/* ------- */
+
+typedef enum _OrchardAppLifeEventFlag {
+  appStart,
+  appTerminate,
+} OrchardAppLifeEventFlag;
+
+typedef struct _OrchardAppLifeEvent {
+  uint8_t   event;
+} OrchardAppLifeEvent;
+
+/* ------- */
+
+typedef struct _OrchardAppTimerEvent {
+  uint32_t  usecs;
+} OrchardAppTimerEvent;
+
+/* ------- */
+
+typedef struct _OrchardAppEvent {
+  OrchardAppEventType     type;
+  union {
+    OrchardAppKeyEvent    key;
+    OrchardAppLifeEvent   app;
+    OrchardAppTimerEvent  timer;
+    OrchardUiEvent        ui;
+    OrchardAdcEvent       adc;
+    OrchardAccelEvent     accel;
+  };
+} OrchardAppEvent;
+
 #endif /* __ORCHARD_EVENTS__ */
+

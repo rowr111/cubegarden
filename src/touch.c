@@ -4,19 +4,38 @@
 #include "shell.h"
 #include "orchard-events.h"
 #include "touch.h"
+#include "orchard-ui.h"
 
 #include "i2c.h"
 #include "gfx.h"
 #include "oled.h"
-#include "ui.h"
 
 event_source_t touch_event;
 
 unsigned int touch_debounce = TOUCH_DEBOUNCE;
 
-static uint8_t touch_state = 0;
+uint8_t touch_state = 0;
 static uint32_t stuck_start = 0;
 static uint32_t stuck_time = 0;
+
+uint8_t captouchRead(void) {
+  uint8_t tx[2], rx[1];
+
+  tx[0] = (uint8_t) 0;
+  tx[1] = (uint8_t) 0;
+  
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  
+  tx[0] = 3;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  return rx[0];
+}
+
 
 // throw-away function for checking touch sensor status
 void update_touch_ui(uint8_t state) {

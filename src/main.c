@@ -20,14 +20,20 @@
 #include "shellcfg.h"
 #include "shell.h"
 
+#include "radio.h"
 #include "oled.h"
 #include "gfx.h"
 #include "orchard-events.h"
-#include "ui.h"
 #include "touch.h"
 #include "hal.h"
 #include "orchard-effects.h"
 #include "storage.h"
+#include "orchard-math.h"
+#include "genes.h"
+#include "led.h"
+#include "userconfig.h"
+#include "orchard-app.h"
+#include "charger.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -90,13 +96,25 @@ static const SerialConfig serialConfig = {
   115200,
 };
 
+extern int print_hex(BaseSequentialStream *chp,
+                     const void *block, int count, uint32_t start);
 
-extern virtual_timer_t chg_vt;
-extern event_source_t chg_keepalive_event;
-void chgKeepaliveHandler(eventid_t id);
+static void default_radio_handler(uint8_t type, uint8_t src, uint8_t dst,
+                                  uint8_t length, const void *data) {
 
-extern virtual_timer_t ui_vt;
-extern event_source_t ui_timer_event;
+  chprintf(stream, "\r\nNo handler for packet found.  %02x -> %02x : %02x\r\n",
+           src, dst, type);
+  print_hex(stream, data, length, 0);
+}
+
+static void orchard_app_restart(eventid_t id) {
+  static int i = 1;
+  (void)id;
+
+  chprintf(stream, "\r\nRunning next app (pid #%d)\r\n", ++i);
+  orchardAppRestart();
+}
+
 
 static thread_t *eventThr = NULL;
 static THD_WORKING_AREA(waOrchardEventThread, 0x900);
@@ -107,26 +125,27 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   evtTableInit(orchard_events, 32);
   orchardEventsStart();
+
+  //  radioStart(radioDriver, &SPID2);
+  //  radioSetDefaultHandler(radioDriver, default_radio_handler);
   
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
-  evtTableHook(orchard_events, ui_timer_event, uiHandler);
   evtTableHook(orchard_events, touch_event, touchHandler);
-
+  evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
+  
+  //TEMP orchardAppRestart();
+  
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, touch_event, touchHandler);
-  evtTableUnhook(orchard_events, ui_timer_event, uiHandler);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
 
   chSysLock();
   chThdExitS(MSG_OK);
 }
 
-void chgSetSafety(void);
-void chgAutoParams(void);
-void chgStart(int force);
-void ggOn(void);
 void spiRuntSetup(SPIDriver *spip);
 /*
  * Application entry point.
@@ -181,10 +200,6 @@ int main(void) {
   geneStart();  // this has to start after random pool is initied
   configStart();
   
-  chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
-
-  chEvtObjectInit(&chg_keepalive_event);
-  
   // init I2C objects for graphics
   i2cObjectInit(&I2CD2);
   i2cStart(&I2CD2, &i2c2_config);
@@ -196,6 +211,10 @@ int main(void) {
 
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
+
+  chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
+  chEvtObjectInit(&chg_keepalive_event);
+
   chgStart(1);
 
   touchStart();
@@ -208,7 +227,10 @@ int main(void) {
   extStart(&EXTD1, &extcfg);
   
   uiStart();
+  spiStart(&SPID2, &spi_config);
 
+  //TEMP  orchardAppInit();
+  
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
 			       sizeof(waOrchardEventThread),

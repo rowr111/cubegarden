@@ -11,6 +11,7 @@ void halt(void);
 
 #define serialDriver                  (&SD4)
 #define stream_driver                 ((BaseSequentialStream *)serialDriver)
+#define radioDriver                   (&KRADIO1)
 
 #define stream (BaseSequentialStream *)&SD4
 

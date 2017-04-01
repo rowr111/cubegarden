@@ -4,8 +4,8 @@
 #
 
 # Compiler options here.
-ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -nostdlib -DSHELL_CONFIG_FILE -fstack-protector
+ifeq ($(USE_OPT),)  # use O2 for production
+  USE_OPT = -O1 -ggdb -fomit-frame-pointer -falign-functions=16 -nostdlib -DSHELL_CONFIG_FILE -fstack-protector
 endif
 
 # C specific options here (added to USE_OPT).
@@ -153,15 +153,23 @@ CSRC = \
        gitversion.c \
        oled.c \
        touch.c \
-       ui.c \
+       charger.c \
        led.c \
+       mic.c \
        hsvrgb.c \
        orchard-math.c \
        genes.c \
        flash.c \
        storage.c \
        userconfig.c \
+       radio.c \
+       hex.c \
+       paging.c \
+       orchard-app.c \
+       orchard-ui.c \
        $(wildcard cmd-*.c) \
+       $(wildcard app-*.c) \
+       $(wildcard ui-*.c) \
        $(LIBFIXMATHSRC) \
        $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \

@@ -6,7 +6,7 @@
 #include "storage.h"
 #include "genes.h"
 #include "orchard-math.h"
-#include "ui.h"
+#include "orchard-ui.h"
 #include "touch.h"
 
 //#include "orchard-shell.h"
@@ -254,7 +254,6 @@ void geneStart() {
   }
 }
 
-#if 0
 uint8_t getConsent(char *who) {
   font_t font;
   coord_t width;
@@ -267,6 +266,7 @@ uint8_t getConsent(char *who) {
   uint32_t val;
   char timer[16];
 
+#if 0
   val = captouchDirectRead();
   
   orchardGfxStart();
@@ -318,5 +318,8 @@ uint8_t getConsent(char *who) {
   orchardGfxEnd();
 
   return result;
-}
+#else
+  return 0;
+  
 #endif
+}

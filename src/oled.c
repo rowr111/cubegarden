@@ -8,8 +8,6 @@
 
 #include "gfx.h"
 
-mutex_t orchard_gfxMutex;
-
 // 011_1100
 #define SSD1306_ADDR  0x3C
 
@@ -19,12 +17,13 @@ void oledStart(void) {
   osalMutexObjectInit(&orchard_gfxMutex);
 }
 
+// pass through to legacy functions
 void oledGfxStart() {
-  osalMutexLock(&orchard_gfxMutex);
+  orchardGfxStart();
 }
 
 void oledGfxEnd() {
-  osalMutexUnlock(&orchard_gfxMutex);
+  orchardGfxEnd();
 }
 
 void oledBanner(void) {
@@ -38,7 +37,7 @@ void oledBanner(void) {
   
   gdispClear(Black);
   gdispDrawStringBox(0, fontheight, width, fontheight * 2,
-                     "Introspection Engine", font, White, justifyCenter);
+                     "BM 2017", font, White, justifyCenter);
   gdispDrawStringBox(0, fontheight * 2, width, fontheight * 3,
                      "EVT1", font, White, justifyCenter);
   gdispFlush();
