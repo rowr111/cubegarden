@@ -136,6 +136,14 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   spiRuntSetup(&SPID2);
   radioStart(radioDriver, &SPID2);
   radioSetDefaultHandler(radioDriver, default_radio_handler);
+  pagingStart();
+  
+  /*
+   * Activates the EXT driver 1.
+   */
+  extInit();
+  extObjectInit(&EXTD1);
+  extStart(&EXTD1, &extcfg);
   
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
@@ -180,9 +188,8 @@ int main(void) {
   palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
   palSetPad(IOPORT3, 8); // set BATT_SRST
   
-  palClearPad(IOPORT1, 19); // clear RADIO_RESET, taking radio out of reset
   palSetPad(IOPORT5, 0); // turn off red LED
-
+  
   sdStart(&SD4, &serialConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
   
@@ -226,13 +233,12 @@ int main(void) {
 
   touchStart();
 
-  /*
-   * Activates the EXT driver 1.
-   */
-  extInit();
-  extObjectInit(&EXTD1);
-  extStart(&EXTD1, &extcfg);
-  
+  // reset the radio
+  palSetPad(IOPORT1, 19); // set RADIO_RESET, resetting the radio
+  chThdSleepMilliseconds(1);
+  palClearPad(IOPORT1, 19); // clear RADIO_RESET, taking radio out of reset
+  chThdSleepMilliseconds(5);
+
   uiStart();
 
   // this hooks all the events, so start it only after all events are initialized

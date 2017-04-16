@@ -22,6 +22,16 @@ void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
   
 }
 
+void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+  uint8_t val;
+
+  chprintf(chp, "Calibrating touch surfaces"SHELL_NEWLINE_STR);
+  touch_force_cal();
+  
+}
+
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argc;
@@ -63,6 +73,7 @@ void capWCommand(BaseSequentialStream *chp, int argc, char *argv[])
 
   if( argc != 2 ) {
     chprintf(chp, "Usage: c <addr> <data>"SHELL_NEWLINE_STR);
+    return;
   }
   tx[0] = (uint8_t) (strtol(argv[0], NULL, 0) & 0xFF);
   tx[1] = (uint8_t) (strtol(argv[1], NULL, 0) & 0xFF);
@@ -85,6 +96,7 @@ void capRCommand(BaseSequentialStream *chp, int argc, char *argv[])
 
   if( argc != 1 ) {
     chprintf(chp, "Usage: cr <addr>"SHELL_NEWLINE_STR);
+    return;
   }
   tx[0] = (uint8_t) (strtol(argv[0], NULL, 0) & 0xFF);
   

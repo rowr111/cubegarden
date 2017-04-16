@@ -178,6 +178,7 @@ void touchCb(EXTDriver *extp, expchannel_t channel) {
 
 void touchStart(void) {
   uint8_t tx[2], rx[1];
+  int i;
 
   chEvtObjectInit(&touch_event);
   
@@ -187,6 +188,34 @@ void touchStart(void) {
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
+
+  // turn off repeated interrupts on press/hold
+  tx[0] = 0x28;
+  tx[1] = 0; 
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  // ignore noise detection -- it's causing some buttons to be erroneously masked
+  tx[0] = 0x44;
+  tx[1] = 0x44; 
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  tx[0] = 0x20;
+  tx[1] = 0x30; 
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  
+  // adjust thresholds
+  for( i = 0; i < 8; i++ ) {
+    tx[0] = 0x30 + i;
+    tx[1] = 0x40; // default is 0x40
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+  }
 
   // enable interrupts
   tx[0] = 0x27;

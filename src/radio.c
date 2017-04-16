@@ -184,7 +184,7 @@ static uint8_t const default_registers[] = {
   RADIO_SyncValue2, 0x4E, //SFD value for uncoded with phySUNMRFSKSFD = 0
 
   /* Radio packet mode config */
-  RADIO_PacketConfig1, PacketConfig1_PacketFormat_Variable_Length | PacketConfig1_AddresFiltering_Node_Or_Broadcast | PacketConfig1_Crc_On,
+  RADIO_PacketConfig1, PacketConfig1_PacketFormat_Variable_Length | PacketConfig1_AddresFiltering_Node_Or_Broadcast | PacketConfig1_Crc_On | PacketConfig1_CrcAutoClear_Off, // added crcautoclearoff
   RADIO_PacketConfig2, 0x00,
 
   /* Radio payload length initialization */
@@ -197,14 +197,14 @@ static uint8_t const default_registers[] = {
 static void radio_select(KRadioDevice *radio) {
 
   spiAcquireBus(radio->driver);
-  palClearPad(IOPORT4, 4); // assert CS line 
+  //  palClearPad(IOPORT4, 4); // assert CS line  // already done by spiSelect below
   spiSelect(radio->driver);
 }
 
 static void radio_unselect(KRadioDevice *radio) {
 
   spiUnselect(radio->driver);
-  palSetPad(IOPORT4, 4); // de-assert CS line  // now under manual control
+  //  palSetPad(IOPORT4, 4); // de-assert CS line  // now under manual control // alread done by spiSelect below
   spiReleaseBus(radio->driver);
 }
 
@@ -349,8 +349,12 @@ static void radio_unload_packet(eventid_t id) {
 
   KRadioDevice *radio = radioDriver;
   RadioPacket pkt;
-  uint8_t reg, crc;
+  uint8_t reg;
+  uint8_t crc;
+  uint8_t flags;
 
+  flags = radioRead(radioDriver, RADIO_IrqFlags2);
+  chprintf(stream, "Flags entering dump: %x\n\r", flags);
   radio_select(radio);
   reg = RADIO_Fifo;
   spiSend(radio->driver, 1, &reg);
@@ -362,8 +366,11 @@ static void radio_unload_packet(eventid_t id) {
 
   /* read the remainder of the packet */
   spiReceive(radio->driver, sizeof(payload), payload);
-  spiReceive(radio->driver, sizeof(crc), &crc);
+  spiReceive(radio->driver, sizeof(crc), &crc); // this is actually a dummy, used to clear FIFO and clear flags
   radio_unselect(radio);
+
+  //  chprintf(stream, "Unloaded prot %d payload %s len %d crc 0x%x\r\n", pkt.prot, payload, pkt.length, crc );
+  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x\r\n", pkt.prot, payload, pkt.length, crc );
 
   /* Dispatch the packet handler */
   unsigned int i;
@@ -593,6 +600,7 @@ void radioSend(KRadioDevice *radio,
 
   RadioPacket pkt;
   uint8_t reg;
+  uint8_t flags;
 
   pkt.length = bytes + sizeof(pkt);
   pkt.src = radio->address;
@@ -612,7 +620,7 @@ void radioSend(KRadioDevice *radio,
                                | OpMode_Transmitter);
 
   /* Transmit the packet as soon as the entire thing is in the Fifo */
-  radio_set(radio, RADIO_FifoThresh, pkt.length - 1);
+  radio_set(radio, RADIO_FifoThresh, pkt.length - 1); // this should be pkt.length-1, but for some reason tx doesn't trigger?? could be a radio version issue between KW01 and RFM69HW?? or a compiler issue?
 
   radio_select(radio);
 
@@ -627,11 +635,15 @@ void radioSend(KRadioDevice *radio,
   spiSend(radio->driver, bytes, payload);
   radio_unselect(radio);
 
+  flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" seems necessary on this radio version
+  // chprintf(stream, "Flags entering Tx handler: %x\n\r", flags);
   /* Wait for the transmission to complete (will be unlocked in IRQ) */
   osalSysLock();
   (void) osalThreadSuspendS(&radio->thread);
   osalSysUnlock();
 
+  flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" might not be necessary, but here anyways
+  // chprintf(stream, "Flags exiting Tx handler: %x\n\r", flags);
   /* Move back into "Rx" mode */
   radio->mode = mode_receiving;
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On

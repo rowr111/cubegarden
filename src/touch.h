@@ -7,4 +7,4 @@ extern event_source_t touch_event;
 extern uint8_t touch_state;
 
 #define TOUCH_DEBOUNCE MS2ST(300)
-#define STUCK_TIMEOUT MS2ST(2000)  // two second max time for stuckage
+#define STUCK_TIMEOUT MS2ST(3000)  // three second max time for stuckage

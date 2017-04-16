@@ -45,6 +45,7 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
 void testCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]);
+void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capRCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -60,6 +61,7 @@ static const ShellCommand commands[] = {
   {"test", testCommand},
   {"i2c", i2cCommand},
   {"captest", capTestCommand},
+  {"capcal", capCalCommand},
   {"c", capWCommand},
   {"cr", capRCommand},
   {"chg", chgCommand},
