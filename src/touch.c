@@ -5,6 +5,7 @@
 #include "orchard-events.h"
 #include "touch.h"
 #include "orchard-ui.h"
+#include "orchard-app.h"
 
 #include "i2c.h"
 #include "gfx.h"
@@ -115,6 +116,7 @@ void touchHandler(eventid_t id) {
   i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
 
+#if 0
   // update the UI touch records
   if( touch & (1 << 1) ) {
     if( chVTTimeElapsedSinceX(uiinput.left_last) > touch_debounce ) {
@@ -158,8 +160,11 @@ void touchHandler(eventid_t id) {
     }
     uiinput.b_last = chVTGetSystemTime();
   }
+#endif
   
   touch_state = touch;
+
+  keyHandler(id); // call to the app handler
 }
 
 void touchCb(EXTDriver *extp, expchannel_t channel) {

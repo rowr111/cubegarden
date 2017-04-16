@@ -163,6 +163,7 @@ CSRC = \
        storage.c \
        userconfig.c \
        radio.c \
+       accel.c \
        hex.c \
        paging.c \
        orchard-app.c \

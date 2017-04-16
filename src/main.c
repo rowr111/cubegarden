@@ -34,6 +34,7 @@
 #include "userconfig.h"
 #include "orchard-app.h"
 #include "charger.h"
+#include "accel.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -49,6 +50,8 @@ extern const char *gitversion;
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0},
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
   }
 };
 
@@ -116,30 +119,33 @@ static void orchard_app_restart(eventid_t id) {
 }
 
 
+void spiRuntSetup(SPIDriver *spip);
+
 static thread_t *eventThr = NULL;
 static THD_WORKING_AREA(waOrchardEventThread, 0x900);
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;
-  chRegSetThreadName("Orchard Event Threads");
+  chRegSetThreadName("Events");
 
   evtTableInit(orchard_events, 32);
   orchardEventsStart();
+  orchardAppInit();
 
-  //  radioStart(radioDriver, &SPID2);
-  //  radioSetDefaultHandler(radioDriver, default_radio_handler);
+  spiStart(&SPID2, &spi_config);
+  spiRuntSetup(&SPID2);
+  radioStart(radioDriver, &SPID2);
+  radioSetDefaultHandler(radioDriver, default_radio_handler);
   
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
-  evtTableHook(orchard_events, touch_event, touchHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   
-  //TEMP orchardAppRestart();
+  orchardAppRestart();
   
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
-  evtTableUnhook(orchard_events, touch_event, touchHandler);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
 
   chSysLock();
@@ -192,6 +198,7 @@ int main(void) {
   chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
 	   chCoreGetStatusX());
 
+  accelStart(&I2CD1);
   flashStart();
   addEntropy(SIM->UIDL);  // something unique to each device
   addEntropy(SIM->UIDML);
@@ -227,10 +234,7 @@ int main(void) {
   extStart(&EXTD1, &extcfg);
   
   uiStart();
-  spiStart(&SPID2, &spi_config);
 
-  //TEMP  orchardAppInit();
-  
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
 			       sizeof(waOrchardEventThread),

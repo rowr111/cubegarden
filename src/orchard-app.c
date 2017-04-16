@@ -22,6 +22,24 @@
 
 #include "shellcfg.h"
 
+/*
+
+  key layout to code
+   4       3
+ 5   6   1   2
+   7       0
+
+   0x80 = down
+   0x40 = right
+   0x20 = left
+   0x10 = up
+
+   0x02 = home
+   0x04 = select
+   0x01 = TBD (down)
+   0x08 = TBD (up)
+ */
+
 #define SEXTEST 0
 #define SEX_TURNAROUND_TIME 4000 // 4 seconds for sex -- mostly to give sender time to "shake it"
 
@@ -37,26 +55,11 @@ static bool run_launcher_timer_engaged;
 
 orchard_app_instance instance;  // the one and in fact only instance of any orchard app
 
-typedef enum _DirIntent {
-  dirNone = 0x0,
-  dirCW = 0x1,
-  dirCCW = 0x2,
-} DirIntent;
-
-static struct jogdial_state {
-  int8_t lastpos;
-  DirIntent direction_intent;
-  uint32_t lasttime;
-} jogdial_state;
-#define DWELL_THRESH  500  // time to spend in one state before direction intent is null
-
 event_source_t orchard_app_terminated;
 event_source_t orchard_app_terminate;
 event_source_t timer_expired;
 event_source_t ui_completed;
 
-static virtual_timer_t keycollect_timer;
-static event_source_t keycollect_timeout;
 static uint16_t  captouch_collected_state = 0;
 
 #define COLLECT_INTERVAL 50  // time to collect events for multi-touch gesture
@@ -89,8 +92,8 @@ static uint8_t ui_override = 0;
 
 void friend_cleanup(void);
 
-#define MAIN_MENU_MASK  ((1 << 11) | (1 << 0))
-#define MAIN_MENU_VALUE ((1 << 11) | (1 << 0))
+#define MAIN_MENU_MASK  0x02
+#define MAIN_MENU_VALUE 0x02
 
 static void handle_radio_page(eventid_t id) {
   (void) id;
@@ -585,12 +588,24 @@ static void handle_chargecheck_timeout(eventid_t id) {
 }
 
 static int captouch_to_key(uint8_t code) {
-  if (code == 11)
-    return keyLeft;
-  if (code == 0)
+  if (code == 0x80)
+    return keyBottom;
+  if (code == 0x40)
     return keyRight;
-  if (code == 5)
+  if (code == 0x20)
+    return keyLeft;
+  if (code == 0x10)
+    return keyTop;
+  if (code == MAIN_MENU_MASK)
+    return keyHome;
+  if( code == 0x04)
     return keySelect;
+  
+  // these are provisional
+  if (code == 0x01)
+    return keyBottom;
+  if (code == 0x08)
+    return keyTop;
   return code;
 }
 
@@ -611,7 +626,7 @@ static void poke_run_launcher_timer(eventid_t id) {
 
   (void)id;
 
-  uint32_t val = captouchRead();
+  uint8_t val = captouchRead();
   if (run_launcher_timer_engaged) {
     /* Timer is engaged, but both buttons are still held.  Do nothing.*/
     if ((val & MAIN_MENU_MASK) == MAIN_MENU_VALUE)
@@ -646,14 +661,6 @@ static void ui_complete_cleanup(eventid_t id) {
     instance.app->event(instance.context, &evt);  
 }
 
-static void run_keycollect_timer(void *arg) {
-  (void)arg;
-  
-  chSysLockFromISR();
-  chEvtBroadcastI(&keycollect_timeout);
-  chSysUnlockFromISR();
-}
-
 static void run_chargecheck(void *arg) {
   (void)arg;
 
@@ -670,15 +677,6 @@ static void run_ping(void *arg) {
   chEvtBroadcastI(&ping_timeout);
   chVTSetI(&ping_timer, MS2ST(PING_MIN_INTERVAL + rand() % PING_RAND_INTERVAL), run_ping, NULL);
   chSysUnlockFromISR();
-}
-
-static void key_event_timer(eventid_t id) {
-  (void)id;
-  captouch_collected_state |= captouchRead(); // accumulate events
-
-  // (re)set a timer to collect accumulated events...
-  chVTReset(&keycollect_timer);
-  chVTSet(&keycollect_timer, MS2ST(COLLECT_INTERVAL), run_keycollect_timer, NULL);
 }
 
 static void adc_temp_event(eventid_t id) {
@@ -710,9 +708,9 @@ static void radio_app_event(eventid_t id) {
     instance.app->event(instance.context, &evt);
 }
 
-static void key_event(eventid_t id) {
+void keyHandler(eventid_t id) {
   (void)id;
-  uint32_t val = captouch_collected_state;
+  uint8_t val = touch_state;
   uint32_t i;
   OrchardAppEvent evt;
 
@@ -720,13 +718,11 @@ static void key_event(eventid_t id) {
     return;
   
   if (!instance.app->event) {
-    captouch_collected_state = 0;
     return;
   }
 
   /* No key changed */
   if (instance.keymask == val) {
-    captouch_collected_state = 0;
     return;
   }
 
@@ -736,12 +732,8 @@ static void key_event(eventid_t id) {
     return;
   }
     
-  for (i = 0; i < 16; i++) {
-    uint8_t code = captouch_to_key(i);
-
-    /* Code is a wheel event */
-    if (code < 0x80)
-      continue;
+  for (i = 0; i < 8; i++) {
+    uint8_t code = captouch_to_key(1 << i);
 
     if ((val & (1 << i)) && !(instance.keymask & (1 << i))) {
       evt.type = keyEvent;
@@ -871,6 +863,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   instance->keymask = captouchRead();
 
   evtTableInit(orchard_app_events, 32);
+  evtTableHook(orchard_app_events, touch_event, touchHandler);
   evtTableHook(orchard_app_events, radio_app, radio_app_event);
   evtTableHook(orchard_app_events, ui_completed, ui_complete_cleanup);
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
@@ -923,9 +916,9 @@ static THD_FUNCTION(orchard_app_thread, arg) {
 
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);
-  evtTableUnhook(orchard_app_events, keycollect_timeout, key_event);
   evtTableUnhook(orchard_app_events, ui_completed, ui_complete_cleanup);
   evtTableUnhook(orchard_app_events, radio_app, radio_app_event);
+  evtTableUnhook(orchard_app_events, touch_event, touchHandler);
 
   /* Atomically broadcasting the event source and terminating the thread,
      there is not a chSysUnlock() because the thread terminates upon return.*/
@@ -942,7 +935,6 @@ void orchardAppInit(void) {
   chEvtObjectInit(&orchard_app_terminated);
   chEvtObjectInit(&orchard_app_terminate);
   chEvtObjectInit(&timer_expired);
-  chEvtObjectInit(&keycollect_timeout);
   chEvtObjectInit(&chargecheck_timeout);
   chEvtObjectInit(&ping_timeout);
   chEvtObjectInit(&ui_completed);
@@ -950,7 +942,7 @@ void orchardAppInit(void) {
 
   /* Hook this outside of the app-specific runloop, so it runs even if
      the app isn't listening for events.*/
-  //evtTableHook(orchard_events, captouch_changed, poke_run_launcher_timer);
+  evtTableHook(orchard_events, touch_event, poke_run_launcher_timer);
   
   // usb detection and charge state management is also meta to the apps
   // sequence of events:
@@ -980,10 +972,6 @@ void orchardAppInit(void) {
 
   chVTReset(&ping_timer);
   chVTSet(&ping_timer, MS2ST(PING_MIN_INTERVAL + rand() % PING_RAND_INTERVAL), run_ping, NULL);
-
-  jogdial_state.lastpos = -1; 
-  jogdial_state.direction_intent = dirNone;
-  jogdial_state.lasttime = chVTGetSystemTime();
 
   for( i = 0; i < MAX_FRIENDS; i++ ) {
     friends[i] = NULL;

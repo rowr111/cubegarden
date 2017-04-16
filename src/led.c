@@ -976,7 +976,7 @@ static THD_WORKING_AREA(waEffectsThread, 256);
 static THD_FUNCTION(effects_thread, arg) {
 
   (void)arg;
-  chRegSetThreadName("LED effects");
+  chRegSetThreadName("effects");
 
   while (!ledsOff) {
     blendFbs();

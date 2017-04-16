@@ -127,7 +127,10 @@ static void launcher_start(OrchardAppContext *context) {
   list->selected = 3;
 
   last_ui_time = chVTGetSystemTime();
+  orchardAppTimer(context, 125 * 1000 * 1000, true); // update UI every 500 ms
+  
   redraw_list(list);
+
 }
 
 void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
@@ -139,12 +142,12 @@ void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   if (event->type == keyEvent) {
     last_ui_time = chVTGetSystemTime();
-    if ((event->key.flags == keyDown) && (event->key.code == keyCW)) {
+    if ((event->key.flags == keyDown) && (event->key.code == keyBottom)) {
       list->selected++;
       if (list->selected >= list->total)
         list->selected = 0;
     }
-    else if ((event->key.flags == keyDown) && (event->key.code == keyCCW)) {
+    else if ((event->key.flags == keyDown) && (event->key.code == keyTop)) {
       list->selected--;
       if (list->selected >= list->total)
         list->selected = list->total - 1;
@@ -153,8 +156,8 @@ void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       orchardAppRun(list->items[list->selected].entry);
     }
     redraw_list(list);
-  } else if (event->type == adcEvent) {
-    // to update % charge state based on USB detect status ping
+  } else if (event->type == timerEvent) {
+    // to update % charge state, UI timer
     redraw_list(list);
   }
 

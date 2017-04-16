@@ -109,6 +109,7 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "   set [addr] [val]     Set a SPI register\r\n");
     chprintf(chp, "   dump [addr] [count]  Dump a set of SPI registers\r\n");
     chprintf(chp, "   addr [addr]          Set radio node address\r\n");
+    chprintf(chp, "   temp                 Get radio temperature\r\n");
     return;
   }
 
@@ -120,6 +121,8 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     radio_dump(chp, argc, argv);
   else if (!strcasecmp(argv[0], "addr"))
     radio_addr(chp, argc, argv);
+  else if (!strcasecmp(argv[0], "temp"))
+    chprintf(chp, "Temperature :%d\r\n", radioTemperature(radioDriver));
   else
     chprintf(chp, "Unrecognized radio command\r\n");
 }

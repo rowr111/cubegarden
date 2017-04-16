@@ -77,7 +77,7 @@ const PALConfig pal_default_config =
       .port = IOPORT4,  // PORTD
       .pads = {
         /* PTD0*/ PAL_MODE_ALTERNATIVE_2,   /* PTD1*/ PAL_MODE_ALTERNATIVE_2,   /* PTD2*/ PAL_MODE_ALTERNATIVE_2, // spi0_pcs0, spi0_clk, spi0_mosi
-        /* PTD3*/ PAL_MODE_ALTERNATIVE_2,   /* PTD4*/ PAL_MODE_ALTERNATIVE_7,   /* PTD5*/ PAL_MODE_ALTERNATIVE_7, // spi0_miso, spi1_pcs0, spi1_sck
+        /* PTD3*/ PAL_MODE_ALTERNATIVE_2,   /* PTD4*/ PAL_MODE_OUTPUT_PUSHPULL, /* PTD5*/ PAL_MODE_ALTERNATIVE_7, // spi0_miso, spi1_pcs0, spi1_sck
         /* PTD6*/ PAL_MODE_ALTERNATIVE_7,   /* PTD7*/ PAL_MODE_ALTERNATIVE_7,   /* PTD8*/ PAL_MODE_UNCONNECTED, // spi1_mosi, spi1_miso
         /* PTD9*/ PAL_MODE_UNCONNECTED,     /*PTD10*/ PAL_MODE_UNCONNECTED,     /*PTD11*/ PAL_MODE_UNCONNECTED,
         /*PTD12*/ PAL_MODE_UNCONNECTED,     /*PTD13*/ PAL_MODE_UNCONNECTED,     /*PTD14*/ PAL_MODE_UNCONNECTED,
@@ -92,7 +92,7 @@ const PALConfig pal_default_config =
     {
       .port = IOPORT5,  // PORTE
       .pads = {
-        /* PTE0*/ PAL_MODE_OUTPUT_PUSHPULL, /* PTE1*/ PAL_MODE_INPUT,           /* PTE2*/ PAL_MODE_UNCONNECTED, // uart1sel, uart1rx
+        /* PTE0*/ PAL_MODE_OUTPUT_PUSHPULL, /* PTE1*/ PAL_MODE_INPUT_PULLUP,    /* PTE2*/ PAL_MODE_UNCONNECTED, // uart1sel, uart1rx
         /* PTE3*/ PAL_MODE_UNCONNECTED,     /* PTE4*/ PAL_MODE_UNCONNECTED,     /* PTE5*/ PAL_MODE_UNCONNECTED,
         /* PTE6*/ PAL_MODE_UNCONNECTED,     /* PTE7*/ PAL_MODE_UNCONNECTED,     /* PTE8*/ PAL_MODE_UNCONNECTED,
         /* PTE9*/ PAL_MODE_UNCONNECTED,     /*PTE10*/ PAL_MODE_UNCONNECTED,     /*PTE11*/ PAL_MODE_UNCONNECTED,

@@ -444,7 +444,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
-      else if( event->key.code == keyCW ) {
+      else if( event->key.code == keyBottom ) {
 	if( friend_total != 0 )
 	  friend_index = (friend_index + 1) % friend_total;
 	else
@@ -452,7 +452,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_ui_time = chVTGetSystemTime();
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
-      } else if( event->key.code == keyCCW) {
+      } else if( event->key.code == keyTop) {
 	if( friend_total != 0 ) {
 	  if( friend_index == 0 )
 	    friend_index = friend_total;

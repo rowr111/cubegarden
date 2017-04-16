@@ -197,12 +197,14 @@ static uint8_t const default_registers[] = {
 static void radio_select(KRadioDevice *radio) {
 
   spiAcquireBus(radio->driver);
+  palClearPad(IOPORT4, 4); // assert CS line 
   spiSelect(radio->driver);
 }
 
 static void radio_unselect(KRadioDevice *radio) {
 
   spiUnselect(radio->driver);
+  palSetPad(IOPORT4, 4); // de-assert CS line  // now under manual control
   spiReleaseBus(radio->driver);
 }
 
@@ -281,6 +283,7 @@ static void radio_set_output_power_dbm(KRadioDevice *radio, int power) {
                                 | PaLevel_Pa1_Off
                                 | PaLevel_Pa2_Off
                                 | ((power + 18) & 0x1f));
+  
 }
 
 #if 0
