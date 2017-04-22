@@ -142,12 +142,12 @@ void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   if (event->type == keyEvent) {
     last_ui_time = chVTGetSystemTime();
-    if ((event->key.flags == keyDown) && (event->key.code == keyBottom)) {
+    if ((event->key.flags == keyDown) && ((event->key.code == keyBottom) || (event->key.code == keyBottomR))) {
       list->selected++;
       if (list->selected >= list->total)
         list->selected = 0;
     }
-    else if ((event->key.flags == keyDown) && (event->key.code == keyTop)) {
+    else if ((event->key.flags == keyDown) && ((event->key.code == keyTop) || (event->key.code == keyTopR))) {
       list->selected--;
       if (list->selected >= list->total)
         list->selected = list->total - 1;

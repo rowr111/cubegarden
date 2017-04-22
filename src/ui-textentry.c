@@ -103,6 +103,7 @@ static void textentry_start(OrchardAppContext *context) {
   textentry_redraw();
 }
 
+#define ENTRIES_PER_WIDTH 21
 static void textentry_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   //// note to self -- once the text entry is complete, the UI widget should
@@ -110,14 +111,22 @@ static void textentry_event(OrchardAppContext *context, const OrchardAppEvent *e
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if( event->key.code == keyCW ) {
+      if( event->key.code == keyRight ) {
 	entry_selection++;
-	if( entry_selection >= sizeof(entry_list) )
+	if( entry_selection >= (sizeof(entry_list)-1) )
 	  entry_selection--;
 	
-      } else if( event->key.code == keyCCW) {
+      } else if( event->key.code == keyLeft) {
 	if( entry_selection > 0 )
 	  entry_selection--;
+	
+      } else if( event->key.code == keyTop) {
+	if( entry_selection >= ENTRIES_PER_WIDTH )
+	  entry_selection -= ENTRIES_PER_WIDTH;
+	
+      } else if( event->key.code == keyBottom) {
+	if( entry_selection < (sizeof(entry_list) - ENTRIES_PER_WIDTH - 1) )
+	  entry_selection += ENTRIES_PER_WIDTH;
 	
       } else if( event->key.code == keySelect ) {
 	if( entry_position < TEXTENTRY_MAXLEN )
@@ -126,12 +135,12 @@ static void textentry_event(OrchardAppContext *context, const OrchardAppEvent *e
 	if( entry_position > TEXTENTRY_MAXLEN )
 	  entry_position--;
 	
-      } else if( event->key.code == keyLeft ) {
+      } else if( event->key.code == keyBottomR ) {
 	if( entry_position > 0 )
 	  entry_position--;
 	entry[entry_position] = '\0';
 	
-      } else if( event->key.code == keyRight ) {
+      } else if( event->key.code == keyTopR ) {
 	context->instance->ui_result = (uint32_t) entry;
 	chEvtBroadcast(&ui_completed);
       }

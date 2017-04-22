@@ -102,6 +102,8 @@ typedef enum _OrchardAppEventKeyCode {
   keyTop = 0x85,
   keyBottom = 0x86,
   keyHome = 0x87,
+  keyBottomR = 0x88,
+  keyTopR = 0x89,
   keyCW = 0x83,
   keyCCW = 0x84,
 } OrchardAppEventKeyCode;

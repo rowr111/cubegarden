@@ -14,3 +14,4 @@ void chg_cb(void *arg); // should consolidate this
 void comp_crc8(uint8_t *tx);
 
 
+void chargerShipMode(void);

@@ -84,4 +84,12 @@ extern ui_input uiinput;
 void orchardGfxStart(void);
 void orchardGfxEnd(void);
 
+typedef enum _OrchardTestResult {
+  orchardResultPass = 0,
+  orchardResultFail = 1,
+  orchardResultUnsure = 2,
+  orchardResultNoTest = 3,  // for cases where there is no test for a function
+} OrchardTestResult;
+
+
 #endif /* __ORCHARD_UI_H__ */

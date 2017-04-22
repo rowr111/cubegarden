@@ -129,8 +129,8 @@ void chgSetSafety(void) {
   uint8_t tx[2];
 
   tx[0] = FAN5421_SAFE_ADR;
-  //  tx[1] = 0x62; // 1150mA, 4.24V
-  tx[1] = 0x02; // 550mA, 4.24V
+  tx[1] = 0x62; // 1150mA, 4.24V
+  //  tx[1] = 0x02; // 550mA, 4.24V
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
@@ -143,8 +143,8 @@ void chgAutoParams(void) {
   
   // now set current targets
   tx[0] = FAN5421_IBAT_ADR;
-  //    tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
-  tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
+  tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
+  // tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
@@ -163,9 +163,9 @@ void chgAutoParams(void) {
     
   // target "float" voltage
   tx[0] = FAN5421_OREG_ADR;
-  //    tx[1] = (0x22 << 2); // target 4.18 float voltage
+  tx[1] = (0x22 << 2); // target 4.18 float voltage
   // tx[1] = (0x19 << 2); // target 4.00 float voltage
-  tx[1] = (0x1E << 2); // target 4.10v float voltage
+  // tx[1] = (0x1E << 2); // target 4.10v float voltage
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
@@ -211,4 +211,8 @@ void chgStart(int force) {
   }
     
   chVTSet(&chg_vt, MS2ST(1000), chg_cb, NULL);
+}
+
+void chargerShipMode(void) {
+  palClearPad(IOPORT2, 1); // force ship mode, should shut the whole thing down...
 }

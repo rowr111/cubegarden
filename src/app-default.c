@@ -432,11 +432,17 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if ( event->key.code == keyLeft ) {
+      if ( event->key.code == keyBottom ) {
 	shift = getShift();
 	shift++;
 	if (shift > 6)
-	  shift = 0;
+	  shift = 6;
+	setShift(shift);
+      }
+      else if( event->key.code == keyTop ) {
+	shift = getShift();
+	if( shift > 0 )
+	  shift--;
 	setShift(shift);
       }
       else if ( event->key.code == keyRight ) {
@@ -444,7 +450,12 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
-      else if( event->key.code == keyBottom ) {
+      else if ( event->key.code == keyLeft ) {
+	effectsPrevPattern();
+	last_oscope_time = chVTGetSystemTime();
+	oscope_running = 0;
+      }
+      else if( event->key.code == keyBottomR ) {
 	if( friend_total != 0 )
 	  friend_index = (friend_index + 1) % friend_total;
 	else
@@ -452,7 +463,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_ui_time = chVTGetSystemTime();
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
-      } else if( event->key.code == keyTop) {
+      } else if( event->key.code == keyTopR) {
 	if( friend_total != 0 ) {
 	  if( friend_index == 0 )
 	    friend_index = friend_total;

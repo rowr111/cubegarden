@@ -62,27 +62,24 @@ static void shipmode_start(OrchardAppContext *context) {
 void shipmode_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   (void)context;
 
-#if 0
   if (event->type == keyEvent) {
     if ((event->key.flags == keyDown) && (event->key.code == keySelect)) {
       if( modeintent == 0 ) {
 	orchardTestPrompt("Standing by...", "hit reset to wake", 0);
-	halt();
+	//	halt();  /////// TODO
       } else {
 	chThdYield();
 	chThdSleepMilliseconds(300); // wait for previous touch state to drain
-	// TODO
-	//	if(orchardTestPrompt("Are you sure?", "Press key to confirm", 5) == orchardResultPass )
+	if(orchardTestPrompt("Are you sure?", "Press key to confirm", 5) == orchardResultPass )
 	  chargerShipMode();
-	  //	else
-	  //	  redraw_ui();
+	else
+	  redraw_ui();
       }
     } else if( event->key.flags == keyDown ) {
       modeintent = !modeintent;
       redraw_ui();
     }
   }
-#endif
 }
 
 orchard_app("power off", NULL, shipmode_start, shipmode_event, NULL);

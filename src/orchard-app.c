@@ -608,9 +608,9 @@ static int captouch_to_key(uint8_t code) {
   
   // these are provisional
   if (code == 0x01)
-    return keyBottom;
+    return keyBottomR;
   if (code == 0x08)
-    return keyTop;
+    return keyTopR;
   return code;
 }
 
