@@ -35,6 +35,7 @@
 #include "orchard-app.h"
 #include "charger.h"
 #include "accel.h"
+#include "mic.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -143,6 +144,9 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   radioSetDefaultHandler(radioDriver, default_radio_handler);
   pagingStart();
   
+  micStart(); 
+  i2sStartRx(&I2SD1); // start the audio sampling buffer
+  
   /*
    * Activates the EXT driver 1.
    */
@@ -240,7 +244,7 @@ int main(void) {
 
   adcStart(&ADCD1, &adccfg1);
   analogStart();
-  
+
   // reset the radio
   palSetPad(IOPORT1, 19); // set RADIO_RESET, resetting the radio
   chThdSleepMilliseconds(1);

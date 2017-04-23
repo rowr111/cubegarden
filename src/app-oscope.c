@@ -5,17 +5,18 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "fixmath.h"
 #include "fix16_fft.h"
 
 static int mode = 0;
 
-static void agc(uint8_t  *sample) {
-  uint8_t min, max;
-  uint8_t scale = 1;
-  int16_t temp;
+static void agc(uint32_t  *sample, uint8_t *output) {
+  uint32_t min, max;
   uint8_t i;
+  float scale;
+  uint32_t temp;
 
   // cheesy AGC to get something on the screen even if it's pretty quiet
   // e.g., "comfort noise"
@@ -23,7 +24,7 @@ static void agc(uint8_t  *sample) {
   if( sample == NULL )
     return;
 
-  min = 255; max = 0;
+  min = UINT_MAX; max = 0;
   for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
     if( sample[i] > max )
       max = sample[i];
@@ -31,21 +32,13 @@ static void agc(uint8_t  *sample) {
       min = sample[i];
   }
 
-  if( (max - min) < 128 )
-    scale = 2;
-  if( (max - min) < 64 )
-    scale = 4;
-  if( (max - min) < 32 )
-    scale = 8;
-  if( (max - min) < 16 )
-    scale = 16;
+  int32_t span = max - min;
+  scale = 255.0 / (float) span;
   
   for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
-    temp = sample[i];
-    temp -= 128;
-    temp *= scale;
-    temp += 128;
-    sample[i] = (uint8_t) temp;
+    temp = sample[i] - min;
+    temp = (uint32_t) (((float)temp) * scale);
+    output[i] = (uint8_t) temp;
   }
 }
 
@@ -85,23 +78,24 @@ static void agc_fft(uint8_t  *sample) {
   }
 }
 
-static void redraw_ui(uint8_t *samples) {
+static void redraw_ui(uint32_t *samples) {
   coord_t height;
   uint8_t i;
   uint8_t scale;
+  uint8_t agc_samp[MIC_SAMPLE_DEPTH];
   fix16_t real[MIC_SAMPLE_DEPTH];
   fix16_t imag[MIC_SAMPLE_DEPTH];
 
-  agc( samples );
-  
+  agc( samples, agc_samp );
+
   if ( mode ) {
-    fix16_fft(samples, real, imag, MIC_SAMPLE_DEPTH);
+    fix16_fft(agc_samp, real, imag, MIC_SAMPLE_DEPTH);
     for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
-      samples[i] = fix16_to_int( fix16_sqrt(fix16_sadd(fix16_mul(real[i],real[i]),
+      agc_samp[i] = fix16_to_int( fix16_sqrt(fix16_sadd(fix16_mul(real[i],real[i]),
 						       fix16_mul(imag[i],imag[i]))) );
     }
     
-    agc_fft(samples);
+    agc_fft(agc_samp);
   }
   
   orchardGfxStart();
@@ -112,11 +106,17 @@ static void redraw_ui(uint8_t *samples) {
 
   for( i = 1; i < MIC_SAMPLE_DEPTH; i++ ) {
     if( samples != NULL ) {
+#if 1
       // below for dots, change starting index to i=0
       //      gdispDrawPixel((coord_t)i, (coord_t) (255 - samples[i]) / scale , White);
-      gdispDrawLine((coord_t)i-1, (coord_t) (255 - samples[i-1]) / scale, 
-		    (coord_t)i, (coord_t) (255 - samples[i]) / scale, 
+      gdispDrawLine((coord_t)i-1, (coord_t) (255 - (uint8_t) agc_samp[i-1]) / scale, 
+		    (coord_t)i, (coord_t) (255 - (uint8_t) agc_samp[i]) / scale, 
 		    White);
+#else
+      gdispDrawLine((coord_t)i-1, (coord_t) samples[i-1], 
+		    (coord_t)i, (coord_t) samples[i], 
+		    White);
+#endif
     } else
       gdispDrawPixel((coord_t)i, (coord_t) 32, White);
   }

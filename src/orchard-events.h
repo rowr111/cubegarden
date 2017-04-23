@@ -85,6 +85,9 @@ extern event_source_t radio_app;
 
 /// Orchard App events
 
+// i2s events
+extern event_source_t i2s_full_event;
+
 typedef enum _OrchardAppEventType {
   keyEvent,
   appEvent,

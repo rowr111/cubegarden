@@ -33,6 +33,8 @@
 #define KINETIS_MCG_MODE            KINETIS_MCG_MODE_PEE
 #define KINETIS_XTAL_FREQUENCY      8000000UL
 #define KINETIS_SYSCLK_FREQUENCY    95977472UL
+#define DEFAULT_SYSTEM_CLOCK        KINETIS_SYSCLK_FREQUENCY
+#define CPU_XTAL32k_CLK_HZ             32768u              /* Value of the external 32k crystal or oscillator clock frequency in Hz */
 // ^^^ correct based on 32.768kHz * 2929 DCO DXM32=1, DRST_DRS=11, FRDIV=000 so divide by 1
 #endif
 
@@ -112,6 +114,13 @@
  * ADC driver system settings.
  */
 #define KINETIS_ADC_USE_ADC0                  TRUE
+
+/*
+ * I2S driver system settings.
+ */
+#define KINETIS_I2S_USE_I2S1                  TRUE
+#define KINETIS_I2S_TX_PRIORITY               5
+#define KINETIS_I2S_RX_PRIORITY               5
 
 /*
  * Processor specific widths of each port.

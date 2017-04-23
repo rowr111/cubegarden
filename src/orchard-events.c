@@ -12,6 +12,8 @@ event_source_t radio_app;
 
 event_source_t accel_bump;
 
+event_source_t i2s_full_event;
+
 void orchardEventsStart(void) {
 
   // ADC-related events
@@ -27,4 +29,8 @@ void orchardEventsStart(void) {
   
   // accel events
   chEvtObjectInit(&accel_bump);
+
+  // i2s events
+  chEvtObjectInit(&i2s_full_event);
+  
 }

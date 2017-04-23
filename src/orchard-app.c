@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -20,6 +21,7 @@
 #include "TransceiverReg.h"
 #include "userconfig.h"
 #include "accel.h"
+#include "mic.h"
 
 #include "shellcfg.h"
 
@@ -110,6 +112,7 @@ static void handle_radio_page(eventid_t id) {
   radioPagePopup();
   effectsSetPattern(oldfx);
   ui_override = 0;
+  analogUpdateMic();
 }
 
 static void handle_ping_timeout(eventid_t id) {
@@ -858,6 +861,57 @@ void orchardAppTimer(const OrchardAppContext *context,
   chVTSet(&context->instance->timer, US2ST(usecs), timer_do_send_message, NULL);
 }
 
+static void i2s_full_handler(eventid_t id) {
+  (void)id;
+  OrchardAppEvent evt;
+  int i;
+
+  if( gen_mic_event ) {
+    gen_mic_event = 0;
+    for( i = 0; i < MIC_SAMPLE_DEPTH * 4; i++ ) { // just grab the first 128 bytes and sample-size convert
+      //      mic_return[i] = (uint8_t) (( ((uint32_t) rx_savebuf[i]) >> 24) & 0xFF + 128);
+      mic_return[i / 4] = (uint32_t) (rx_savebuf[i] + INT_MAX + 1);
+    }
+    
+    evt.type = adcEvent;
+    evt.adc.code = adcCodeMic;
+    if( !ui_override )
+      instance.app->event(instance.context, &evt);
+  }
+  // this is for MMC saving
+#if 0
+  if( sd_offset < (DATA_OFFSET_START + DATA_LEN_BYTES) ) {
+    if( !HAL_SUCCESS == 
+	MMCD1.vmt->write(&MMCD1, sd_offset / MMCSD_BLOCK_SIZE, 
+			 (uint8_t *) rx_savebuf, NUM_RX_SAMPLES * sizeof(int32_t) / MMCSD_BLOCK_SIZE) ) {
+      chprintf(stream, "mmc_write failed\n\r");
+      return;
+    }
+    sd_offset += NUM_RX_SAMPLES * sizeof(int32_t);
+  } else {
+#if ENDURANCE_TEST
+    // if we're done recording, loop again
+    sd_offset = DATA_OFFSET_START;
+    write_iters++;
+    endurance_val++;
+    // update the endurance value sector
+    memcpy(endure_sector, &endurance_val, sizeof(uint32_t));
+    MMCD1.vmt->write(&MMCD1, ENDURANCE_OFFSET / MMCSD_BLOCK_SIZE, 
+		     (uint8_t *) endure_sector, 1);
+#endif
+    // if not doing endurance testing, do nothing
+  }
+#endif
+  
+}
+
+static void i2s_reset_handler(eventid_t id) {
+  (void)id;
+ 
+  // sd_offset = DATA_OFFSET_START;   // not yet implemented
+}
+
+
 static THD_WORKING_AREA(waOrchardAppThread, 0x900); // more stack
 static THD_FUNCTION(orchard_app_thread, arg) {
 
@@ -887,6 +941,8 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableHook(orchard_app_events, timer_expired, timer_event);
   evtTableHook(orchard_app_events, celcius_rdy, adc_temp_event);
+  evtTableHook(orchard_app_events, i2s_full_event, i2s_full_handler);
+  //  evtTableHook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
 
   if (instance->app->init)
     app_context.priv_size = instance->app->init(&app_context);
@@ -933,6 +989,8 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   chVTReset(&run_launcher_timer);
   run_launcher_timer_engaged = false;
 
+  //  evtTableUnhook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
+  evtTableUnhook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableUnhook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);
