@@ -168,6 +168,7 @@ CSRC = \
        paging.c \
        orchard-app.c \
        orchard-ui.c \
+       analog.c \
        $(wildcard cmd-*.c) \
        $(wildcard app-*.c) \
        $(wildcard ui-*.c) \

@@ -19,6 +19,7 @@
 #include "radio.h"
 #include "TransceiverReg.h"
 #include "userconfig.h"
+#include "accel.h"
 
 #include "shellcfg.h"
 
@@ -68,10 +69,12 @@ static unsigned long track_time;
 
 static virtual_timer_t chargecheck_timer;
 static event_source_t chargecheck_timeout;
-#define CHARGECHECK_INTERVAL 1000 // time between checking state of USB pins
+#define CHARGECHECK_INTERVAL 1000 // time between checking state of charger and battery
+// note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
+
 // 3.3V (3300mV) is threshold for OLED failure; 50mV for margin
-#define SAFETY_THRESH  3350     // threshold to go into safety mode
-#define SHIPMODE_THRESH  3250   // threshold to go into ship mode
+#define SAFETY_THRESH  3390     // threshold to go into safety mode
+#define SHIPMODE_THRESH  3270   // threshold to go into ship mode
 
 static virtual_timer_t ping_timer;
 static event_source_t ping_timeout;
@@ -89,6 +92,8 @@ static uint8_t cleanup_state = 0;
 mutex_t friend_mutex;
 
 static uint8_t ui_override = 0;
+
+uint32_t uptime = 0;
 
 void friend_cleanup(void);
 
@@ -117,6 +122,7 @@ static void handle_ping_timeout(eventid_t id) {
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
 	    strlen(family->name) + 1, family->name);
   radioRelease(radioDriver);
+
 #endif
     
   // cleanup every other ping we send, to make sure friends that are
@@ -549,27 +555,36 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
 #else
       memcpy(response, &gamete, sizeof(genome));
       strncpy(&(response[sizeof(genome)]), who, GENE_NAMELENGTH);
+      radioAcquire(radioDriver);
       radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_sex_ack,
 		sizeof(response), response);
+      radioRelease(radioDriver);
 #endif
     }
   }
 }
 
-
-static void handle_charge_state(eventid_t id) {
+static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
+  struct accel_data accel; // for entropy call
 
+  if( (((uptime / 60) % 5) == 0) && ((uptime % 60) == 0) ) { // update the uptime, batt state once every 5 mins
+    chprintf(stream, "Uptime: %dh %dm %ds\n\r", uptime / 3600, (uptime / 60) % 60, uptime % 60);
+    chprintf(stream, "Volts: %dmV Soc: %d%% Stat: %s Fault: %s\n\r", ggVoltage(), ggStateofCharge(), chgStat(), chgFault());
+  }
+  
+  uptime += CHARGECHECK_INTERVAL / 1000; // keep an uptime count in seconds
+  
   // whenever this system task runs, add some entropy to the random number pool...
-  // addEntropy(accel.x ^ accel.y ^ accel.z);  // TODO
+  accelPoll(&accel);
+  addEntropy(accel.x ^ accel.y ^ accel.z);
 
   // flush config data if it's changed
   configLazyFlush();
   
   // check if battery is too low, and shut down if it is
   // but only if we're not plugged in to a charger
-#if 0
-  if( (ggVoltage() < SHIPMODE_THRESH) && (usbStatus == usbStatNC) ) {  
+  if( (ggVoltage() < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
     chargerShipMode();  // requires plugging in to re-active battery
   }
 
@@ -578,17 +593,15 @@ static void handle_charge_state(eventid_t id) {
       effectsSetPattern(effectsNameLookup("safetyPattern"));
 
     // limit brightness to guarantee ~2 hours runtime in safety mode
-    if( getShift() < 2 )
-      setShift(2);
+    if( getShift() < 3 )
+      setShift(3);
   }
-#endif
-}
 
-static void handle_chargecheck_timeout(eventid_t id) {
-  (void)id;
-  uint8_t dummy;
-  
-  dummy = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" is necessary to get the Rx interrupt to fire
+  // "pump" is now gone when switching interrupt mode from crcOK to packet ready
+  //  uint8_t dummy;
+  //  radioAcquire(radioDriver);
+  //  dummy = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" is necessary to get the Rx interrupt to fire
+  //  radioRelease(radioDriver);
   /// chprintf(stream, "radio flags: %x\r\n", dummy);  /// TODO: FIGURE OUT WHY THIS IS NECESSARY????
 }
 
@@ -873,6 +886,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableHook(orchard_app_events, ui_completed, ui_complete_cleanup);
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableHook(orchard_app_events, timer_expired, timer_event);
+  evtTableHook(orchard_app_events, celcius_rdy, adc_temp_event);
 
   if (instance->app->init)
     app_context.priv_size = instance->app->init(&app_context);
@@ -919,6 +933,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   chVTReset(&run_launcher_timer);
   run_launcher_timer_engaged = false;
 
+  evtTableUnhook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableUnhook(orchard_app_events, ui_completed, ui_complete_cleanup);

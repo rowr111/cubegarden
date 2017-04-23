@@ -25,6 +25,8 @@ extern event_source_t orchard_app_terminated;
 // Emitted to the system after a UI dialog is completed
 extern event_source_t ui_completed;
 
+extern uint32_t uptime;
+
 void orchardAppInit(void);
 void orchardAppRestart(void);
 void orchardAppWatchdog(void);

@@ -15,3 +15,7 @@ void comp_crc8(uint8_t *tx);
 
 
 void chargerShipMode(void);
+
+const char *chgStat(void);
+const char *chgFault(void);
+int isCharging(void);

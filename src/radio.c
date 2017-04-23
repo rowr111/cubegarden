@@ -7,6 +7,7 @@
 #include "orchard.h"
 #include "orchard-events.h"
 #include "radio.h"
+#include "chprintf.h"
 
 #include "TransceiverReg.h"
 
@@ -21,6 +22,8 @@
 #define RADIO_BUFFER_MASK         (RADIO_BUFFER_SIZE - 1)
 
 #define MAX_PACKET_HANDLERS       10
+
+uint32_t crcfails = 0;
 
 /* This number was guessed based on observations (133 at 30 degrees) */
 static int temperature_offset = 133 + 30;
@@ -352,9 +355,15 @@ static void radio_unload_packet(eventid_t id) {
   uint8_t reg;
   uint8_t crc;
   uint8_t flags;
+  uint8_t crc_failed = 0;
 
   flags = radioRead(radioDriver, RADIO_IrqFlags2);
-  chprintf(stream, "Flags entering dump: %x\n\r", flags);
+  if( !(flags & IrqFlags2_CrcOk) ) {
+    chprintf(stream, "CRC failed, flags: %x!!\n\r", flags);
+    crc_failed = 1;
+    crcfails++;
+  }
+  
   radio_select(radio);
   reg = RADIO_Fifo;
   spiSend(radio->driver, 1, &reg);
@@ -372,6 +381,9 @@ static void radio_unload_packet(eventid_t id) {
   //  chprintf(stream, "Unloaded prot %d payload %s len %d crc 0x%x\r\n", pkt.prot, payload, pkt.length, crc );
   chprintf(stream, "Unloaded prot %d payload %s len %d crc %x\r\n", pkt.prot, payload, pkt.length, crc );
 
+  if( crc_failed )
+    return;  // abort packet handling if the CRC is bad
+  
   /* Dispatch the packet handler */
   unsigned int i;
   bool handled = false;
@@ -450,6 +462,7 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
                                | OpMode_Listen_Off
                                | OpMode_Receiver);
+  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
 
   osalMutexObjectInit(&(radio->radio_mutex));  
 }
@@ -515,15 +528,19 @@ int radioTemperature(KRadioDevice *radio) {
 
   uint8_t buf[2];
 
+  radioAcquire(radioDriver);
   radio_set(radio, REG_TEMP1, REG_TEMP1_START);
+  radioRelease(radioDriver);
 
   do {
     buf[0] = REG_TEMP1;
 
+    radioAcquire(radioDriver);
     radio_select(radio);
     spiSend(radio->driver, 1, buf);
     spiReceive(radio->driver, 2, buf);
     radio_unselect(radio);
+    radioRelease(radioDriver);
   }
   while (buf[0] & REG_TEMP1_RUNNING);
 
@@ -618,6 +635,7 @@ void radioSend(KRadioDevice *radio,
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
                                | OpMode_Listen_Off
                                | OpMode_Transmitter);
+  radioWrite(radio, RADIO_DioMapping1, DIO0_TxPacketSent);
 
   /* Transmit the packet as soon as the entire thing is in the Fifo */
   radio_set(radio, RADIO_FifoThresh, pkt.length - 1); // this should be pkt.length-1, but for some reason tx doesn't trigger?? could be a radio version issue between KW01 and RFM69HW?? or a compiler issue?
@@ -643,11 +661,16 @@ void radioSend(KRadioDevice *radio,
   osalSysUnlock();
 
   flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" might not be necessary, but here anyways
+  if( flags & IrqFlags2_PayloadReady )
+    radioWrite(radioDriver, RADIO_PacketConfig2, PacketConfig2_RxRestart); // prevent RX deadlock
+  
   // chprintf(stream, "Flags exiting Tx handler: %x\n\r", flags);
   /* Move back into "Rx" mode */
   radio->mode = mode_receiving;
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
                                | OpMode_Listen_Off
                                | OpMode_Receiver);
+  
+  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
 }
 

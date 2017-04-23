@@ -55,6 +55,11 @@ static const EXTConfig extcfg = {
   }
 };
 
+static const ADCConfig adccfg1 = {
+  /* Perform initial calibration */
+  true
+};
+
 static const SPIConfig spi_config = {
   NULL,
   IOPORT4,
@@ -207,7 +212,7 @@ int main(void) {
 
   accelStart(&I2CD1);
   flashStart();
-  addEntropy(SIM->UIDL);  // something unique to each device
+  addEntropy(SIM->UIDL);  // something unique to each device, but repeatable
   addEntropy(SIM->UIDML);
   addEntropy(SIM->UIDMH);
   
@@ -233,6 +238,9 @@ int main(void) {
 
   touchStart();
 
+  adcStart(&ADCD1, &adccfg1);
+  analogStart();
+  
   // reset the radio
   palSetPad(IOPORT1, 19); // set RADIO_RESET, resetting the radio
   chThdSleepMilliseconds(1);

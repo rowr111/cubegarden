@@ -68,6 +68,13 @@ struct evt_table {
 
 void orchardEventsStart(void);
 
+// adc-related events
+extern event_source_t celcius_rdy;
+
+// accelerometer events
+extern event_source_t accel_bump;
+
+// low-level radio events
 extern event_source_t rf_pkt_rdy;
 
 // BM radio protocol events

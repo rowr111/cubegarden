@@ -129,11 +129,92 @@ void chgSetSafety(void) {
   uint8_t tx[2];
 
   tx[0] = FAN5421_SAFE_ADR;
-  tx[1] = 0x62; // 1150mA, 4.24V
+  tx[1] = 0xF1; // 2050mA, 4.22V
+  //  tx[1] = 0x62; // 1150mA, 4.24V
   //  tx[1] = 0x02; // 550mA, 4.24V
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
+}
+
+int isCharging(void) {
+  uint8_t tx[2], rx[1];
+  
+  tx[0] = FAN5421_CTL0_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+    
+  switch( (rx[0] >> 4) & 0x3 ) {
+  case 0:
+    return(0);
+  case 1:
+    return(1);
+  case 2:
+    return(1);
+  case 3:
+    return(1);
+  }
+}
+
+const char *chgStat(void) {
+  uint8_t tx[2], rx[1];
+  
+  tx[0] = FAN5421_CTL0_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+    
+  switch( (rx[0] >> 4) & 0x3 ) {
+  case 0:
+    return("Idle");
+  case 1:
+    tx[0] = FAN5421_SPCHG_ADR;
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+    if( (rx[0] >> 4) & 0x1 )
+      return("Slow chg");
+    else
+      return("Fast chg");
+  case 2:
+    return("Charged");
+  case 3:
+    return("Fault");
+  }
+}
+
+const char *chgFault(void) {
+  uint8_t tx[2], rx[1];
+  
+  tx[0] = FAN5421_CTL0_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+    
+  switch( (rx[0] >> 4) & 0x3 ) {
+  case 3:
+    switch( rx[0] & 0x7 ) {
+    case 0:
+      return( "No fault" );
+    case 1:
+      return( "Vbus OVP" );
+    case 2:
+      return( "Sleep mode" );
+    case 3:
+      return( "Poor source" );
+    case 4:
+      return( "Battery OVP" );
+    case 5:
+      return( "Thermal" );
+    case 6:
+      return( "Timeout" );
+    case 7:
+      return( "No battery" );
+    }
+  default:
+    return( "No Fault" );
+  }
 }
 
 void chgAutoParams(void) {
@@ -143,7 +224,8 @@ void chgAutoParams(void) {
   
   // now set current targets
   tx[0] = FAN5421_IBAT_ADR;
-  tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
+  tx[1] = 0xA << 3 | 0x1; // 1550mA, termination at 97mA (~0.02 * C)
+  //  tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
   // tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
@@ -163,7 +245,7 @@ void chgAutoParams(void) {
     
   // target "float" voltage
   tx[0] = FAN5421_OREG_ADR;
-  tx[1] = (0x22 << 2); // target 4.18 float voltage
+  tx[1] = (0x22 << 2); // target 4.18 float voltage -- a tiny bit of margin below 4.2v for safety
   // tx[1] = (0x19 << 2); // target 4.00 float voltage
   // tx[1] = (0x1E << 2); // target 4.10v float voltage
   i2cAcquireBus(&I2CD1);

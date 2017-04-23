@@ -56,6 +56,7 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendlocal(BaseSequentialStream *chp, int argc, char *argv[]);
+void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -66,6 +67,7 @@ static const ShellCommand commands[] = {
   {"cr", capRCommand},
   {"chg", chgCommand},
   {"gg", ggCommand},
+  {"gg2", gg2Command},
   {"gfx", gfxCommand},
   {"spi", spiCommand},
   {"fx", fxCommand},
