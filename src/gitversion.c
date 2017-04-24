@@ -1,1 +1,1 @@
-const char *gitversion = "3c7146aeb17b41c99083d376eb462f34ff1552e4";
+const char *gitversion = "d7578a3f454b3479d102a6fdae8b4d2171a110de";
