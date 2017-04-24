@@ -75,8 +75,9 @@ static event_source_t chargecheck_timeout;
 // note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
 
 // 3.3V (3300mV) is threshold for OLED failure; 50mV for margin
-#define SAFETY_THRESH  3390     // threshold to go into safety mode
-#define SHIPMODE_THRESH  3270   // threshold to go into ship mode
+#define BRIGHT_THRESH  3550     // threshold to limit brightness
+#define SAFETY_THRESH  3470     // threshold to go into safety mode
+#define SHIPMODE_THRESH  3330   // threshold to go into ship mode
 
 static virtual_timer_t ping_timer;
 static event_source_t ping_timeout;
@@ -570,10 +571,12 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
 static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
   struct accel_data accel; // for entropy call
+  int16_t voltage;
 
+  voltage = ggVoltage();
   if( (((uptime / 60) % 5) == 0) && ((uptime % 60) == 0) ) { // update the uptime, batt state once every 5 mins
     chprintf(stream, "Uptime: %dh %dm %ds\n\r", uptime / 3600, (uptime / 60) % 60, uptime % 60);
-    chprintf(stream, "Volts: %dmV Soc: %d%% Stat: %s Fault: %s\n\r", ggVoltage(), ggStateofCharge(), chgStat(), chgFault());
+    chprintf(stream, "Volts: %dmV Soc: %d%% Stat: %s Fault: %s\n\r", voltage, ggStateofCharge(), chgStat(), chgFault());
   }
   
   uptime += CHARGECHECK_INTERVAL / 1000; // keep an uptime count in seconds
@@ -584,14 +587,19 @@ static void handle_chargecheck_timeout(eventid_t id) {
 
   // flush config data if it's changed
   configLazyFlush();
-  
+
   // check if battery is too low, and shut down if it is
   // but only if we're not plugged in to a charger
-  if( (ggVoltage() < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
+  if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
     chargerShipMode();  // requires plugging in to re-active battery
   }
 
-  if( ggVoltage() < SAFETY_THRESH ) {
+  if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
+    if( getShift() < 2 )
+      setShift(2);
+  }
+
+  if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
       effectsSetPattern(effectsNameLookup("safetyPattern"));
 
