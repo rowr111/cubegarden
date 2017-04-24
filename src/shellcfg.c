@@ -55,8 +55,15 @@ void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendlocal(BaseSequentialStream *chp, int argc, char *argv[]);
 void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_gename(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_genetweak(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_geneseq(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_friendlocal(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_friendlist(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -73,7 +80,13 @@ static const ShellCommand commands[] = {
   {"fx", fxCommand},
   {"radio", cmd_radio},
   {"msg", cmd_msg},
+  {"gename", cmd_gename},
+  {"geneseq", cmd_geneseq},
+  {"genetweak", cmd_genetweak},
   {"friendlocal", cmd_friendlocal},
+  {"friendlist", cmd_friendlist},
+  {"friendping", cmd_friendping},
+  {"friendsim", cmd_friendsim},
   {NULL, NULL}
 };
 

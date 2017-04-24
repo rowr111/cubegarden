@@ -6,12 +6,13 @@
 #include "mic.h"
 
 #include <string.h>
+#include <limits.h>
 
-uint32_t mic_return[MIC_SAMPLE_DEPTH];
+//uint32_t mic_return[MIC_SAMPLE_DEPTH];
 
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n);
 int32_t rx_samples[NUM_RX_SAMPLES];
-int32_t rx_savebuf[NUM_RX_SAMPLES];
+uint16_t rx_savebuf[NUM_RX_SAMPLES];
 uint32_t rx_handler_count = 0;
 
 uint8_t gen_mic_event = 0;
@@ -81,11 +82,17 @@ void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n) {
   (void) i2sp;
   (void) offset;
   (void) n;
+  int i;
   
   // for now just copy it into the save buffer over and over again.
   // in the future, this would then kick off a SPI MMC data write event to save out the blocks
   rx_handler_count++;
-  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
+  //  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // just grab the first 128 bytes and sample-size convert
+    //    rx_savebuf[i] = (uint16_t) ((rx_samples[i] + INT_MAX + 1) >> 16) & 0xFFFF;
+    rx_savebuf[i] = (uint16_t) (((rx_samples[i] >> 16) + 32768) & 0xFFFF);
+  }
+  
   // kick out an event to write data to disk
   //  chSysLockFromISR();
   chEvtBroadcastI(&i2s_full_event);
@@ -101,6 +108,6 @@ void analogUpdateMic(void) {
   gen_mic_event = 1;
 }
 
-uint8_t *analogReadMic(void) {
-  return mic_return;
+uint16_t *analogReadMic(void) {
+  return rx_savebuf;
 }

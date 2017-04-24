@@ -876,10 +876,12 @@ static void i2s_full_handler(eventid_t id) {
 
   if( gen_mic_event ) {
     gen_mic_event = 0;
+#if 0
     for( i = 0; i < MIC_SAMPLE_DEPTH * 4; i++ ) { // just grab the first 128 bytes and sample-size convert
       //      mic_return[i] = (uint8_t) (( ((uint32_t) rx_savebuf[i]) >> 24) & 0xFF + 128);
       mic_return[i / 4] = (uint32_t) (rx_savebuf[i] + INT_MAX + 1);
     }
+#endif
     
     evt.type = adcEvent;
     evt.adc.code = adcCodeMic;
@@ -920,7 +922,7 @@ static void i2s_reset_handler(eventid_t id) {
 }
 
 
-static THD_WORKING_AREA(waOrchardAppThread, 0x900); // more stack
+static THD_WORKING_AREA(waOrchardAppThread, 0x980); // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
 static THD_FUNCTION(orchard_app_thread, arg) {
 
   (void)arg;

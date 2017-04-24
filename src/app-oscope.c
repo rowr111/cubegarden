@@ -12,9 +12,11 @@
 
 static int mode = 0;
 
-static void agc(uint32_t  *sample, uint8_t *output) {
-  uint32_t min, max;
-  uint8_t i;
+#define NUM_SAMPLES (NUM_RX_SAMPLES / 4)
+
+static void agc(uint16_t  *sample, uint16_t *output) {
+  uint16_t min, max;
+  uint16_t i;
   float scale;
   uint32_t temp;
 
@@ -24,21 +26,21 @@ static void agc(uint32_t  *sample, uint8_t *output) {
   if( sample == NULL )
     return;
 
-  min = UINT_MAX; max = 0;
-  for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
+  min = 65535; max = 0;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // input sample buffer is deeper, search all the way through
     if( sample[i] > max )
       max = sample[i];
     if( sample[i] < min )
       min = sample[i];
   }
 
-  int32_t span = max - min;
-  scale = 255.0 / (float) span;
-  
-  for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
+  uint16_t span = max - min;
+  scale = 65535.0 / (float) span;
+
+  for( i = 0; i < NUM_RX_SAMPLES; i += 4 ) { // decimate by 4
     temp = sample[i] - min;
     temp = (uint32_t) (((float)temp) * scale);
-    output[i] = (uint8_t) temp;
+    output[i / 4] = (uint16_t) temp; 
   }
 }
 
@@ -55,7 +57,7 @@ static void agc_fft(uint8_t  *sample) {
     return;
 
   min = 255; max = 0;
-  for( i = 2; i < MIC_SAMPLE_DEPTH; i++ ) {
+  for( i = 2; i < NUM_SAMPLES; i++ ) {
     if( sample[i] > max )
       max = sample[i];
     if( sample[i] < min )
@@ -78,39 +80,47 @@ static void agc_fft(uint8_t  *sample) {
   }
 }
 
-static void redraw_ui(uint32_t *samples) {
+// happens within a gfxlock
+static void precompute(uint16_t *samples) {
+  fix16_t real[NUM_SAMPLES];
+  fix16_t imag[NUM_SAMPLES];
+  uint16_t agc_samp[NUM_SAMPLES];
+  uint8_t fft_samp[NUM_SAMPLES];
   coord_t height;
-  uint8_t i;
-  uint8_t scale;
-  uint8_t agc_samp[MIC_SAMPLE_DEPTH];
-  fix16_t real[MIC_SAMPLE_DEPTH];
-  fix16_t imag[MIC_SAMPLE_DEPTH];
+  coord_t width;
+  uint16_t i;
+  uint16_t scale;
 
   agc( samples, agc_samp );
-
   if ( mode ) {
-    fix16_fft(agc_samp, real, imag, MIC_SAMPLE_DEPTH);
-    for( i = 0; i < MIC_SAMPLE_DEPTH; i++ ) {
-      agc_samp[i] = fix16_to_int( fix16_sqrt(fix16_sadd(fix16_mul(real[i],real[i]),
+    for( i = 0; i < NUM_SAMPLES; i++ ) {
+      fft_samp[i] = (uint8_t) (agc_samp[i] >> 8) & 0xFF;
+    }
+    fix16_fft(fft_samp, real, imag, NUM_SAMPLES);
+    for( i = 0; i < NUM_SAMPLES; i++ ) {
+      fft_samp[i] = fix16_to_int( fix16_sqrt(fix16_sadd(fix16_mul(real[i],real[i]),
 						       fix16_mul(imag[i],imag[i]))) );
     }
     
-    agc_fft(agc_samp);
+    agc_fft(fft_samp);
+    for( i = 0; i < NUM_SAMPLES; i++ ) {
+      agc_samp[i] = ((uint16_t) fft_samp[i]) << 8;
+    }
   }
   
-  orchardGfxStart();
   height = gdispGetHeight();
-  scale = 256 / height;
+  scale = 65535 / height;
 
   gdispClear(Black);
 
-  for( i = 1; i < MIC_SAMPLE_DEPTH; i++ ) {
+  width = gdispGetWidth();
+  for( i = 1; i < width; i++ ) {
     if( samples != NULL ) {
 #if 1
       // below for dots, change starting index to i=0
       //      gdispDrawPixel((coord_t)i, (coord_t) (255 - samples[i]) / scale , White);
-      gdispDrawLine((coord_t)i-1, (coord_t) (255 - (uint8_t) agc_samp[i-1]) / scale, 
-		    (coord_t)i, (coord_t) (255 - (uint8_t) agc_samp[i]) / scale, 
+      gdispDrawLine((coord_t)i-1, (coord_t) ((65535 - agc_samp[i-1]) / scale), 
+		    (coord_t)i, (coord_t) ((65535 - agc_samp[i]) / scale), 
 		    White);
 #else
       gdispDrawLine((coord_t)i-1, (coord_t) samples[i-1], 
@@ -120,6 +130,13 @@ static void redraw_ui(uint32_t *samples) {
     } else
       gdispDrawPixel((coord_t)i, (coord_t) 32, White);
   }
+}
+
+static void redraw_ui(uint16_t *samples) {
+  
+  orchardGfxStart();
+  // call compute before flush, so stack isn't shared between two memory intensive functions
+  precompute(samples);
 
   gdispFlush();
   orchardGfxEnd();
@@ -141,7 +158,7 @@ static void oscope_start(OrchardAppContext *context) {
 void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
-  uint8_t *samples;
+  uint16_t *samples;
   
   if (event->type == keyEvent) {
     if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {

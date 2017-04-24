@@ -245,7 +245,8 @@ void chgAutoParams(void) {
     
   // target "float" voltage
   tx[0] = FAN5421_OREG_ADR;
-  tx[1] = (0x22 << 2); // target 4.18 float voltage -- a tiny bit of margin below 4.2v for safety
+  tx[1] = (0x23 << 2); // target 4.20 float voltage
+  //  tx[1] = (0x22 << 2); // target 4.18 float voltage -- a tiny bit of margin below 4.2v for safety
   // tx[1] = (0x19 << 2); // target 4.00 float voltage
   // tx[1] = (0x1E << 2); // target 4.10v float voltage
   i2cAcquireBus(&I2CD1);

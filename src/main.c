@@ -36,6 +36,7 @@
 #include "charger.h"
 #include "accel.h"
 #include "mic.h"
+#include "analog.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
 
@@ -230,7 +231,7 @@ int main(void) {
   oledStart();
   gfxInit();
 
-  oledBanner();
+  // oledBanner();
 
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
