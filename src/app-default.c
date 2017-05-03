@@ -15,6 +15,7 @@
 
 #include "orchard-ui.h"
 #include <string.h>
+#include <math.h>
 
 #include "fixmath.h"
 #include "fix16_fft.h"
@@ -174,11 +175,76 @@ static void precompute(uint16_t *samples) {
   }
 }
 
+static void dbcompute(uint16_t *sample) {
+  char uiStr[32];
+  
+  coord_t width;
+  coord_t height;
+  coord_t tallheight;
+  font_t font;
+  font_t font2;
+  int db = 0;
+
+  font = gdispOpenFont("fixed_5x8");
+  width = gdispGetWidth();
+  height = gdispGetFontMetric(font, fontHeight);
+
+  gdispClear(Black);
+  gdispFillArea(0, 0, width, height, White);
+
+  gdispDrawStringBox(0, 0, width, height,
+                     "Sound level", font, Black, justifyCenter);
+
+  gdispCloseFont(font);
+  font2 = gdispOpenFont("DejaVuSans32");
+  tallheight = gdispGetFontMetric(font2, fontHeight);
+
+  // now compute dbs...
+  uint16_t min, max;
+  uint16_t i;
+  float cum = 0;
+  int32_t temp;
+
+  min = 65535; max = 0;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    if( sample[i] > max )
+      max = sample[i];
+    if( sample[i] < min )
+      min = sample[i];
+  }
+  int32_t mid = (max + min) / 2;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    temp = (((int32_t)sample[i]) - mid);
+    cum += (float) (temp * temp);
+  }
+  cum /= (float) NUM_RX_SAMPLES;
+  cum = sqrt(cum);
+  db = (int)  (24.0 + 20.0 * log10(cum)); // assumes 120dB is peak value, from AOP on datasheet
+  dblog[dblogptr] = (uint8_t) db;
+  dblogptr = (dblogptr + 1) % DBLOGLEN;
+  
+  cum = 0.0;
+  for( i = 0; i < DBLOGLEN; i++ ) {
+    cum += (float) dblog[i];
+  }
+  cum /= (float) DBLOGLEN;
+
+  chsnprintf(uiStr, sizeof(uiStr), "%ddB", (int) cum );
+  gdispDrawStringBox(0, height*2, width, tallheight,
+		     uiStr, font2, White, justifyCenter);
+  
+  gdispCloseFont(font2);
+}
+
 static void do_oscope(void) {
   
   orchardGfxStart();
-  // call compute before flush, so stack isn't shared between two memory intensive functions
-  precompute(samples);
+  if( mode == 0 || mode == 1 ) {
+    // call compute before flush, so stack isn't shared between two memory intensive functions
+    precompute(samples);
+  } else {
+    dbcompute(samples);
+  }
 
   gdispFlush();
   orchardGfxEnd();
@@ -225,7 +291,7 @@ static void do_shaker(void) {
   orchardGfxEnd();
 }
 
-static void redraw_ui(uint8_t mode) {
+static void redraw_ui(uint8_t uimode) {
   font_t font;
   coord_t width;
   coord_t fontheight, header_height;
@@ -272,7 +338,7 @@ static void redraw_ui(uint8_t mode) {
 
   orchardGfxStart();
 
-  if( mode == 1 ) { // timeout
+  if( uimode == 1 ) { // timeout
     font = gdispOpenFont("ui2");
     fontheight = gdispGetFontMetric(font, fontHeight);
     width = gdispGetWidth();
@@ -284,7 +350,7 @@ static void redraw_ui(uint8_t mode) {
     orchardGfxEnd();
     chThdSleepMilliseconds(1500);
     return;
-  } else if ( mode == 2 ) { // done
+  } else if ( uimode == 2 ) { // done
     font = gdispOpenFont("ui2");
     fontheight = gdispGetFontMetric(font, fontHeight);
     width = gdispGetWidth();
@@ -462,12 +528,12 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	setShift(shift);
       }
       else if ( event->key.code == keyRight ) {
-	effectsNextPattern();
+	effectsNextPattern(1);
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
       else if ( event->key.code == keyLeft ) {
-	effectsPrevPattern();
+	effectsPrevPattern(1);
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
@@ -494,7 +560,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_ui_time = chVTGetSystemTime();
 	// oscope timer does not reset on select as it should swap between FFT and time domain mode
 	if( oscope_running ) {
-	  mode = !mode;
+	  mode = (mode + 1) % 3;
 	} else {
 	  if( friend_total != 0 ) { // we have friends
 	    if( strncmp(effectsCurName(), "Lg", 2) == 0 ) { // and we're sporting a genetic light
