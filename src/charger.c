@@ -18,6 +18,8 @@ static int keepalive_mod = 0;
 int16_t ggStateofCharge(void) {
   uint8_t tx[4], rx[3];
   msg_t retval;
+  uint16_t soc;
+  uint16_t voltage;
 
   tx[0] = 0x0f; // ITE register
   i2cAcquireBus(&I2CD1);
@@ -27,7 +29,15 @@ int16_t ggStateofCharge(void) {
     chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
   //chprintf(stream, "State of charge: %.1f%%"NL, (rx[0] | (rx[1] << 8)) / 10.0);
-  return (int16_t) (rx[0] | (rx[1] << 8)) / 10;
+  soc = (int16_t) (rx[0] | (rx[1] << 8)) / 10;
+
+  // hack to push SOC to 100% for UI reporting reasons
+  //  voltage = ggVoltage();
+  //  if( voltage > 4140 ) { // because the GG measurement is a bit noisy..may need to revisit once R20P is removed
+  //    soc = 100;
+  //  }
+  
+  return soc;
 }
 
 int16_t ggVoltage(void) {
@@ -155,6 +165,8 @@ int isCharging(void) {
     return(1);
   case 3:
     return(1);
+  default:
+    return 0;
   }
 }
 
@@ -182,6 +194,8 @@ const char *chgStat(void) {
     return("Charged");
   case 3:
     return("Fault");
+  default:
+    return("Badness");
   }
 }
 
