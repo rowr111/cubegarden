@@ -72,7 +72,7 @@ static void config_event(OrchardAppContext *context, const OrchardAppEvent *even
   (void)context;
 
   if (event->type == keyEvent) {
-    if ( (event->key.flags == keyDown) && ((event->key.code == keyCW) || (event->key.code == keyCCW)) ) {
+    if ( (event->key.flags == keyDown) && ((event->key.code == keyLeft) || (event->key.code == keyRight)) ) {
       configToggleAutosex();
     } else if( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
       orchardAppExit();
