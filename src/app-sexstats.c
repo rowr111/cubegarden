@@ -68,10 +68,13 @@ static void sexstats_event(OrchardAppContext *context, const OrchardAppEvent *ev
   if (event->type == keyEvent) {
     if ( (event->key.flags == keyDown) && ((event->key.code == keyLeft) || (event->key.code == keyRight)) ) {
       mode = !mode;
-    } else if ( (event->key.flags == keyDown) && ((event->key.code == keyCW) || (event->key.code == keyCCW)) ) {
+    } else if ( (event->key.flags == keyDown) && ((event->key.code == keyTop) || (event->key.code == keyBottom)) ) {
       mode = !mode;
     } else if( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      orchardAppExit();
+      if( mode )
+	orchardAppExit();
+      else
+	mode = !mode;
     }
   }
 
