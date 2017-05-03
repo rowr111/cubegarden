@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <math.h>
 
 #include "fixmath.h"
 #include "fix16_fft.h"
@@ -13,6 +14,9 @@
 static int mode = 0;
 
 #define NUM_SAMPLES (NUM_RX_SAMPLES / 4)
+
+uint8_t dblog[DBLOGLEN];
+uint8_t dblogptr = 0;
 
 static void agc(uint16_t  *sample, uint16_t *output) {
   uint16_t min, max;
@@ -132,13 +136,78 @@ static void precompute(uint16_t *samples) {
   }
 }
 
+static void dbcompute(uint16_t *sample) {
+  char uiStr[32];
+  
+  coord_t width;
+  coord_t height;
+  coord_t tallheight;
+  font_t font;
+  font_t font2;
+  int db = 0;
+
+  font = gdispOpenFont("fixed_5x8");
+  width = gdispGetWidth();
+  height = gdispGetFontMetric(font, fontHeight);
+
+  gdispClear(Black);
+  gdispFillArea(0, 0, width, height, White);
+
+  gdispDrawStringBox(0, 0, width, height,
+                     "Sound level", font, Black, justifyCenter);
+
+  gdispCloseFont(font);
+  font2 = gdispOpenFont("DejaVuSans32");
+  tallheight = gdispGetFontMetric(font2, fontHeight);
+
+  // now compute dbs...
+  uint16_t min, max;
+  uint16_t i;
+  float cum = 0;
+  int32_t temp;
+
+  min = 65535; max = 0;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    if( sample[i] > max )
+      max = sample[i];
+    if( sample[i] < min )
+      min = sample[i];
+  }
+  int32_t mid = (max + min) / 2;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    temp = (((int32_t)sample[i]) - mid);
+    cum += (float) (temp * temp);
+  }
+  cum /= (float) NUM_RX_SAMPLES;
+  cum = sqrt(cum);
+  db = (int)  (24.0 + 20.0 * log10(cum)); // assumes 120dB is peak value, from AOP on datasheet
+  dblog[dblogptr] = (uint8_t) db;
+  dblogptr = (dblogptr + 1) % DBLOGLEN;
+  
+  cum = 0.0;
+  for( i = 0; i < DBLOGLEN; i++ ) {
+    cum += (float) dblog[i];
+  }
+  cum /= (float) DBLOGLEN;
+
+  chsnprintf(uiStr, sizeof(uiStr), "%ddB", (int) cum );
+  gdispDrawStringBox(0, height*2, width, tallheight,
+		     uiStr, font2, White, justifyCenter);
+  
+  gdispCloseFont(font2);
+}
+
 static void redraw_ui(uint16_t *samples) {
   
   orchardGfxStart();
-  // call compute before flush, so stack isn't shared between two memory intensive functions
-  precompute(samples);
-
+  if( mode == 0 || mode == 1 ) {
+    // call compute before flush, so stack isn't shared between two memory intensive functions
+    precompute(samples);
+  } else {
+    dbcompute(samples);
+  }
   gdispFlush();
+   
   orchardGfxEnd();
 }
 
@@ -164,7 +233,7 @@ void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {
       orchardAppExit();
     } else  if ( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      mode = !mode;
+      mode = (mode + 1) % 3;
     }
   } else if( event->type == adcEvent) {
     if( event->adc.code == adcCodeMic ) {
