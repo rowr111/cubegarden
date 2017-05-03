@@ -382,7 +382,7 @@ static void redraw_ui(uint8_t uimode) {
                      tmp, font, Black, justifyLeft);
 
   if( friend_total > 0 )
-    chsnprintf(tmp, sizeof(tmp), "%d/%d b%d %d%%", friend_index + 1, friend_total, 6 - getShift(),
+    chsnprintf(tmp, sizeof(tmp), "%d/%d %d %d%%", friend_index + 1, friend_total, 6 - getShift(),
 	       ggStateofCharge());
   else 
     chsnprintf(tmp, sizeof(tmp), "b%d %d%%", 6 - getShift(), ggStateofCharge());

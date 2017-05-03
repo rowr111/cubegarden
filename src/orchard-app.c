@@ -121,13 +121,10 @@ static void handle_ping_timeout(eventid_t id) {
   const struct genes *family;
   family = (const struct genes *) storageGetData(GENE_BLOCK);
  
-#if 1  // TODO -- enable ping timeout once radio is working
   radioAcquire(radioDriver);
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
 	    strlen(family->name) + 1, family->name);
   radioRelease(radioDriver);
-
-#endif
     
   // cleanup every other ping we send, to make sure friends that are
   // nearby build up credit over time to max credits
@@ -609,10 +606,10 @@ static void handle_chargecheck_timeout(eventid_t id) {
   }
 
   // "pump" is now gone when switching interrupt mode from crcOK to packet ready
-  //  uint8_t dummy;
-  //  radioAcquire(radioDriver);
-  //  dummy = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" is necessary to get the Rx interrupt to fire
-  //  radioRelease(radioDriver);
+  uint8_t dummy;
+  radioAcquire(radioDriver);
+  dummy = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" is necessary to get the Rx interrupt to fire
+  radioRelease(radioDriver);
   /// chprintf(stream, "radio flags: %x\r\n", dummy);  /// TODO: FIGURE OUT WHY THIS IS NECESSARY????
 }
 
