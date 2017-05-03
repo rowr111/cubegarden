@@ -63,9 +63,9 @@ static void list_event(OrchardAppContext *context, const OrchardAppEvent *event)
   uicontext = context->instance->uicontext;
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if( event->key.code == keyCW ) {
+      if( event->key.code == keyBottom ) {
 	uicontext->selected = (uicontext->selected + 1) % uicontext->total;
-      } else if( event->key.code == keyCCW) {
+      } else if( event->key.code == keyTop) {
 	if( uicontext->selected == 0 )
 	  uicontext->selected = uicontext->total - 1;
 	else
