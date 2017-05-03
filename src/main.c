@@ -36,6 +36,7 @@
 #include "charger.h"
 #include "accel.h"
 #include "mic.h"
+#include "paging.h"
 #include "analog.h"
 
 #define SPI_TIMEOUT MS2ST(3000)
