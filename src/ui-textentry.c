@@ -3,7 +3,7 @@
 #include "orchard-ui.h"
 #include <string.h>
 
-static const char entry_list[] = "abcdefghijklmnopqrstuvwxyz 0123456789.,!?;:-)(=\\_/<>~|@#$%^&*{}[]";
+static const char entry_list[] = "abcdefghijklmnopqrstuvwxyz 0123456789.,!?;:-)(=\\_/<>~|@#$%^&*[]";
 static uint8_t entry_selection = 0;
 static char entry[TEXTENTRY_MAXLEN + 1];  // +1 for the null terminator
 static uint8_t entry_position = 0;
@@ -87,6 +87,9 @@ static void textentry_redraw(void) {
     if( drawindex == listLen)
       break;
   }
+  gdispDrawStringBox(0, header_height + (j+1) * fontheight, width, fontheight,
+		     "A=commit name  B=delete", font, White, justifyCenter);
+  
   
   gdispFlush();
   orchardGfxEnd();
