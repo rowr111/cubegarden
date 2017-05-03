@@ -40,8 +40,8 @@ uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
 uint8_t getShift(void);
-void effectsNextPattern(void);
-void effectsPrevPattern(void);
+void effectsNextPattern(int skipstrobe);
+void effectsPrevPattern(int skipstrobe);
 
 void uiLedGet(uint8_t index, Color *c);
 void uiLedSet(uint8_t index, Color c);

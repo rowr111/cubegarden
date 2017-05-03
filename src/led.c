@@ -936,18 +936,34 @@ uint8_t effectsGetPattern(void) {
   return fx_index;
 }
 
-void effectsNextPattern(void) {
+void effectsNextPattern(int skipstrobe) {
   fx_index = (fx_index + 1) % fx_max;
+
+  if(skipstrobe) {
+    if(strncmp(effectsCurName(), "strobe", 6) == 0) {
+      fx_index = (fx_index + 1) % fx_max;
+    }
+  }
 
   patternChanged = 1;
   check_lightgene_hack();
 }
 
-void effectsPrevPattern(void) {
+void effectsPrevPattern(int skipstrobe) {
   if( fx_index == 0 ) {
     fx_index = fx_max - 1;
   } else {
     fx_index--;
+  }
+
+  if(skipstrobe) {
+    if(strncmp(effectsCurName(), "strobe", 6) == 0) {
+      if( fx_index == 0 ) {
+	fx_index = fx_max - 1;
+      } else {
+	fx_index--;
+      }
+    }
   }
   
   patternChanged = 1;
