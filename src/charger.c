@@ -134,6 +134,7 @@ void chgSetSafety(void) {
   //  tx[1] = 0x02; // 550mA, 4.24V
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
+  //  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, 500);
   i2cReleaseBus(&I2CD1);
 }
 

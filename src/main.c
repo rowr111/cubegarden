@@ -69,21 +69,22 @@ static const SPIConfig spi_config = {
   KINETIS_SPI_TAR_8BIT_FAST
 };
 
-// roughly 1MHz 
-#define KINETIS_SPI_TAR_SYSCLK_DIV_64(n) \
-    SPIx_CTARn_FMSZ(((n) - 1)) | \
-    SPIx_CTARn_PBR(0) | \
-    SPIx_CTARn_BR(0x5) | \
-    SPIx_CTARn_CSSCK(0x5) | \
-    SPIx_CTARn_ASC(0x7) | \
-    SPIx_CTARn_DT(0x7)
 
-static const SPIConfig spi2_config = {
+static const SPIConfig spi_config_mmc = {
   NULL,
-  IOPORT3,
-  2,
-  KINETIS_SPI_TAR_SYSCLK_DIV_64(16) // 16-bit frame size
+  GPIOD,
+  0, 
+  KINETIS_SPI_TAR_8BIT_FAST
 };
+
+static const MMCConfig mmc_config = { 
+  &SPID1,
+  &spi_config_mmc,
+  &spi_config_mmc
+};
+
+MMCDriver MMCD1;
+
 
 static const I2CConfig i2c_config = {
   100000
@@ -125,6 +126,13 @@ static void orchard_app_restart(eventid_t id) {
   orchardAppRestart();
 }
 
+static void freefall(eventid_t id) {
+
+  (void)id;
+  chprintf(stream, "A");
+  bump(5);
+  chEvtBroadcast(&accel_bump);
+}
 
 void spiRuntSetup(SPIDriver *spip);
 
@@ -135,86 +143,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   (void)arg;
   chRegSetThreadName("Events");
 
-  evtTableInit(orchard_events, 32);
-  orchardEventsStart();
-  orchardAppInit();
-
-  spiStart(&SPID2, &spi_config);
-  spiRuntSetup(&SPID2);
-  radioStart(radioDriver, &SPID2);
-  radioSetDefaultHandler(radioDriver, default_radio_handler);
-  pagingStart();
-  
-  micStart(); 
-  i2sStartRx(&I2SD1); // start the audio sampling buffer
-  
-  /*
-   * Activates the EXT driver 1.
-   */
-  extInit();
-  extObjectInit(&EXTD1);
-  extStart(&EXTD1, &extcfg);
-  
-  evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
-  evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
-  
-  orchardAppRestart();
-  
-  while (!chThdShouldTerminateX())
-    chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
-
-  evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
-  evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
-
-  chSysLock();
-  chThdExitS(MSG_OK);
-}
-
-void spiRuntSetup(SPIDriver *spip);
-/*
- * Application entry point.
- */
-int main(void) {
-
-  /*
-   * System initializations.
-   * - HAL initialization, this also initializes the configured device drivers
-   *   and performs the board-specific initializations.
-   * - Kernel initialization, the main() function becomes a thread and the
-   *   RTOS is active.
-   */
-  halInit();
-  // K22 has a separate setting for open-drain that has to be explicitly set for I2C
-  // this breaks the chibiOS abstractions, which were not made to anticipate this oddity.
-  PORT_PCR_REG(PORTB,2) |= PORTx_PCRn_ODE;
-  PORT_PCR_REG(PORTB,3) |= PORTx_PCRn_ODE;
-  
-  PORT_PCR_REG(PORTC,10) |= PORTx_PCRn_ODE;
-  PORT_PCR_REG(PORTC,11) |= PORTx_PCRn_ODE;
-
-  chSysInit();
-
-  // IOPORT1 = PORTA, IOPORT2 = PORTB, etc...
-  palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
-  palSetPad(IOPORT3, 8); // set BATT_SRST
-  
-  palSetPad(IOPORT5, 0); // turn off red LED
-  
-  sdStart(&SD4, &serialConfig);
-  // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
-  
-  i2cObjectInit(&I2CD1);
-  i2cStart(&I2CD1, &i2c_config);
-  chgSetSafety(); // has to be first thing written to the battery controller
-
-  shellInit();
-
-  chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
-  chprintf(stream, "bunnie-BM17 bootloader.  Based on build %s"SHELL_NEWLINE_STR,
-	   gitversion);
-  chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
-	   chCoreGetStatusX());
-
   accelStart(&I2CD1);
   flashStart();
   addEntropy(SIM->UIDL);  // something unique to each device, but repeatable
@@ -223,6 +151,8 @@ int main(void) {
   
   geneStart();  // this has to start after random pool is initied
   configStart();
+
+  chgSetSafety(); // has to be first thing written to the battery controller
   
   // init I2C objects for graphics
   i2cObjectInit(&I2CD2);
@@ -253,6 +183,91 @@ int main(void) {
   chThdSleepMilliseconds(5);
 
   uiStart();
+
+  spiObjectInit(&SPID1);
+  mmcObjectInit(&MMCD1);
+  mmcStart(&MMCD1, &mmc_config); // driver, config
+  
+  evtTableInit(orchard_events, 32);
+  orchardEventsStart();
+  orchardAppInit();
+
+  spiStart(&SPID2, &spi_config);
+  spiRuntSetup(&SPID2);
+  radioStart(radioDriver, &SPID2);
+  radioSetDefaultHandler(radioDriver, default_radio_handler);
+  pagingStart();
+  
+  micStart(); 
+  i2sStartRx(&I2SD1); // start the audio sampling buffer
+  
+  /*
+   * Activates the EXT driver 1.
+   */
+  extInit();
+  extObjectInit(&EXTD1);
+  extStart(&EXTD1, &extcfg);
+  
+  evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
+  evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
+  evtTableHook(orchard_events, accel_process, accel_proc);
+  evtTableHook(orchard_events, accel_freefall, freefall);
+  
+  orchardAppRestart();
+  
+  while (!chThdShouldTerminateX())
+    chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
+
+  evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
+  evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
+
+  chSysLock();
+  chThdExitS(MSG_OK);
+}
+
+void spiRuntSetup(SPIDriver *spip);
+/*
+ * Application entry point.
+ */
+int main(void) {
+  
+  /*
+   * System initializations.
+   * - HAL initialization, this also initializes the configured device drivers
+   *   and performs the board-specific initializations.
+   * - Kernel initialization, the main() function becomes a thread and the
+   *   RTOS is active.
+   */
+  halInit();
+  // K22 has a separate setting for open-drain that has to be explicitly set for I2C
+  // this breaks the chibiOS abstractions, which were not made to anticipate this oddity.
+  PORT_PCR_REG(PORTB,2) |= PORTx_PCRn_ODE;
+  PORT_PCR_REG(PORTB,3) |= PORTx_PCRn_ODE;
+  
+  PORT_PCR_REG(PORTC,10) |= PORTx_PCRn_ODE;
+  PORT_PCR_REG(PORTC,11) |= PORTx_PCRn_ODE;
+
+  chSysInit();
+
+  // IOPORT1 = PORTA, IOPORT2 = PORTB, etc...
+  palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
+  palSetPad(IOPORT3, 8); // set BATT_SRST
+  
+  palSetPad(IOPORT5, 0); // turn off red LED
+  
+  sdStart(&SD4, &serialConfig);
+  // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
+  
+  i2cObjectInit(&I2CD1);
+  i2cStart(&I2CD1, &i2c_config);
+
+  shellInit();
+
+  chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
+  chprintf(stream, "bunnie-BM17 bootloader.  Based on build %s"SHELL_NEWLINE_STR,
+	   gitversion);
+  chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
+	   chCoreGetStatusX());
 
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,

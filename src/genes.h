@@ -36,7 +36,7 @@ typedef struct genes {
   genome    haploidP[GENE_FAMILYSIZE]; // paternal copy
 } genes;
 
-void geneStart(void);
+int geneStart(void);
 void generateName(char *result);
 void computeGeneExpression(const genome *hapM, const genome *hapP, genome *expr);
 uint8_t getConsent(char *who);

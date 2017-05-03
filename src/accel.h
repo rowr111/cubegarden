@@ -7,7 +7,8 @@ struct accel_data {
   int z;
 };
 
-void accel_irq(void *port, int irq, int type);
+void accel_irq(EXTDriver *extp, expchannel_t channel);
+void accel_proc(eventid_t id);
 
 void accelStart(I2CDriver *driver);
 void accelStop(void);
@@ -20,5 +21,6 @@ extern event_source_t accel_y_axis_pulse;
 extern event_source_t accel_z_axis_pulse;
 extern event_source_t accel_landscape_portrait;
 extern event_source_t accel_freefall;
+extern event_source_t accel_process;
 
 #endif /* __ORCHARD_ACCEL_H__ */

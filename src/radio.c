@@ -356,6 +356,7 @@ static void radio_unload_packet(eventid_t id) {
   uint8_t crc;
   uint8_t flags;
   uint8_t crc_failed = 0;
+  uint8_t rssi;
 
   flags = radioRead(radioDriver, RADIO_IrqFlags2);
   if( !(flags & IrqFlags2_CrcOk) ) {
@@ -363,6 +364,8 @@ static void radio_unload_packet(eventid_t id) {
     crc_failed = 1;
     crcfails++;
   }
+
+  rssi = radio_get(radio, RADIO_RssiValue);
   
   radio_select(radio);
   reg = RADIO_Fifo;
@@ -379,7 +382,7 @@ static void radio_unload_packet(eventid_t id) {
   radio_unselect(radio);
 
   //  chprintf(stream, "Unloaded prot %d payload %s len %d crc 0x%x\r\n", pkt.prot, payload, pkt.length, crc );
-  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x\r\n", pkt.prot, payload, pkt.length, crc );
+  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, rssi / 2 );
 
   if( crc_failed )
     return;  // abort packet handling if the CRC is bad

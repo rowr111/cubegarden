@@ -242,16 +242,21 @@ static void init_genes(uint32_t block) {
   storagePatchData(block, (uint32_t *) &family, GENE_OFFSET, sizeof(struct genes));
 }
 
-void geneStart() {
+int geneStart() {
   const struct genes *family;
+  int had_to_init = 0;
 
   family = (const struct genes *) storageGetData(GENE_BLOCK);
 
   if( family->signature != GENE_SIGNATURE ) {
     init_genes(GENE_BLOCK);
+    had_to_init = 1;
   } else if( family->version != GENE_VERSION ) {
     init_genes(GENE_BLOCK);
+    had_to_init = 1;
   }
+
+  return had_to_init;
 }
 
 uint8_t getConsent(char *who) {

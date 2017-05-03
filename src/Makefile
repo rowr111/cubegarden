@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)  # use O2 for production
-  USE_OPT = -O1 -ggdb -fomit-frame-pointer -falign-functions=16 -nostdlib -DSHELL_CONFIG_FILE -fstack-protector
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -nostdlib -DSHELL_CONFIG_FILE -fstack-protector
 endif
 
 # C specific options here (added to USE_OPT).

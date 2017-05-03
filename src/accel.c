@@ -225,6 +225,7 @@ event_source_t accel_x_axis_pulse;
 event_source_t accel_y_axis_pulse;
 event_source_t accel_z_axis_pulse;
 event_source_t accel_freefall;
+event_source_t accel_process;
 event_source_t accel_landscape_portrait;
 
 static void accel_set(uint8_t reg, uint8_t val) {
@@ -248,13 +249,9 @@ static uint8_t accel_get(uint8_t reg) {
   return val;
 }
 
-void accel_irq(void *port, int irq, int type) {
-
+void accel_proc(eventid_t id) {
+  (void) id;
   uint8_t mask;
-
-  (void)port;
-  (void)irq;
-  (void)type;
 
   i2cAcquireBus(driver);
   mask = accel_get(REG_INT_SRC);
@@ -293,6 +290,15 @@ void accel_irq(void *port, int irq, int type) {
     if (pulsemask & REG_PULSE_SRC_AXZ)
       chEvtBroadcast(&accel_z_axis_pulse);
   }
+}
+
+void accel_irq(EXTDriver *extp, expchannel_t channel) {
+  (void)extp;
+  (void)channel;
+  
+  chSysLockFromISR();
+  chEvtBroadcastI(&accel_process);
+  chSysUnlockFromISR();
 }
 
 void accelEnableFreefall(int sensitivity, int debounce) {
@@ -385,6 +391,7 @@ void accelStart(I2CDriver *i2cp) {
   chEvtObjectInit(&accel_y_axis_pulse);
   chEvtObjectInit(&accel_z_axis_pulse);
   chEvtObjectInit(&accel_freefall);
+  chEvtObjectInit(&accel_process);
   chEvtObjectInit(&accel_landscape_portrait);
 
   // enable freefall by default

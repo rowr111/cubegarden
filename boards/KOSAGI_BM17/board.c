@@ -142,6 +142,11 @@ bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
  */
 void __early_init(void) {
 
+  *((unsigned int *) 0x40048038) |= 0x400; // enable clock to port 2
+  *((unsigned int *) 0x4004A004) = 0x104; // select GPIO
+  *((unsigned int *) 0x400ff054) |= 0x2; // set DDR to output
+  *((unsigned int *) 0x400ff044) |= 0x2; // set output
+  
   k22x_clock_init();
   SystemCoreClockUpdate();
 }

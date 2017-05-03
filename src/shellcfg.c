@@ -50,7 +50,6 @@ void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capRCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void gfxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -64,6 +63,7 @@ void cmd_friendlist(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -75,7 +75,6 @@ static const ShellCommand commands[] = {
   {"chg", chgCommand},
   {"gg", ggCommand},
   {"gg2", gg2Command},
-  {"gfx", gfxCommand},
   {"spi", spiCommand},
   {"fx", fxCommand},
   {"radio", cmd_radio},
@@ -87,6 +86,7 @@ static const ShellCommand commands[] = {
   {"friendlist", cmd_friendlist},
   {"friendping", cmd_friendping},
   {"friendsim", cmd_friendsim},
+  {"sd", cmd_sd},
   {NULL, NULL}
 };
 

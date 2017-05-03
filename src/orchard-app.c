@@ -595,8 +595,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   }
 
   if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
-    if( getShift() < 2 )
-      setShift(2);
+    if( getShift() < 3 )
+      setShift(3);
   }
 
   if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
@@ -604,8 +604,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
       effectsSetPattern(effectsNameLookup("safetyPattern"));
 
     // limit brightness to guarantee ~2 hours runtime in safety mode
-    if( getShift() < 3 )
-      setShift(3);
+    if( getShift() < 4 )
+      setShift(4);
   }
 
   // "pump" is now gone when switching interrupt mode from crcOK to packet ready
@@ -921,6 +921,15 @@ static void i2s_reset_handler(eventid_t id) {
   // sd_offset = DATA_OFFSET_START;   // not yet implemented
 }
 
+static void accel_bump_event(eventid_t id) {
+  (void) id;
+  OrchardAppEvent evt;
+  
+  evt.type = accelEvent;
+  evt.accel.code = accelCodeBump;
+  if( !ui_override )
+    instance.app->event(instance.context, &evt);
+}
 
 static THD_WORKING_AREA(waOrchardAppThread, 0x980); // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
 static THD_FUNCTION(orchard_app_thread, arg) {
@@ -952,6 +961,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableHook(orchard_app_events, timer_expired, timer_event);
   evtTableHook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableHook(orchard_app_events, i2s_full_event, i2s_full_handler);
+  evtTableHook(orchard_app_events, accel_bump, accel_bump_event);
   //  evtTableHook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
 
   if (instance->app->init)
@@ -1000,6 +1010,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   run_launcher_timer_engaged = false;
 
   //  evtTableUnhook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
+  evtTableUnhook(orchard_app_events, accel_bump, accel_bump_event);
   evtTableUnhook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableUnhook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
