@@ -9,6 +9,7 @@
 #include "radio.h"
 #include "storage.h"
 #include "userconfig.h"
+#include "charger.h"
 
 #include "mic.h"
 
@@ -173,7 +174,7 @@ static void precompute(uint16_t *samples) {
   }
 }
 
-static void do_oscope() {
+static void do_oscope(void) {
   
   orchardGfxStart();
   // call compute before flush, so stack isn't shared between two memory intensive functions
@@ -447,14 +448,14 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if ( event->key.code == keyBottom ) {
+      if ( event->key.code == keyBottomR ) {
 	shift = getShift();
 	shift++;
 	if (shift > 6)
 	  shift = 6;
 	setShift(shift);
       }
-      else if( event->key.code == keyTop ) {
+      else if( event->key.code == keyTopR ) {
 	shift = getShift();
 	if( shift > 0 )
 	  shift--;
@@ -470,7 +471,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
-      else if( event->key.code == keyBottomR ) {
+      else if( event->key.code == keyBottom ) {
 	if( friend_total != 0 )
 	  friend_index = (friend_index + 1) % friend_total;
 	else
@@ -478,7 +479,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_ui_time = chVTGetSystemTime();
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
-      } else if( event->key.code == keyTopR) {
+      } else if( event->key.code == keyTop) {
 	if( friend_total != 0 ) {
 	  if( friend_index == 0 )
 	    friend_index = friend_total;
