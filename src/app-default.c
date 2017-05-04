@@ -276,7 +276,7 @@ static void do_shaker(void) {
   gdispDrawStringBox(0, 0, width, fontheight,
 		     "sex! sex! sex!", font, White, justifyCenter);
   gdispDrawStringBox(0, header_height + 1 * fontheight, width, fontheight,
-		     "shake it up!", font, White, justifyCenter);
+		     "tap my buttons!", font, White, justifyCenter);
   chsnprintf(tmp, sizeof(tmp), "Mutation rate: %d%%", (bump_level * 100) / BUMP_LIMIT);
   gdispDrawStringBox(0, header_height + 2 * fontheight, width, fontheight,
 		     tmp, font, White, justifyCenter);
@@ -523,7 +523,10 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if ( event->key.code == keyBottomR ) {
+      if( (bump_level < BUMP_LIMIT) && (sex_running) ) {
+	bump_level++;
+	// next is an else-if because we want no buttons to trigger in sex mode
+      } else if ( event->key.code == keyBottomR ) {
 	shift = getShift();
 	shift++;
 	if (shift > 6)
