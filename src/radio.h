@@ -13,6 +13,7 @@ extern uint32_t crcfails;
 extern uint16_t radiotemp;
 extern uint8_t txboost;
 extern uint8_t anonymous;
+extern uint8_t radio_rssi;
 
 typedef struct _RadioPacket {
   uint8_t length;       /* Total length of packet, including length field */

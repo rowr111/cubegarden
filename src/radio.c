@@ -25,6 +25,9 @@
 #define MAX_PACKET_HANDLERS       10
 
 uint32_t crcfails = 0;
+uint8_t radio_rssi = 0;
+
+//#define DEBUG_CRC
 
 /* This number was guessed based on observations (133 at 30 degrees) */
 static int temperature_offset = 133 + 30;
@@ -357,19 +360,22 @@ static void radio_unload_packet(eventid_t id) {
   uint8_t crc;
   uint8_t flags;
   uint8_t crc_failed = 0;
-  uint8_t rssi;
 
   flags = radioRead(radioDriver, RADIO_IrqFlags2);
   if( !(flags & IrqFlags2_CrcOk) ) {
+#ifdef DEBUG_CRC
     chprintf(stream, "CRC failed, flags: %x!!\n\r", flags);
+#endif
     crc_failed = 1;
     crcfails++;
   }
 
-  rssi = radio_get(radio, RADIO_RssiValue);
+  radio_rssi = radio_get(radio, RADIO_RssiValue) / 2;
   
   if( crc_failed ) {
-    chprintf(stream, "CRC fail rssi -%ddBm\r\n", rssi / 2 );
+#ifdef DEBUG_CRC
+    chprintf(stream, "CRC fail rssi -%ddBm\r\n", radio_rssi );
+#endif
     return;  // abort packet handling if the CRC is bad
   }
   
@@ -387,7 +393,9 @@ static void radio_unload_packet(eventid_t id) {
   spiReceive(radio->driver, sizeof(crc), &crc); // this is actually a dummy, used to clear FIFO and clear flags
   radio_unselect(radio);
 
-  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, rssi / 2 );
+#ifdef DEBUG_CRC
+  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, radio_rssi );
+#endif
 
   /* Dispatch the packet handler */
   unsigned int i;

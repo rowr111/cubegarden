@@ -3,6 +3,7 @@
 
 #include "charger.h"
 #include "radio.h"
+#include "analog.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -20,7 +21,6 @@ static void redraw_ui(uint8_t flag) {
   coord_t width;
   coord_t height;
   font_t font;
-  color_t draw_color = White;
 
   orchardGfxStart();
   // draw the title bar
@@ -69,7 +69,10 @@ static void redraw_ui(uint8_t flag) {
   gdispDrawStringBox(0, height*6, width, height,
 		     uiStr, font, White, justifyLeft);
   // 7th line left
-  chsnprintf(uiStr, sizeof(uiStr), "CRC fails: %d", crcfails);  // this is from the radio subsystem
+  if( radio_rssi != 0 )
+    chsnprintf(uiStr, sizeof(uiStr), "CRC errs %d, rssi -%ddBm", crcfails, radio_rssi);  // this is from the radio subsystem
+  else
+    chsnprintf(uiStr, sizeof(uiStr), "CRC errs %d, no peers", crcfails);  // this is from the radio subsys
   gdispDrawStringBox(0, height*7, width, height,
 		     uiStr, font, White, justifyLeft);
 
