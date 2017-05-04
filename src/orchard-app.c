@@ -67,7 +67,6 @@ static uint16_t  captouch_collected_state = 0;
 
 #define COLLECT_INTERVAL 50  // time to collect events for multi-touch gesture
 #define TRACK_INTERVAL 1  // trackpad debounce in ms
-static unsigned long track_time;
 
 static virtual_timer_t chargecheck_timer;
 static event_source_t chargecheck_timeout;
@@ -102,6 +101,17 @@ void friend_cleanup(void);
 
 #define MAIN_MENU_MASK  0x02
 #define MAIN_MENU_VALUE 0x02
+
+//#define TEST_WATCHDOG
+
+void wdogPing(void) {
+#ifdef TEST_WATCHDOG
+  // do nothing if we're testing the watchdog
+#else  
+  WDOG->REFRESH = 0xA602;
+  WDOG->REFRESH = 0xB480;
+#endif
+}
 
 static void handle_radio_page(eventid_t id) {
   (void) id;
@@ -600,6 +610,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   struct accel_data accel; // for entropy call
   int16_t voltage;
 
+  wdogPing(); // ping the watchdog
+  
   voltage = ggVoltage();
   if( (((uptime / 60) % 5) == 0) && ((uptime % 60) == 0) ) { // update the uptime, batt state once every 5 mins
     chprintf(stream, "Uptime: %dh %dm %ds\n\r", uptime / 3600, (uptime / 60) % 60, uptime % 60);
@@ -639,6 +651,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   uint8_t dummy;
   radioAcquire(radioDriver);
   dummy = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" is necessary to get the Rx interrupt to fire
+  (void) dummy;
   radioRelease(radioDriver);
   /// chprintf(stream, "radio flags: %x\r\n", dummy);  /// TODO: FIGURE OUT WHY THIS IS NECESSARY????
 }
@@ -741,16 +754,6 @@ static void adc_temp_event(eventid_t id) {
 
   evt.type = adcEvent;
   evt.adc.code = adcCodeTemp;
-  if( !ui_override )
-    instance.app->event(instance.context, &evt);
-}
-
-static void adc_mic_event(eventid_t id) {
-  (void) id;
-  OrchardAppEvent evt;
-
-  evt.type = adcEvent;
-  evt.adc.code = adcCodeMic;
   if( !ui_override )
     instance.app->event(instance.context, &evt);
 }
@@ -899,11 +902,11 @@ void orchardAppTimer(const OrchardAppContext *context,
 static void i2s_full_handler(eventid_t id) {
   (void)id;
   OrchardAppEvent evt;
-  int i;
 
   if( gen_mic_event ) {
     gen_mic_event = 0;
 #if 0
+    int i;
     for( i = 0; i < MIC_SAMPLE_DEPTH * 4; i++ ) { // just grab the first 128 bytes and sample-size convert
       //      mic_return[i] = (uint8_t) (( ((uint32_t) rx_savebuf[i]) >> 24) & 0xFF + 128);
       mic_return[i / 4] = (uint32_t) (rx_savebuf[i] + INT_MAX + 1);
