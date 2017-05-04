@@ -43,6 +43,7 @@ void friendsUnlock(void);
 uint8_t friendCount(void);
 uint8_t getMutationRate(void);
 void keyHandler(eventid_t id);
+void friendClear(void);
 
 #define MAX_FRIENDS  100   // max # of friends to track
 

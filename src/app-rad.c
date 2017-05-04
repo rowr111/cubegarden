@@ -10,6 +10,9 @@
 
 static uint8_t line = 0;
 uint8_t anonymous = 0;
+static struct OrchardUiContext listUiContext;
+static const  char title[] = "Pick a channel";
+static uint8_t ui_override = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Settings";
@@ -35,7 +38,19 @@ static void redraw_ui(void) {
                      tmp, font, Black, justifyCenter);
 
   // 1st line: Channel
-  chsnprintf(uiStr, sizeof(uiStr), "Channel: %d", config->cfg_channel);
+  switch( config->cfg_channel ) {
+  case 0:
+    chsnprintf(uiStr, sizeof(uiStr), "Channel: Institute");
+    break;
+  case 1:
+    chsnprintf(uiStr, sizeof(uiStr), "Channel: Disorient");
+    break;
+  case 2:
+    chsnprintf(uiStr, sizeof(uiStr), "Channel: Kaos");
+    break;
+  default:
+    chsnprintf(uiStr, sizeof(uiStr), "Channel: Other");
+  }
   if( line == LINE_CHAN ) {
     gdispFillArea(0, height*(LINE_CHAN + 1), width, height, White);
     draw_color = Black;
@@ -86,6 +101,8 @@ static void setting_start(OrchardAppContext *context) {
 static void setting_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
+  const OrchardUi *listUi;
+  uint8_t selected;
 
   if (event->type == keyEvent) {
     if( (event->key.flags == keyDown) && ((event->key.code == keyBottom)) ) {
@@ -99,14 +116,47 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
     } else if( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
       if( line == LINE_TXBOOST )
 	configToggleBoost();
-      else if( line == LINE_SILENT )
+      else if( line == LINE_SILENT ) {
 	anonymous = !anonymous;
-    } else if( line == LINE_CHAN ) {
-      // handle channel config
+	if( anonymous )
+	  friendClear();
+      } else if( line == LINE_CHAN ) {
+	listUi = getUiByName("list");
+	listUiContext.total = 4;  
+	listUiContext.selected = 0;
+	listUiContext.itemlist = (const char **) chHeapAlloc(NULL, sizeof(char *) * 5); // 5 lines incl header
+	if( listUiContext.itemlist == NULL )
+	  return;
+	
+	listUiContext.itemlist[0] = title;
+	listUiContext.itemlist[1] = "Institute";
+	listUiContext.itemlist[2] = "Disorient";
+	listUiContext.itemlist[3] = "Kaos";
+	listUiContext.itemlist[4] = "Other";
+	
+	if( listUi != NULL ) {
+	  context->instance->uicontext = &listUiContext;
+	  context->instance->ui = listUi;
+	}
+	ui_override = 1;
+	listUi->start(context);
+      }
     }
+  } else if( event->type == uiEvent ) {
+    chHeapFree(listUiContext.itemlist); // free the itemlist passed to the UI
+    selected = (uint8_t) context->instance->ui_result;
+    context->instance->ui = NULL;
+    context->instance->uicontext = NULL;
+    
+    // handle channel config
+    configSetChannel((uint32_t) selected);
+    radioUpdateChannelFromConfig(radioDriver);
+    friendClear();
+    ui_override = 0;
   }
 
-  redraw_ui();
+  if( !ui_override )
+    redraw_ui();
 }
 
 static void setting_exit(OrchardAppContext *context) {

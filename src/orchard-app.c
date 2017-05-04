@@ -215,6 +215,30 @@ void cmd_friendlocal(BaseSequentialStream *chp, int argc, char *argv[]) {
 }
 //orchard_command("friendlocal", cmd_friendlocal);
 
+// clear the friend table, e.g. when we change channels or go silent
+void friendClear(void) {
+  uint32_t i;
+  uint32_t cleared = 1;
+
+  osalMutexLock(&friend_mutex);
+  do {
+    cleared = 1;
+    for( i = 0; i < MAX_FRIENDS; i++ ) {
+      if( friends[i] == NULL )
+	continue;
+
+      friends[i][0]--;
+      if( friends[i][0] == 0 ) {
+	chHeapFree(friends[i]);
+	friends[i] = NULL;
+      } else {
+	cleared = 0;
+      }
+    }
+  } while( cleared == 0 );
+  osalMutexUnlock(&friend_mutex);
+}
+
 // to be called periodically to decrement credits and de-alloc friends we haven't seen in a while
 void friend_cleanup(void) {
   uint32_t i;
@@ -540,6 +564,7 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
       consent = getConsent(who);
       chThdSleepMilliseconds(300); // clear event queues
       ui_override = 0;
+      analogUpdateMic(); // need this to restart the oscope if it's running
       if( !consent )
 	return;
     } else {

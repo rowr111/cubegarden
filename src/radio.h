@@ -7,6 +7,7 @@ typedef struct _KRadioDevice KRadioDevice;
 #define RADIO_NETWORK_MAX_LENGTH 8
 #define RADIO_BROADCAST_ADDRESS 255
 #define RADIO_MAXCHANNELS 4
+#define RADIO_CH_SPACE 3 // make extra space between channels so there's less chance of interference
 
 extern uint32_t crcfails;
 extern uint16_t radiotemp;
@@ -32,6 +33,7 @@ enum radio_protocols {
 
 extern KRadioDevice KRADIO1;
 
+void radioUpdateChannelFromConfig(KRadioDevice *radio);
 void radioStart(KRadioDevice *radio, SPIDriver *spip);
 void radioStop(KRadioDevice *radio);
 uint8_t radioRead(KRadioDevice *radio, uint8_t addr);

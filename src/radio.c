@@ -428,6 +428,9 @@ void radioRelease(KRadioDevice *radio) {
 void radioStart(KRadioDevice *radio, SPIDriver *spip) {
 
   unsigned int reg;
+  const struct userconfig *config;
+
+  config = getConfig();
 
   radio->driver = spip;
 
@@ -445,7 +448,7 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   radio_phy_update_modulation_parameters(radio);
   radio_set_bit_rate(radio, 50000);
 
-  radio->channel = 0;
+  radio->channel = config->cfg_channel * RADIO_CH_SPACE;
   radio_phy_update_rf_frequency(radio);
 
   radio_set_preamble_length(radio, 3);
@@ -472,6 +475,15 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
 
   osalMutexObjectInit(&(radio->radio_mutex));  
+}
+
+void radioUpdateChannelFromConfig(KRadioDevice *radio) {
+  const struct userconfig *config;
+
+  config = getConfig();
+  
+  radio->channel = config->cfg_channel * RADIO_CH_SPACE;
+  radio_phy_update_rf_frequency(radio);
 }
 
 void radioSetDefaultHandler(KRadioDevice *radio,
