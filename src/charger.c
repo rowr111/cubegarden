@@ -32,10 +32,12 @@ int16_t ggStateofCharge(void) {
   soc = (int16_t) (rx[0] | (rx[1] << 8)) / 10;
 
   // hack to push SOC to 100% for UI reporting reasons
-  //  voltage = ggVoltage();
-  //  if( voltage > 4140 ) { // because the GG measurement is a bit noisy..may need to revisit once R20P is removed
-  //    soc = 100;
-  //  }
+  voltage = ggVoltage();
+  if( voltage > 4000 ) { // because the GG measurement is a bit noisy..may need to revisit once R20P is removed
+    soc = soc + ((voltage - 4000) / 10);
+    if( soc > 100 )
+      soc = 100;
+  }
   
   return soc;
 }
