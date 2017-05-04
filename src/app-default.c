@@ -34,10 +34,12 @@ static uint8_t bump_level = 0;
 #define REFRACTORY_PERIOD 5000  // timeout for having sex
 #define UI_LOCKOUT_TIME 6000  // timeout on friend list sorting/deletion after UI interaction
 
-#define OSCOPE_IDLE_TIME 40000  // 40 seconds of idle, and we switch to an oscilloscope mode UI...because it's pretty
+#define OSCOPE_IDLE_TIME 30000  // 30 seconds of idle, and we switch to an oscilloscope mode UI...because it's pretty
+#define OSCOPE_UPDATE_FAIL 500 // 0.5 seconds until auto retrigger of update, in case ui is disrupted
 
 static uint32_t last_ui_time = 0;
 static uint32_t last_oscope_time = 0;
+static uint32_t last_oscope_update = 0;
 
 static char title[32];
 static  const char item1[] = "Yes";
@@ -614,6 +616,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     }
   } else if( event->type == adcEvent) {
     if( oscope_running ) {
+      last_oscope_update = chVTGetSystemTime();
       if( event->adc.code == adcCodeMic ) {
 	samples = analogReadMic();
 	if( context->instance->ui == NULL )
@@ -658,7 +661,14 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     // only kick off oscope if we're not in a UI mode...
     if( ((chVTGetSystemTime() - last_oscope_time) > OSCOPE_IDLE_TIME) && !oscope_running ) {
       analogUpdateMic(); // this kicks off the ADC sampling; once this returns, the UI will swap modes automagically
+      last_oscope_update = chVTGetSystemTime();
       oscope_running = 1;
+    }
+    
+    if( ((chVTGetSystemTime() - last_oscope_update) > OSCOPE_UPDATE_FAIL) && oscope_running ) {
+      // refresh UI in case of a long interruption, e.g. sex prompts etc.
+      analogUpdateMic();
+      last_oscope_update = chVTGetSystemTime();
     }
   }
 }
