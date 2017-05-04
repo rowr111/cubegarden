@@ -8,6 +8,7 @@
 #include "orchard-events.h"
 #include "radio.h"
 #include "chprintf.h"
+#include "userconfig.h"
 
 #include "TransceiverReg.h"
 
@@ -624,6 +625,9 @@ void radioSend(KRadioDevice *radio,
   RadioPacket pkt;
   uint8_t reg;
   uint8_t flags;
+  const struct userconfig *config;
+
+  config = getConfig();
 
   pkt.length = bytes + sizeof(pkt);
   pkt.src = radio->address;
@@ -642,16 +646,22 @@ void radioSend(KRadioDevice *radio,
                                | OpMode_Listen_Off
                                | OpMode_Transmitter);
 
-  // set high power modes
-  radio_set(radio, RADIO_PaLevel, 0x7F);
-  radio_set(radio, RADIO_Ocp, 0x0F);
-  radio_set(radio, RADIO_RegTestPa1, 0x5D);
-  radio_set(radio, RADIO_RegTestPa2, 0x7C);
+  if( config->cfg_txboost ) {
+    // set high power modes
+    radio_set(radio, RADIO_PaLevel, 0x7F);
+    radio_set(radio, RADIO_Ocp, 0x0F);
+    radio_set(radio, RADIO_RegTestPa1, 0x5D);
+    radio_set(radio, RADIO_RegTestPa2, 0x7C);
+  } else {
+    // don't configure external boost
+    radio_set(radio, RADIO_PaLevel, 0x7F);
+    radio_set(radio, RADIO_Ocp, 0x0F);
+  }
 
-  //  chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
-  //  chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
-  //  chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
-  //  chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
+  //chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
+  //chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
+  //chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
+  //chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
   
   radioWrite(radio, RADIO_DioMapping1, DIO0_TxPacketSent);
 
@@ -682,16 +692,16 @@ void radioSend(KRadioDevice *radio,
   if( flags & IrqFlags2_PayloadReady )
     radioWrite(radioDriver, RADIO_PacketConfig2, PacketConfig2_RxRestart); // prevent RX deadlock
 
-  // turn off high power PA to prevent Rx damage
+  // turn off high power PA settings to prevent Rx damage (done in either boost or regular case)
   radio_set(radio, RADIO_PaLevel, 0x9F);
   radio_set(radio, RADIO_Ocp, 0x1C);
   radio_set(radio, RADIO_RegTestPa1, 0x55);
   radio_set(radio, RADIO_RegTestPa2, 0x70);
   
-  //  chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
-  //  chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
-  //  chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
-  //  chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
+  //chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
+  //chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
+  //chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
+  //chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
 
   // chprintf(stream, "Flags exiting Tx handler: %x\n\r", flags);
   /* Move back into "Rx" mode */

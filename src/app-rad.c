@@ -4,6 +4,10 @@
 #include "radio.h"
 
 #define NUM_LINES 3
+#define LINE_TXBOOST 1
+#define LINE_SILENT 2
+#define LINE_CHAN 0
+
 static uint8_t line = 0;
 uint8_t anonymous = 0;
 
@@ -32,35 +36,35 @@ static void redraw_ui(void) {
 
   // 1st line: Channel
   chsnprintf(uiStr, sizeof(uiStr), "Channel: %d", config->cfg_channel);
-  if( line == 0 ) {
-    gdispFillArea(0, height*1, width, height, White);
+  if( line == LINE_CHAN ) {
+    gdispFillArea(0, height*(LINE_CHAN + 1), width, height, White);
     draw_color = Black;
   } else {
     draw_color = White;
   }
-  gdispDrawStringBox(0, height, width, height,
+  gdispDrawStringBox(0, height * (LINE_CHAN +1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
   // 2nd line: Tx boost
   chsnprintf(uiStr, sizeof(uiStr), "Tx boost: %s", config->cfg_txboost ? "on" : "off");
-  if( line == 1 ) {
-    gdispFillArea(0, height*2, width, height, White);
+  if( line == LINE_TXBOOST ) {
+    gdispFillArea(0, height*(LINE_TXBOOST + 1), width, height, White);
     draw_color = Black;
   } else {
     draw_color = White;
   }
-  gdispDrawStringBox(0, height*2, width, height,
+  gdispDrawStringBox(0, height * (LINE_TXBOOST + 1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
   // 3rd line: anonymous mode
   chsnprintf(uiStr, sizeof(uiStr), "Silent mode: %s", anonymous ? "on" : "off");
-  if( line == 2 ) {
-    gdispFillArea(0, height*3, width, height, White);
+  if( line == LINE_SILENT ) {
+    gdispFillArea(0, height*(LINE_SILENT+1), width, height, White);
     draw_color = Black;
   } else {
     draw_color = White;
   }
-  gdispDrawStringBox(0, height*3, width, height,
+  gdispDrawStringBox(0, height*(LINE_SILENT+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
   
   gdispFlush();
@@ -93,7 +97,12 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
       else
 	line = NUM_LINES - 1;
     } else if( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      orchardAppExit();
+      if( line == LINE_TXBOOST )
+	configToggleBoost();
+      else if( line == LINE_SILENT )
+	anonymous = !anonymous;
+    } else if( line == LINE_CHAN ) {
+      // handle channel config
     }
   }
 
