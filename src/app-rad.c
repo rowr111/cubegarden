@@ -12,7 +12,6 @@ static uint8_t line = 0;
 uint8_t anonymous = 0;
 static struct OrchardUiContext listUiContext;
 static const  char title[] = "Pick a channel";
-static uint8_t ui_override = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Settings";
@@ -81,6 +80,13 @@ static void redraw_ui(void) {
   }
   gdispDrawStringBox(0, height*(LINE_SILENT+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
+
+  // 4th line: firmware version -- not selectable
+  chsnprintf(uiStr, 24, "git: %s", gitversion); // limit length so it doesn't go off screen
+  gdispFillArea(0, height*(NUM_LINES+2), width, height, Black);
+  gdispDrawStringBox(0, height*(NUM_LINES+2), width, height,
+		     uiStr, font, White, justifyLeft);
+  
   
   gdispFlush();
   orchardGfxEnd();
@@ -138,7 +144,6 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
 	  context->instance->uicontext = &listUiContext;
 	  context->instance->ui = listUi;
 	}
-	ui_override = 1;
 	listUi->start(context);
       }
     }
@@ -152,11 +157,11 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
     configSetChannel((uint32_t) selected);
     radioUpdateChannelFromConfig(radioDriver);
     friendClear();
-    ui_override = 0;
   }
 
-  if( !ui_override )
+  if( context->instance->ui == NULL ) {
     redraw_ui();
+  }
 }
 
 static void setting_exit(OrchardAppContext *context) {
