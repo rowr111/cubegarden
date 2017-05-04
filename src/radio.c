@@ -367,6 +367,11 @@ static void radio_unload_packet(eventid_t id) {
 
   rssi = radio_get(radio, RADIO_RssiValue);
   
+  if( crc_failed ) {
+    chprintf(stream, "CRC fail rssi -%ddBm\r\n", rssi / 2 );
+    return;  // abort packet handling if the CRC is bad
+  }
+  
   radio_select(radio);
   reg = RADIO_Fifo;
   spiSend(radio->driver, 1, &reg);
@@ -381,12 +386,8 @@ static void radio_unload_packet(eventid_t id) {
   spiReceive(radio->driver, sizeof(crc), &crc); // this is actually a dummy, used to clear FIFO and clear flags
   radio_unselect(radio);
 
-  //  chprintf(stream, "Unloaded prot %d payload %s len %d crc 0x%x\r\n", pkt.prot, payload, pkt.length, crc );
   chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, rssi / 2 );
 
-  if( crc_failed )
-    return;  // abort packet handling if the CRC is bad
-  
   /* Dispatch the packet handler */
   unsigned int i;
   bool handled = false;
