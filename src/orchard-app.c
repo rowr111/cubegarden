@@ -102,7 +102,8 @@ void friend_cleanup(void);
 #define MAIN_MENU_MASK  0x02
 #define MAIN_MENU_VALUE 0x02
 
-//#define TEST_WATCHDOG
+//#define TEST_WATCHDOG  // uncomment to force a reset when watchdog is enabled
+// note -- watchdog is in hal_lld.c inside the K22x ports directory
 
 void wdogPing(void) {
 #ifdef TEST_WATCHDOG
