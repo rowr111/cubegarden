@@ -422,10 +422,17 @@ static void redraw_ui(uint8_t uimode) {
     }
     friendsUnlock();
   } else {
+    if( anonymous ) {
+      gdispDrawStringBox(0, header_height + 3 * fontheight, width, fontheight,
+			 "Scan disabled", font, text_color, justifyCenter);
+      gdispDrawStringBox(0, header_height + 4 * fontheight, width, fontheight,
+			 "in silent mode", font, text_color, justifyCenter);
+    } else {
       gdispDrawStringBox(0, header_height + 3 * fontheight, width, fontheight,
 			 "no friends in range", font, text_color, justifyCenter);
       gdispDrawStringBox(0, header_height + 4 * fontheight, width, fontheight,
 			 ":-(", font, text_color, justifyCenter);
+    }
   }
   
   gdispCloseFont(font);

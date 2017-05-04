@@ -120,11 +120,13 @@ static void handle_ping_timeout(eventid_t id) {
   (void) id;
   const struct genes *family;
   family = (const struct genes *) storageGetData(GENE_BLOCK);
- 
-  radioAcquire(radioDriver);
-  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
-	    strlen(family->name) + 1, family->name);
-  radioRelease(radioDriver);
+
+  if( !anonymous ) {
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
+	      strlen(family->name) + 1, family->name);
+    radioRelease(radioDriver);
+  }
     
   // cleanup every other ping we send, to make sure friends that are
   // nearby build up credit over time to max credits
@@ -283,6 +285,9 @@ static void radio_ping_received(uint8_t prot, uint8_t src, uint8_t dst,
   (void) length;
   char *friend;
 
+  if(anonymous) // ignore pings in anonymous mode
+    return;
+  
   friend = friend_lookup((char *) data);
   if( friend == NULL )
     friend = friend_add((char *) data);
