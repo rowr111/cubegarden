@@ -197,13 +197,13 @@ void touchStart(void) {
   i2cReleaseBus(&I2CD1);
 
   // ignore noise detection -- it's causing some buttons to be erroneously masked
-  tx[0] = 0x44;
-  tx[1] = 0x44; 
-  i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
-  i2cReleaseBus(&I2CD1);
-  tx[0] = 0x20;
-  tx[1] = 0x30; 
+  //  tx[0] = 0x44;
+  //  tx[1] = 0x44;  // RF noise
+  //  i2cAcquireBus(&I2CD1);
+  //  i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  //  i2cReleaseBus(&I2CD1);
+  tx[0] = 0x20; // ana noise
+  tx[1] = 0x10;  // 0x10 = disable analog noise, 0x20 = disable digital noise
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);

@@ -460,6 +460,8 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   while (radio_get(radio, RADIO_IrqFlags2) & IrqFlags2_FifoNotEmpty)
     (void)radio_get(radio, RADIO_Fifo);
 
+  radio_set(radio, RADIO_TestLna, 0x2D); // put LNA into high sensitivity mode
+  
   /* Move into "Rx" mode */
   radio->mode = mode_receiving;
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
@@ -638,6 +640,18 @@ void radioSend(KRadioDevice *radio,
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
                                | OpMode_Listen_Off
                                | OpMode_Transmitter);
+
+  // set high power modes
+  radio_set(radio, RADIO_PaLevel, 0x7F);
+  radio_set(radio, RADIO_Ocp, 0x0F);
+  radio_set(radio, RADIO_RegTestPa1, 0x5D);
+  radio_set(radio, RADIO_RegTestPa2, 0x7C);
+
+  //  chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
+  //  chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
+  //  chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
+  //  chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
+  
   radioWrite(radio, RADIO_DioMapping1, DIO0_TxPacketSent);
 
   /* Transmit the packet as soon as the entire thing is in the Fifo */
@@ -666,7 +680,18 @@ void radioSend(KRadioDevice *radio,
   flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" might not be necessary, but here anyways
   if( flags & IrqFlags2_PayloadReady )
     radioWrite(radioDriver, RADIO_PacketConfig2, PacketConfig2_RxRestart); // prevent RX deadlock
+
+  // turn off high power PA to prevent Rx damage
+  radio_set(radio, RADIO_PaLevel, 0x9F);
+  radio_set(radio, RADIO_Ocp, 0x1C);
+  radio_set(radio, RADIO_RegTestPa1, 0x55);
+  radio_set(radio, RADIO_RegTestPa2, 0x70);
   
+  //  chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));
+  //  chprintf(stream, "ocp: %02x\n\r", radio_get(radio, 0x13));
+  //  chprintf(stream, "testpa1: %02x\n\r", radio_get(radio, 0x5a));
+  //  chprintf(stream, "testpa2: %02x\n\r", radio_get(radio, 0x5c));
+
   // chprintf(stream, "Flags exiting Tx handler: %x\n\r", flags);
   /* Move back into "Rx" mode */
   radio->mode = mode_receiving;

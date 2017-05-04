@@ -105,6 +105,8 @@
 #define	RADIO_TestLna	      	0x58	/*	Sensitivity	boost								0x1B		*/
 #define	RADIO_TestAfc	      	0x71	/*	AFC	offset	for	low	modulation	index	AFC			0x00		*/
 #define RADIO_Calib          	0x57  /*  Used in calibration procedure for V2a chip version*/
+#define RADIO_RegTestPa1        0x5A
+#define RADIO_RegTestPa2        0x5C
 #define RADIO_TestPLL_BW            0x5F    /* Added, PLL Bandwidth setting   */ /*JAPAN CFG*/
 #define RADIO_TestDagc       	0x6F  /*  Fading margin improvement. Added for extended PHY. */
 
