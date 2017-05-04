@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "orchard.h"
 
+#include "radio.h"
 #include "storage.h"
 #include "userconfig.h"
 
@@ -40,8 +41,15 @@ void configToggleAutosex(void) {
   config_cache.cfg_autosex = !config_cache.cfg_autosex;
 }
 
-void configGgPatched(void) {
-  config_cache.gg_hotfix = CONFIG_GGHOTFIX_VERSION;
+void configToggleBoost(void) {
+  config_cache.cfg_txboost = !config_cache.cfg_txboost;
+}
+
+void configSetChannel(uint32_t channel) {
+  if( channel >= RADIO_MAXCHANNELS )
+    channel = 0;  // force to default if bogus stuff is sent to us
+  
+  config_cache.cfg_channel = channel;
 }
 
 void configFlush(void) {
@@ -66,7 +74,8 @@ static void init_config(uint32_t block) {
   config.sex_initiations = 0;
   config.sex_responses = 0;
   config.cfg_autosex = 0;   // deny rapid breeding by default
-  config.gg_hotfix = 0xFFFFFFFF;
+  config.cfg_channel = 0;
+  config.cfg_txboost = 1;
 
   storagePatchData(block, (uint32_t *) &config, CONFIG_OFFSET, sizeof(struct userconfig));
 }

@@ -1,8 +1,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    2
-#define CONFIG_GGHOTFIX_VERSION 2  // inc this to patch up gas gauges with newer changes
+#define CONFIG_VERSION    3
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -10,7 +9,8 @@ typedef struct userconfig {
   uint32_t  sex_initiations; // number of times we've initiated sex
   uint32_t  sex_responses;   // numbef or times others have initiated sex
   uint32_t  cfg_autosex;     // set if sex automatically allowed
-  uint32_t  gg_hotfix;       // will be 0xFFFF_FFFF if patch has not been applied
+  uint32_t  cfg_channel;     // our default channel
+  uint32_t  cfg_txboost;     // set txboost
 } userconfig;
 
 void configStart(void);
@@ -21,7 +21,8 @@ void configIncSexResponses(void);
 void configSetAutosex(void);
 void configClearAutoSex(void);
 void configToggleAutosex(void);
-void configGgPatched(void);
+void configSetChannel(uint32_t channel);
+void configToggleBoost(void);
 void configFlush(void); // call on power-down to flush config state
 
 void configLazyFlush(void);  // call periodically to sync state, but only when dirty
