@@ -53,6 +53,7 @@ static uint16_t *samples;
 
 uint8_t sex_running = 0;
 uint8_t sex_done = 0;
+uint8_t sex_clear_event = 0;
 uint32_t sex_timer; 
 
 #define SEX_TIMEOUT (8 * 1000)  // 15 seconds for partner to respond before giving up
@@ -346,7 +347,7 @@ static void redraw_ui(uint8_t uimode) {
     width = gdispGetWidth();
     gdispClear(Black);
     gdispDrawStringBox(0, 32, width, fontheight,
-		       "DENIED!", font, White, justifyCenter);
+		       "FAILURE!", font, White, justifyCenter);
     gdispFlush();
     gdispCloseFont(font);
     orchardGfxEnd();
@@ -523,7 +524,9 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
-      if( (bump_level < BUMP_LIMIT) && (sex_running) ) {
+      if( sex_clear_event == 1 ) {
+	sex_clear_event = 0; // ignore the first keydown event after sex, because it might be from the rubbing
+      } else if( (bump_level < BUMP_LIMIT) && (sex_running) ) {
 	bump_level++;
 	// next is an else-if because we want no buttons to trigger in sex mode
       } else if ( event->key.code == keyBottomR ) {
@@ -654,6 +657,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       sex_done = 0;
       check_lightgene_hack();
       redraw_ui(2);  // indicate that sex is done
+      sex_clear_event = 1;  // flush event pipe so rubbing doesn't activate pads
     }
   }
   
