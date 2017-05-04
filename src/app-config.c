@@ -3,7 +3,7 @@
 #include "userconfig.h"
 
 static void redraw_ui(void) {
-  char tmp[] = "Configure Options";
+  char tmp[] = "Configure Consent";
   char uiStr[32];
   
   coord_t width;
@@ -87,4 +87,4 @@ static void config_exit(OrchardAppContext *context) {
   (void)context;
 }
 
-orchard_app("User options", config_init, config_start, config_event, config_exit);
+orchard_app("Consent setting", config_init, config_start, config_event, config_exit);
