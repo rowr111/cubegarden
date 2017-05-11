@@ -16,6 +16,6 @@ void analogUpdateMic(void);
 uint16_t *analogReadMic(void);
 void micStart(void);
 
-#define DBLOGLEN 16
+#define DBLOGLEN 8
 extern uint8_t dblog[];
 extern uint8_t dblogptr;

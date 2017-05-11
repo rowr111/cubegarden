@@ -203,11 +203,14 @@ static void dbcompute(uint16_t *sample) {
   tallheight = gdispGetFontMetric(font2, fontHeight);
 
   // now compute dbs...
+#if 0
   uint16_t min, max;
+#endif
   uint16_t i;
   float cum = 0;
   int32_t temp;
 
+#if 0
   min = 65535; max = 0;
   for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
     if( sample[i] > max )
@@ -216,6 +219,15 @@ static void dbcompute(uint16_t *sample) {
       min = sample[i];
   }
   int32_t mid = (max + min) / 2;
+#else
+  cum = 0.0;
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    cum += (float)sample[i];
+  }
+  int32_t mid = (int32_t) (cum / (float) NUM_RX_SAMPLES);
+#endif
+  
+  cum = 0.0;
   for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
     temp = (((int32_t)sample[i]) - mid);
     cum += (float) (temp * temp);

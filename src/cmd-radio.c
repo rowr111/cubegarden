@@ -101,6 +101,22 @@ static void radio_addr(BaseSequentialStream *chp, int argc, char *argv[]) {
   chprintf(chp, "Set radio address to %d\r\n", addr);
 }
 
+#if 0 // leave this around to simplify specrtum analyzer characterization
+static int should_stop(void) {
+  uint8_t bfr[1];
+  return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
+}
+
+void radio_blast(void) {
+  chprintf(stream, "Hit any key to stop\n\r");
+  while( !should_stop() ) {
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
+	      5, "test");
+    chThdSleepMilliseconds(5);
+  }
+}
+#endif
+
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
 
   if (argc == 0) {
@@ -123,6 +139,8 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     radio_addr(chp, argc, argv);
   else if (!strcasecmp(argv[0], "temp"))
     chprintf(chp, "Temperature :%d\r\n", radioTemperature(radioDriver));
+  //  else if (!strcasecmp(argv[0], "blast"))
+  //    radio_blast();
   else
     chprintf(chp, "Unrecognized radio command\r\n");
 }
