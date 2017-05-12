@@ -11,7 +11,7 @@
 #include "fixmath.h"
 #include "fix16_fft.h"
 
-static int mode = 0;
+static int mode = 2;
 
 #define NUM_SAMPLES (NUM_RX_SAMPLES / 4)
 
