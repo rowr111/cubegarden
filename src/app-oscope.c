@@ -243,7 +243,7 @@ void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   
   if (event->type == keyEvent) {
     if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {
-      orchardAppExit();
+      // orchardAppExit();  // I think this is a misfeature as "home" hold should be the way out
     } else  if ( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
       mode = (mode + 1) % 3;
     }
