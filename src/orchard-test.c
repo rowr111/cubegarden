@@ -100,7 +100,7 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
     } else {
       // pass
       chsnprintf(prompt, sizeof(prompt), "0x%x", auditval);
-      orchardTestPrompt( "TEST PASS", prompt, -30 );
+      orchardTestPrompt( "NO ERRORS", prompt, -30 );
     }
   }
 }
