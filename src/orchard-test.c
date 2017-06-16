@@ -96,11 +96,11 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
     if( auditval > 0xFFFF ) {
       // failure
       chsnprintf(prompt, sizeof(prompt), "0x%x", auditval);
-      orchardTestPrompt( "FAIL", prompt, -120 );
+      orchardTestPrompt( "FAIL", prompt, -30 );
     } else {
       // pass
       chsnprintf(prompt, sizeof(prompt), "0x%x", auditval);
-      orchardTestPrompt( "TEST PASS", prompt, -120 );
+      orchardTestPrompt( "TEST PASS", prompt, -30 );
     }
   }
 }

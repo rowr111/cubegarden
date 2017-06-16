@@ -47,14 +47,12 @@ void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void capRCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]);
-void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_gename(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_genetweak(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_geneseq(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -67,6 +65,9 @@ void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
+#ifdef HAS_STC3115
+void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
+#endif
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -74,10 +75,8 @@ static const ShellCommand commands[] = {
   {"captest", capTestCommand},
   {"capcal", capCalCommand},
   {"c", capWCommand},
-  {"cr", capRCommand},
   {"chg", chgCommand},
   {"gg", ggCommand},
-  {"gg2", gg2Command},
   {"spi", spiCommand},
   {"fx", fxCommand},
   {"radio", cmd_radio},
@@ -93,6 +92,9 @@ static const ShellCommand commands[] = {
   {"auditlog", cmd_printaudit},
   {"auditcheck", cmd_auditcheck},
   {"testall", cmd_testall},
+#ifdef HAS_STC3115
+  {"gg2", gg2Command},
+#endif
   {NULL, NULL}
 };
 

@@ -8,6 +8,9 @@
 
 #include "orchard-app.h"
 
+int start_test = 0;
+int test_started = 0;
+
 void testCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argc;
@@ -41,7 +44,7 @@ void testCommand(BaseSequentialStream *chp, int argc, char *argv[])
   test_type = (OrchardTestType) strtoul(argv[1], NULL, 0);
 
   if (test == NULL) {
-    chprintf(chp, "Test %s was not found in the test table.\n\r", argv[0]);
+    chprintf(chp, "Test %s was not found.\n\r", argv[0]);
     return;
   }
 
@@ -68,7 +71,6 @@ void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[])
 
   if( argc != 1 ) {
     chprintf(chp, "Usage: auditcheck <testtype>\n\r");
-    chprintf(chp, "Testtype is a code denoting the test type (see orchard-test.h)\n\r" );
     return;
   }
   test_type = (OrchardTestType) strtoul(argv[0], NULL, 0);
@@ -83,19 +85,22 @@ void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[])
 
   test_app = orchardAppByName("~testmode");
   if( test_app ) {
-    orchardAppRun(test_app);
+    start_test = 1;
     // give some time for the app to launch
-    chThdYield();
-    chThdSleepMilliseconds(500);
+    while( !test_started ) {
+      chThdYield();
+      chThdSleepMilliseconds(100);
+    }
   }
   
   if( argc != 1 ) {
     chprintf(chp, "Usage: testall <testtype>\n\r");
-    chprintf(chp, "Testtype is a code denoting the test type (see orchard-test.h)\n\r" );
     return;
   }
   test_type = (OrchardTestType) strtoul(argv[0], NULL, 0);
 
   orchardTestRunAll(chp, test_type);
-  
+
+  start_test = 0;
+  test_started = 0;
 }

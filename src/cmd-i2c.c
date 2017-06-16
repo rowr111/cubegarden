@@ -87,25 +87,3 @@ void capWCommand(BaseSequentialStream *chp, int argc, char *argv[])
   return;
 }
 
-void capRCommand(BaseSequentialStream *chp, int argc, char *argv[])
-{
-  (void)argc;
-  (void)argv;
-  uint8_t tx[1], rx[1];
-  msg_t retval;
-
-  if( argc != 1 ) {
-    chprintf(chp, "Usage: cr <addr>"SHELL_NEWLINE_STR);
-    return;
-  }
-  tx[0] = (uint8_t) (strtol(argv[0], NULL, 0) & 0xFF);
-  
-
-  i2cAcquireBus(&I2CD1);
-  retval = i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 1, rx, 1, TIME_INFINITE);
-  i2cReleaseBus(&I2CD1);
-
-  chprintf(chp, "read: %02x, retval: %d"SHELL_NEWLINE_STR, rx[0], retval == MSG_OK ? 1 : 0);
-  return;
-}
-

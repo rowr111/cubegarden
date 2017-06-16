@@ -138,6 +138,9 @@ static void launcher_start(OrchardAppContext *context) {
 
 }
 
+extern int start_test;
+extern int test_started;
+
 void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   struct launcher_list *list = (struct launcher_list *)context->priv;
   int32_t ui_timeout;
@@ -164,6 +167,14 @@ void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   } else if (event->type == timerEvent) {
     // to update % charge state, UI timer
     redraw_list(list);
+  }
+
+  if( start_test == 1 ) {
+    led_app = orchardAppByName("~testmode");
+    if( led_app != NULL ) {
+      test_started = 1;
+      orchardAppRun(led_app);
+    }
   }
 
   if( (ui_timeout <= 0) || (ui_timeout > (BLINKY_DEFAULT_DELAY / 1000)) ) {

@@ -692,6 +692,7 @@ static void run_launcher(void *arg) {
   chSysUnlockFromISR();
 }
 
+extern int start_test;
 static void poke_run_launcher_timer(eventid_t id) {
 
   (void)id;
@@ -713,7 +714,11 @@ static void poke_run_launcher_timer(eventid_t id) {
 
     /* Start the sequence to go to the main menu when we're done.*/
     run_launcher_timer_engaged = true;
-    chVTSet(&run_launcher_timer, RUN_LAUNCHER_TIMEOUT, run_launcher, NULL);
+    if( start_test == 0 ) { // fast timeout if we're not in test mode
+      chVTSet(&run_launcher_timer, RUN_LAUNCHER_TIMEOUT, run_launcher, NULL);
+    } else {
+      chVTSet(&run_launcher_timer, 3000, run_launcher, NULL); // hold for three seconds in this case
+    }
   }
 }
 

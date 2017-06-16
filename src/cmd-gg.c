@@ -9,6 +9,7 @@
 
 #define NL SHELL_NEWLINE_STR
 
+#ifdef HAS_STC3115
 void gg2Command(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argc;
@@ -122,6 +123,7 @@ void gg2Command(BaseSequentialStream *chp, int argc, char *argv[])
   }
 
 }
+#endif
 
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {

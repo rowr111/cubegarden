@@ -15,3 +15,4 @@
 #define FAN5421_SPCHG_ADR 5
 #define FAN5421_SAFE_ADR 6
 
+#undef HAS_STC3115  // for units with the STC3115 unpopulated

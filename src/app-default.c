@@ -289,7 +289,7 @@ static void do_shaker(void) {
   gdispDrawStringBox(0, 0, width, fontheight,
 		     "sex! sex! sex!", font, White, justifyCenter);
   gdispDrawStringBox(0, header_height + 1 * fontheight, width, fontheight,
-		     "rub my buttons!", font, White, justifyCenter);
+		     "stroke my buttons!", font, White, justifyCenter);
   chsnprintf(tmp, sizeof(tmp), "Mutation rate: %d%%", (bump_level * 100) / BUMP_LIMIT);
   gdispDrawStringBox(0, header_height + 2 * fontheight, width, fontheight,
 		     tmp, font, White, justifyCenter);
