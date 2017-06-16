@@ -8,6 +8,10 @@
 #include <string.h>
 #include <limits.h>
 
+#include "shell.h"
+#include "chprintf.h"
+#include "orchard-test.h"
+#include "test-audit.h"
 //uint32_t mic_return[MIC_SAMPLE_DEPTH];
 
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n);
@@ -111,3 +115,54 @@ void analogUpdateMic(void) {
 uint16_t *analogReadMic(void) {
   return rx_savebuf;
 }
+
+OrchardTestResult test_mic(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  uint16_t min, max;
+  int i, j;
+  char prompt[16];
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    return orchardResultNoTest;
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    orchardTestPrompt("speak into", "microphone", 0);
+    min = 65535; max = 0;
+
+    for( j = 0; j < 20; j++ ) {
+      gen_mic_event = 1;
+      
+      chThdYield();
+      chThdSleepMilliseconds(200);  // wait for mic to sample
+
+      for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // input sample buffer is deeper, search all the way through
+	if( rx_savebuf[i] > max )
+	  max = rx_savebuf[i];
+	if( rx_savebuf[i] < min )
+	  min = rx_savebuf[i];
+      }
+    }
+    
+    uint16_t span = max - min;
+    chsnprintf(prompt, sizeof(prompt), "span %d", span);
+
+    if( span > 100 ) {
+      orchardTestPrompt("mic test PASS", prompt, 0);
+      chprintf(stream, "mic test pass, span: %d\n\r", span);
+      return orchardResultPass;
+    } else {
+      orchardTestPrompt("mic test FAIL", prompt, 0);
+      chprintf(stream, "mic test fail, span: %d\n\r", span);
+      return orchardResultFail;
+    }
+    
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("mic", test_mic);
+

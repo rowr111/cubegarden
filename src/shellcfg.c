@@ -64,6 +64,9 @@ void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
 
 static const ShellCommand commands[] = {
   {"test", testCommand},
@@ -87,6 +90,9 @@ static const ShellCommand commands[] = {
   {"friendping", cmd_friendping},
   {"friendsim", cmd_friendsim},
   {"sd", cmd_sd},
+  {"auditlog", cmd_printaudit},
+  {"auditcheck", cmd_auditcheck},
+  {"testall", cmd_testall},
   {NULL, NULL}
 };
 

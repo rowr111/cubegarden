@@ -12,6 +12,9 @@
 
 #include "TransceiverReg.h"
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 #define REG_TEMP1                 0x4e
 #define REG_TEMP1_START             (1 << 3)
 #define REG_TEMP1_RUNNING           (1 << 2)
@@ -733,3 +736,93 @@ void radioSend(KRadioDevice *radio,
   radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
 }
 
+static uint32_t test_rxseq = 0;
+static uint32_t test_rxdat = 0;
+
+static void test_radio_handler(uint8_t prot, uint8_t src, uint8_t dst,
+                               uint8_t length, const void *data) {
+
+  (void)length;
+  (void)prot;
+  (void)src;
+  (void)dst;
+
+  test_rxdat = *((uint32_t *) data);
+  chprintf(stream, "radio test: rxdat %x, seq %x\n\r", test_rxdat, test_rxseq);
+  test_rxseq++;
+}
+
+#define RADIO_TEST_TIMEOUT_MS  5000
+#define RADIO_TEST_TX_RETRY_MS 300
+OrchardTestResult test_radio(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  uint8_t reg;
+  uint32_t nonce;
+  uint32_t oldseq;
+  uint32_t starttime;
+  uint8_t i, j;
+  char promptA[16];
+  char promptB[16];
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    reg = radio_get(radioDriver, RADIO_Version);
+    if( reg != 0x24 ) {
+      return orchardResultFail;
+    } else {
+      return orchardResultPass;
+    }
+    break;
+  case orchardTestInteractive:
+    orchardTestPrompt("radio test", "requires test peer", 0);
+    radioSetHandler(radioDriver, radio_prot_peer_to_dut, test_radio_handler);
+
+    for (i = 0; i < 4; i++) {
+      switch(i) {
+      case 0:
+        nonce = SIM->UIDL;
+        break;
+      case 1:
+        nonce = SIM->UIDML;
+        break;
+      case 2:
+        nonce = SIM->UIDMH;
+        break;
+      default:
+        nonce = rand();
+      }
+
+      j = 0;
+      oldseq = test_rxseq;
+      starttime = chVTGetSystemTime();
+      while (oldseq == test_rxseq) {
+        chsnprintf(promptA, sizeof(promptA), "radio tx: %d", i+1 );
+        chsnprintf(promptB, sizeof(promptB), "retry: %d", j++ );
+        orchardTestPrompt(promptA, promptB, 0);
+	chprintf(stream, "radio test: nonce %x, tx %x, retry %x\n\r", nonce, i+1, j-1);
+	radioAcquire(radioDriver);
+        radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_dut_to_peer,
+                  sizeof(nonce), &nonce);
+	radioRelease(radioDriver);
+        if (chVTGetSystemTime() - starttime > RADIO_TEST_TIMEOUT_MS) {
+          orchardTestPrompt("radio test", "timeout fail!", 0);
+          return orchardResultFail;
+        }
+        chThdSleepMilliseconds(RADIO_TEST_TX_RETRY_MS);
+      }
+      if (test_rxdat != (nonce & 0xFFFFFF)) {  // top byte seems missing on this protocol, whoops
+	chprintf(stream, "rx mismatch: test_rxdat %x, nonce %x\n\r", test_rxdat, nonce );
+        orchardTestPrompt("radio test", "rx mismatch!", 0);
+        return orchardResultFail;
+      }
+    }
+    orchardTestPrompt("radio test", "pass!", 0);
+    return orchardResultPass;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("radio", test_radio);

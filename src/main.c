@@ -39,6 +39,8 @@
 #include "paging.h"
 #include "analog.h"
 
+#include "orchard-test.h"
+
 #define SPI_TIMEOUT MS2ST(3000)
 
 #define LED_COUNT 32
@@ -146,6 +148,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   accelStart(&I2CD1);
   flashStart();
+  orchardTestInit();
+  
   addEntropy(SIM->UIDL);  // something unique to each device, but repeatable
   addEntropy(SIM->UIDML);
   addEntropy(SIM->UIDMH);
@@ -201,7 +205,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   
   micStart(); 
   i2sStartRx(&I2SD1); // start the audio sampling buffer
-  
+
+  orchardTestRunAll(stream, orchardTestPoweron);
   /*
    * Activates the EXT driver 1.
    */
@@ -297,3 +302,21 @@ int main(void) {
   }
 }
 
+OrchardTestResult test_cpu(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    if( SIM->SDID != 0x22000695 ) // just check the CPUID is correct
+      return orchardResultFail;
+    else
+      return orchardResultPass;
+    break;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("cpu", test_cpu);

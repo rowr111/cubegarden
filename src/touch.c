@@ -11,6 +11,9 @@
 #include "gfx.h"
 #include "oled.h"
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 event_source_t touch_event;
 
 unsigned int touch_debounce = TOUCH_DEBOUNCE;
@@ -233,3 +236,54 @@ void touchStart(void) {
 
   touch_force_cal();
 }
+
+OrchardTestResult test_captouch(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  char touchstat[9];
+  uint16_t touchmask = 0;
+  uint8_t i;
+  uint8_t tx[1], rx[1];
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    tx[0] = 0xFD;
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, CAP1208_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+    if( rx[0] != 0x6B ) { // this is the product ID
+      return orchardResultFail;
+    } else {
+      return orchardResultPass;
+    }
+    break;
+  case orchardTestInteractive:
+    if( orchardTestPrompt("Do not touch", "touch sensors", 2) == orchardResultPass ) {
+      orchardTestPrompt("captouch fail", "sensor stuck on", 0);
+      return orchardResultFail;
+    }
+    touchstat[8] = '\0';
+    while( touchmask != 0xFF ) {
+      touchmask |= captouchRead();
+      for( i = 0; i < 8; i++ ) {
+	if( (touchmask >> i) & 1 )
+	  touchstat[i] = 'T';
+	else
+	  touchstat[i] = '_';
+      }
+      orchardTestPrompt("touch each sensor", touchstat, 0);
+      chThdYield();
+      chThdSleepMilliseconds(10);
+      // if not all sensors can be touched, the test will never time out and we'll get stuck.
+    }
+    orchardTestPrompt("touch test PASS", touchstat, 0);
+    return orchardResultPass;
+    
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("ctouch", test_captouch);
+

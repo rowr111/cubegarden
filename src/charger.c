@@ -8,6 +8,9 @@
 #include "charger.h"
 #include "orchard-ui.h"
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 #define NL SHELL_NEWLINE_STR
 
 virtual_timer_t chg_vt;
@@ -31,6 +34,7 @@ int16_t ggStateofCharge(void) {
   //chprintf(stream, "State of charge: %.1f%%"NL, (rx[0] | (rx[1] << 8)) / 10.0);
   soc = (int16_t) (rx[0] | (rx[1] << 8)) / 10;
 
+#if 0 // no longer needed with correct battery profile selected! woooooo....
   // hack to push SOC to 100% for UI reporting reasons
   voltage = ggVoltage();
   if( voltage > 4000 ) { // because the GG measurement is a bit noisy..may need to revisit once R20P is removed
@@ -38,6 +42,7 @@ int16_t ggStateofCharge(void) {
     if( soc > 100 )
       soc = 100;
   }
+#endif
   
   return soc;
 }
@@ -97,6 +102,14 @@ void ggOn(void) {
   uint8_t tx[4];
   
   tx[0] = 0x15; // power mode
+  i2cAcquireBus(&I2CD1);
+  tx[1] = 0x1;
+  tx[2] = 0x0;
+  comp_crc8(tx);
+  i2cMasterTransmitTimeout(&I2CD1, LC709203_ADDR, tx, 4, NULL, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  tx[0] = 0x12; // change of the parameter, selects a 3.7V/4.2V pack
   i2cAcquireBus(&I2CD1);
   tx[1] = 0x1;
   tx[2] = 0x0;
@@ -316,3 +329,67 @@ void chgStart(int force) {
 void chargerShipMode(void) {
   palClearPad(IOPORT2, 1); // force ship mode, should shut the whole thing down...
 }
+
+
+OrchardTestResult test_charger(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  uint8_t tx[2];
+  uint8_t rx[2];
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    tx[0] = FAN5421_INFO_ADR;
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+    
+    if( rx[0] != 0x81 ) {
+      return orchardResultFail;
+    } else {
+      return orchardResultPass;
+    }
+    break;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("charger", test_charger);
+
+
+OrchardTestResult test_gasgauge(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  uint8_t tx[4], rx[3];
+  uint16_t version;
+  uint16_t voltage;
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    tx[0] = 0x11; // IC version
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, LC709203_ADDR, tx, 1, rx, 3, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+    version = (int16_t) (rx[0] | (rx[1] << 8));
+
+    voltage = ggVoltage();
+    
+    if( (version != 0x2AFF) || (voltage < 3000) || (voltage > 4300) ) {
+      return orchardResultFail;
+    } else {
+      return orchardResultPass;
+    }
+    break;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("gg", test_gasgauge);

@@ -149,6 +149,7 @@ CSRC = \
        main.c \
        orchard-vectors.c \
        orchard-events.c \
+       orchard-test.c \
        shellcfg.c \
        gitversion.c \
        oled.c \
@@ -172,6 +173,7 @@ CSRC = \
        $(wildcard cmd-*.c) \
        $(wildcard app-*.c) \
        $(wildcard ui-*.c) \
+       $(wildcard test-*.c) \
        $(LIBFIXMATHSRC) \
        $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \
@@ -258,8 +260,8 @@ CPPWARN = -Wall -Wextra -Wundef
 # Start of user section
 #
 
-# List all user C define here, like -D_DEBUG=1
-UDEFS = -DTARGET_MK22F -D__FPU_PRESENT=1 -DDISABLE_WATCHDOG  ## comment out -DDISABLE_WATCHDOG for production
+# List all user C define here, like -D_DEBUG=1  -DTESTER_DEVICE for tester peer
+UDEFS = -DTARGET_MK22F -D__FPU_PRESENT=1 -DDISABLE_WATCHDOG #-DTESTER_DEVICE ## comment out -DDISABLE_WATCHDOG for production # 
 
 # Define ASM defines here
 UADEFS =

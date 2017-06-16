@@ -7,6 +7,9 @@
 #include "orchard.h"
 #include "orchard-events.h"
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 #define REG_INT_SYSMOD                0x0b
 #define REG_INT_SYSMOD_SYSMOD1          (1 << 1)
 #define REG_INT_SYSMOD_SYSMOD0          (1 << 0)
@@ -426,3 +429,28 @@ msg_t accelPoll(struct accel_data *data) {
   return MSG_OK;
 }
 
+OrchardTestResult test_accel(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  uint8_t ret;
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    i2cAcquireBus(driver);
+    ret =  accel_get(REG_WHO_AM_I);
+    i2cReleaseBus(driver);
+    if( ret != 0x2A ) {
+      return orchardResultFail;
+    } else {
+      return orchardResultPass;
+    }
+    break;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("accel", test_accel);

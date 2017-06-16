@@ -27,11 +27,6 @@
 
 #include "shell.h"
 
-/*
- * Shell Thread size
- */
-#define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(2048)
-
 extern ShellConfig shell_cfg;
 
 #endif  /* SHELLCFG_H */
