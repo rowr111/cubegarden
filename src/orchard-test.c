@@ -93,6 +93,8 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
   }
   if( test_type == orchardTestInteractive ) {
     auditval = auditCheck(test_type);
+    chThdSleepMilliseconds(2000); // give 2 seconds for FLASH udpates to happen after test is done, it fucks wit the UART
+    
     if( auditval > 0xFFFF ) {
       // failure
       chprintf(chp, "FAIL\n\r" );
