@@ -169,7 +169,7 @@ static uint32_t rec_init(OrchardAppContext *context) {
     return 1;
   }
 
-  //  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
+ chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
 }
 
@@ -187,7 +187,7 @@ static void rec_start(OrchardAppContext *context) {
   analogUpdateMic(); // don't generate events as we're going to record in the app thread directly
   sd_active = 1;
 
-  //  orchardAppTimer(context, 1000 * 1000 * 500, true); //update ui maybe 10 times a second?
+  orchardAppTimer(context, 1000 * 1000 * 500, true); //update ui maybe 10 times a second?
   
 }
 
@@ -207,6 +207,8 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       update_sd(analogReadMic()); // recording happens in the app thread, not event thread
       analogUpdateMic();
     }
+  } else if( event->type == timerEvent ) {
+
   }
 }
 
@@ -230,7 +232,7 @@ static void rec_exit(OrchardAppContext *context) {
   //    chprintf(stream, "mmcDisconnect failed\n\r");
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
-  //  chThdSetPriority(LOWPRIO + 2);
+  chThdSetPriority(LOWPRIO + 2);
 }
 
 orchard_app("Record Clips", rec_init, rec_start, rec_event, rec_exit);
