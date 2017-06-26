@@ -38,8 +38,8 @@ static void agc(uint16_t  *sample, uint16_t *output) {
       min = sample[i];
   }
 
-  uint16_t span = max - min;
-  scale = 65535.0 / (float) span;
+  float span = (float) max - (float) min;
+  scale = (65535.0 / span) * 1.1;
 
   for( i = 0; i < NUM_RX_SAMPLES; i += (NUM_RX_SAMPLES / NUM_SAMPLES) ) { // decimate by buffer ratio
     temp = sample[i] - min;
