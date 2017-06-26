@@ -4,7 +4,6 @@
 #define MIC_SAMPLE_DEPTH 128
 
 //extern int32_t rx_samples[];
-extern int32_t __ramd10__[];
 extern int32_t rx_samples[];
 extern int16_t rx_savebuf[];
 

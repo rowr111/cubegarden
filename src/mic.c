@@ -131,9 +131,9 @@ void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n) {
 
   I2S0->RCSR |= 0x40000; // clear the fifo error flag, that's typically why we get here
     
-#if 0
-  while( DMA->TCD[KINETIS_I2S_DMA_CHANNEL].CSR |= 0x40 ) // wait until the channel is not active
-    ;
+#if 1
+  //  while( DMA->TCD[KINETIS_I2S_DMA_CHANNEL].CSR |= 0x40 ) // wait until the channel is not active
+  //    ;
   // reset the rx buffer so we're not overflowing into surrounding memory
   DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
   

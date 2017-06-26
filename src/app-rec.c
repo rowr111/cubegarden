@@ -17,6 +17,9 @@ extern MMCDriver MMCD1;
 
 extern int sd_active;
 
+int prompt_state = 1;
+uint32_t last_update = 0;
+
 static void redraw_ui() {
   char uiStr[32];
   
@@ -42,11 +45,12 @@ static void redraw_ui() {
   font2 = gdispOpenFont("DejaVuSans32");
   tallheight = gdispGetFontMetric(font2, fontHeight);
 
-#if 0
-  if( (ST2MS(chVTGetSystemTime()) / 1000) % 2 ) {
+#if 1
+  //  if( (ST2MS(chVTGetSystemTime()) / 1000) % 2 ) {
+  if( prompt_state ) {
     chsnprintf(uiStr, sizeof(uiStr), "%s", "ACTIVE" );
   } else {
-    chsnprintf(uiStr, sizeof(uiStr), " " );
+    chsnprintf(uiStr, sizeof(uiStr), "REC" );
   }
 #else
   chsnprintf(uiStr, sizeof(uiStr), "%s", "ACTIVE" );
@@ -63,12 +67,23 @@ static void redraw_ui() {
 #define SECTOR_BYTES       MMCSD_BLOCK_SIZE  // should be 512
 
 // should see the string 'RIFF' at these offsets in the SD card if it's formatted correctly
+/*  // for 44.1khz
 #define CLIP1_OFFSET_BYTES  0x0052800
 #define CLIP2_OFFSET_BYTES  0x12D4000
 #define CLIP3_OFFSET_BYTES  0x2555800
 #define CLIP4_OFFSET_BYTES  0x37D7000
 #define CLIP5_OFFSET_BYTES  0x4A58800
 #define CLIP6_OFFSET_BYTES  0x5CDA000
+*/
+
+// for 32khz
+#define CLIP1_OFFSET_BYTES  0x0052800
+#define CLIP2_OFFSET_BYTES  0x12A2800
+#define CLIP3_OFFSET_BYTES  0x24F2800
+#define CLIP4_OFFSET_BYTES  0x3742800
+#define CLIP5_OFFSET_BYTES  0x4992800
+#define CLIP6_OFFSET_BYTES  0x5BE2800
+
 const unsigned int clip_offset_bytes[] = { CLIP1_OFFSET_BYTES, CLIP2_OFFSET_BYTES, CLIP3_OFFSET_BYTES,
 					   CLIP4_OFFSET_BYTES, CLIP5_OFFSET_BYTES, CLIP6_OFFSET_BYTES };
 
@@ -77,12 +92,16 @@ uint8_t *block = NULL;
 // all offsets are in bytes
 #define WAV_RIFF         0x0  // 'RIFF' located here
 #define WAV_DATA_OFFSET  0x2C // data starts here
-#define DATA_END_OFFSET  (0x1281400) // end of data offset, about 4 minutes
+#define DATA_END_OFFSET  (0x124f800) // end of data offset, about 4 minutes
+// #define DATA_END_OFFSET  (0x1281400) // end of data offset, about 4 minutes
 
 const char wav_header[WAV_DATA_OFFSET] =
-  { 0x52, 0x49, 0x46, 0x46, 0x86, 0x15, 0x28, 0x01, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
+  { 0x52, 0x49, 0x46, 0x46, 0x90, 0xf8, 0x24, 0x01, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
+    0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x7d, 0x00, 0x00, 0x00, 0xfa, 0x00, 0x00,
+    0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x00, 0xf8, 0x24, 0x01 };
+/*  { 0x52, 0x49, 0x46, 0x46, 0x86, 0x15, 0x28, 0x01, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
     0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00,
-    0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0xe0, 0x14, 0x28, 0x01 };
+    0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0xe0, 0x14, 0x28, 0x01 }; */
 
 static uint32_t sd_offset = CLIP1_OFFSET_BYTES + DATA_END_OFFSET; // start at end, to trigger initialization
 static uint8_t clip_num = 0;
@@ -196,7 +215,7 @@ static void rec_start(OrchardAppContext *context) {
 
   analogUpdateMic(); // don't generate events as we're going to record in the app thread directly
 
-  orchardAppTimer(context, 1000 * 1000 * 500, true); //update ui maybe 10 times a second?
+  //orchardAppTimer(context, 1000 * 1000 * 50, true); //update ui maybe 10 times a second?
   
 }
 
@@ -215,9 +234,14 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if( event->adc.code == adcCodeMic ) {
       update_sd(analogReadMic()); // recording happens in the app thread, not event thread
       analogUpdateMic();
+      if( (ST2MS(chVTGetSystemTime()) - last_update) > 1000 ) {
+	prompt_state = !prompt_state;
+	redraw_ui();
+	last_update = ST2MS(chVTGetSystemTime());
+      }
     }
   } else if( event->type == timerEvent ) {
-
+    // redraw_ui();
   }
 }
 
@@ -225,7 +249,7 @@ static void rec_exit(OrchardAppContext *context) {
 
   (void)context;
 
-  //  sd_active = 0;
+  sd_active = 0;
   
   chHeapFree(block);
   
