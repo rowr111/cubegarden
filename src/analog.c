@@ -7,9 +7,6 @@
 
 #include "chbsem.h"
 
-//static adcsample_t mic_sample[MIC_SAMPLE_DEPTH];
-//static uint8_t mic_return[MIC_SAMPLE_DEPTH];
-
 #define ADC_GRPCELCIUS_NUM_CHANNELS   2
 #define ADC_GRPCELCIUS_BUF_DEPTH      1
 static int32_t celcius;
@@ -87,53 +84,6 @@ void analogUpdateTemperature(void) {
 int32_t analogReadTemperature() {
   return celcius;
 }
-
-#if 0
-static void adc_mic_end_cb(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
-  (void)adcp;
-  (void)n;
-
-  uint8_t i;
-
-  for( i = 0 ; i < n; i++ ) { 
-    mic_return[i] = (uint8_t) buffer[i];
-  }
-
-  chSysLockFromISR();
-  chEvtBroadcastI(&mic_rdy);
-  chSysUnlockFromISR();
-}
-
-
-/*
- * ADC conversion group.
- * Mode:        Linear buffer, 8 samples of 1 channel, SW triggered.
- */
-static const ADCConversionGroup adcgrpmic = {
-  false,
-  1, // just one channel
-  adc_mic_end_cb,
-  NULL,
-  ADC_DADP1,  // microphone input channel
-  // SYCLK = 48MHz. ADCCLK = SYSCLK / 4 / 2 = 6 MHz
-  ADCx_CFG1_ADIV(ADCx_CFG1_ADIV_DIV_4) |
-  ADCx_CFG1_ADICLK(ADCx_CFG1_ADIVCLK_BUS_CLOCK_DIV_2) |
-  ADCx_CFG1_MODE(ADCx_CFG1_MODE_8_OR_9_BITS),  // 8 bits per sample
-  ADCx_SC3_AVGE |
-  ADCx_SC3_AVGS(ADCx_SC3_AVGS_AVERAGE_32_SAMPLES) // 32 sample average
-  // this should give ~6.25kHz sampling rate
-};
-
-void analogUpdateMic(void) {
-  adcAcquireBus(&ADCD1);
-  adcConvert(&ADCD1, &adcgrpmic, mic_sample, MIC_SAMPLE_DEPTH);
-  adcReleaseBus(&ADCD1);
-}
-
-uint8_t *analogReadMic() {
-  return mic_return;
-}
-#endif
 
 void analogStart() {
   

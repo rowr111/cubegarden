@@ -12,11 +12,10 @@
 #include "chprintf.h"
 #include "orchard-test.h"
 #include "test-audit.h"
-//uint32_t mic_return[MIC_SAMPLE_DEPTH];
 
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n);
 int32_t rx_samples[NUM_RX_SAMPLES];
-uint16_t rx_savebuf[NUM_RX_SAMPLES];
+int16_t rx_savebuf[NUM_RX_SAMPLES];
 uint32_t rx_handler_count = 0;
 
 uint8_t gen_mic_event = 0;
@@ -27,7 +26,7 @@ static I2SConfig i2s_config = {
   NUM_RX_SAMPLES,
   i2s_handler,
   { // sai_tx_state
-    {48000u, 12288000 /*mclk freq*/, 32, kSaiStereo},  // mclk must be at least 2x bitclock
+    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},  // mclk must be at least 2x bitclock
     NULL,
     0,
     0,
@@ -43,7 +42,7 @@ static I2SConfig i2s_config = {
     0,
   },
   { // sai_rx_state
-    {48000u, 12288000 /*mclk freq*/, 32, kSaiStereo},
+    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},
     (uint8_t *) rx_samples,  // regardless fo sample size, driver thinks of this as char stream...for now.
     NUM_RX_SAMPLES,
     0,
@@ -55,7 +54,7 @@ static I2SConfig i2s_config = {
     kSaiMaster,
     kSaiBusI2SType,
     //    NULL,  // semaphore_t
-    FALSE,
+    false,  // use DMA
     0,
   },
   { // tx_userconfig
@@ -82,26 +81,71 @@ static I2SConfig i2s_config = {
 
 extern event_source_t i2s_full_event;
 
+int rx_dma_count = 0;
+int rx_dma_lasterr = 0;
+int rx_i2s_lasterr = 0;
+
+// need to make vector derived from KINETIS_I2S_DMA_CHANNEL
+OSAL_IRQ_HANDLER(KINETIS_DMA2_IRQ_VECTOR) {
+  int i;
+  
+  OSAL_IRQ_PROLOGUE();
+  //  osalSysLockFromISR();
+  DMA->CINT = KINETIS_I2S_DMA_CHANNEL;
+  
+  // reset the destination address pointer
+  // we do this before the copy under the theory that we'll start
+  // overwriting the buffe only after some of the data has copied
+  DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
+  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
+
+  rx_dma_count++;
+
+  //  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+    // !! we actually throw away a couple of bits, >> 14 would give us everything the mic gives us,
+    // but we're limited on space and CPU so toss the LSBs...
+    rx_savebuf[i] = (int16_t) (rx_samples[i] >> 16);
+  }
+
+  // kick out an event to write data to disk
+  chSysLockFromISR();
+  chEvtBroadcastI(&i2s_full_event);
+  chSysUnlockFromISR();
+
+  //  osalSysUnlockFromISR();  
+  OSAL_IRQ_EPILOGUE();
+}
+
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n) {
   (void) i2sp;
   (void) offset;
   (void) n;
   int i;
   
+  // reset the rx buffer so we're not overflowing into surrounding memory
+  DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
+  
   // for now just copy it into the save buffer over and over again.
   // in the future, this would then kick off a SPI MMC data write event to save out the blocks
-  rx_handler_count++;
+  rx_handler_count++; // this is a count of I2S errors
+  rx_dma_lasterr = DMA->ES;
+  rx_i2s_lasterr = I2S0->RCSR;
+
+  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
+  
+#if 0   // this gets called now only if we have an I2S error
   //  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // just grab the first 128 bytes and sample-size convert
+  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { 
     //    rx_savebuf[i] = (uint16_t) ((rx_samples[i] + INT_MAX + 1) >> 16) & 0xFFFF;
-    rx_savebuf[i] = (uint16_t) (((rx_samples[i] >> 16) + 32768) & 0xFFFF);
+    rx_savebuf[i] = (int16_t) ((rx_samples[i] >> 16) & 0xFFFF);
   }
   
   // kick out an event to write data to disk
   //  chSysLockFromISR();
   chEvtBroadcastI(&i2s_full_event);
   // chSysUnlockFromISR();
-
+#endif
 }
 
 void micStart(void) {
@@ -112,7 +156,7 @@ void analogUpdateMic(void) {
   gen_mic_event = 1;
 }
 
-uint16_t *analogReadMic(void) {
+int16_t *analogReadMic(void) {
   return rx_savebuf;
 }
 

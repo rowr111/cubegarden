@@ -58,7 +58,7 @@ uint32_t sex_timer;
 
 #define SEX_TIMEOUT (8 * 1000)  // 15 seconds for partner to respond before giving up
 
-#define NUM_SAMPLES (NUM_RX_SAMPLES / 4)
+#define NUM_SAMPLES MIC_SAMPLE_DEPTH  // was NUM_RX_SAMPLES / 4
 
 static void agc(uint16_t  *sample, uint16_t *output) {
   uint16_t min, max;
@@ -94,7 +94,7 @@ static void agc_fft(uint8_t  *sample) {
   uint8_t min, max;
   uint8_t scale = 1;
   int16_t temp;
-  uint8_t i;
+  uint16_t i;
 
   // cheesy AGC to get something on the screen even if it's pretty quiet
   // e.g., "comfort noise"
@@ -533,6 +533,9 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   uint8_t shift;
   uint8_t selected = 0;
   char sexpacket[GENE_NAMELENGTH * 2 + 2];
+  int i;
+  uint16_t *sample_t;
+  int16_t *sample_in;
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
@@ -636,7 +639,13 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if( oscope_running ) {
       last_oscope_update = chVTGetSystemTime();
       if( event->adc.code == adcCodeMic ) {
-	samples = analogReadMic();
+	sample_in = analogReadMic();
+	sample_t = (uint16_t *) sample_in;
+	for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+	  sample_t[i] = (uint16_t) (((int32_t) sample_in[i] + 32768L) & 0xFFFF);
+	}
+	samples = sample_t;
+	
 	if( context->instance->ui == NULL )
 	  redraw_ui(0);
       }

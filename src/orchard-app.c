@@ -97,6 +97,8 @@ static uint8_t ui_override = 0;
 
 uint32_t uptime = 0;
 
+int sd_active = 0;
+
 void friend_cleanup(void);
 
 #define MAIN_MENU_MASK  0x02
@@ -905,49 +907,23 @@ void orchardAppTimer(const OrchardAppContext *context,
   chVTSet(&context->instance->timer, US2ST(usecs), timer_do_send_message, NULL);
 }
 
+void update_sd(int16_t *samples);
 static void i2s_full_handler(eventid_t id) {
   (void)id;
   OrchardAppEvent evt;
 
   if( gen_mic_event ) {
     gen_mic_event = 0;
-#if 0
-    int i;
-    for( i = 0; i < MIC_SAMPLE_DEPTH * 4; i++ ) { // just grab the first 128 bytes and sample-size convert
-      //      mic_return[i] = (uint8_t) (( ((uint32_t) rx_savebuf[i]) >> 24) & 0xFF + 128);
-      mic_return[i / 4] = (uint32_t) (rx_savebuf[i] + INT_MAX + 1);
-    }
-#endif
     
     evt.type = adcEvent;
     evt.adc.code = adcCodeMic;
     if( !ui_override )
       instance.app->event(instance.context, &evt);
   }
-  // this is for MMC saving
-#if 0
-  if( sd_offset < (DATA_OFFSET_START + DATA_LEN_BYTES) ) {
-    if( !HAL_SUCCESS == 
-	MMCD1.vmt->write(&MMCD1, sd_offset / MMCSD_BLOCK_SIZE, 
-			 (uint8_t *) rx_savebuf, NUM_RX_SAMPLES * sizeof(int32_t) / MMCSD_BLOCK_SIZE) ) {
-      chprintf(stream, "mmc_write failed\n\r");
-      return;
-    }
-    sd_offset += NUM_RX_SAMPLES * sizeof(int32_t);
-  } else {
-#if ENDURANCE_TEST
-    // if we're done recording, loop again
-    sd_offset = DATA_OFFSET_START;
-    write_iters++;
-    endurance_val++;
-    // update the endurance value sector
-    memcpy(endure_sector, &endurance_val, sizeof(uint32_t));
-    MMCD1.vmt->write(&MMCD1, ENDURANCE_OFFSET / MMCSD_BLOCK_SIZE, 
-		     (uint8_t *) endure_sector, 1);
-#endif
-    // if not doing endurance testing, do nothing
-  }
-#endif
+  //  this is for MMC saving
+  //if( sd_active ) {
+  //  update_sd(analogReadMic());
+  //}
   
 }
 

@@ -52,7 +52,7 @@ static void agc_fft(uint8_t  *sample) {
   uint8_t min, max;
   uint8_t scale = 1;
   int16_t temp;
-  uint8_t i;
+  uint16_t i;
 
   // cheesy AGC to get something on the screen even if it's pretty quiet
   // e.g., "comfort noise"
@@ -237,8 +237,10 @@ static void oscope_start(OrchardAppContext *context) {
 }
 
 void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
-
+  int i;
+  
   (void)context;
+  int16_t *sample_in;
   uint16_t *samples;
   
   if (event->type == keyEvent) {
@@ -249,7 +251,11 @@ void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     }
   } else if( event->type == adcEvent) {
     if( event->adc.code == adcCodeMic ) {
-      samples = analogReadMic();
+      sample_in = analogReadMic();
+      samples = (uint16_t *) sample_in;
+      for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+	samples[i] = (uint16_t) (((int32_t) sample_in[i] + 32768L) & 0xFFFF);
+      }
       redraw_ui(samples);
     }
     analogUpdateMic();
