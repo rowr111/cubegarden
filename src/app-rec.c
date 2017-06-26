@@ -234,10 +234,19 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if( event->adc.code == adcCodeMic ) {
       update_sd(analogReadMic()); // recording happens in the app thread, not event thread
       analogUpdateMic();
-      if( (ST2MS(chVTGetSystemTime()) - last_update) > 1000 ) {
-	prompt_state = !prompt_state;
-	redraw_ui();
+      
+      if( (ST2MS(chVTGetSystemTime()) - last_update) > 2000 ) {
+	// just flash the LED
+	if( prompt_state ) {
+	  palClearPad(IOPORT5, 0); // turn on red LED
+	} else {
+	  palSetPad(IOPORT5, 0); // turn off red LED
+	}
 	last_update = ST2MS(chVTGetSystemTime());
+	prompt_state = !prompt_state;
+	/*  // UI drawing takes too much CPU time, can't do it concurrently with recording
+	redraw_ui();
+	last_update = ST2MS(chVTGetSystemTime());*/
       }
     }
   } else if( event->type == timerEvent ) {
