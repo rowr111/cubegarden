@@ -7,6 +7,7 @@
 #include "orchard-ui.h"
 
 #include "mic.h"
+#include "led.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -176,6 +177,12 @@ static uint32_t rec_init(OrchardAppContext *context) {
 static void rec_start(OrchardAppContext *context) {
   (void)context;
 
+  //  while(ledsOff == 0) {
+  //    effectsStop();
+  //    chThdYield();
+  //    chThdSleepMilliseconds(50);
+  //  }
+  
   if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) )
     sd_error = 1;
   else
@@ -235,6 +242,8 @@ static void rec_exit(OrchardAppContext *context) {
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
   chThdSetPriority(LOWPRIO + 2);
+
+  //  effectsStart();
 }
 
 orchard_app("Record Clips", rec_init, rec_start, rec_event, rec_exit);

@@ -14,7 +14,11 @@
 #include "test-audit.h"
 
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n);
-int32_t rx_samples[NUM_RX_SAMPLES];
+//int32_t rx_samples[NUM_RX_SAMPLES];
+extern int32_t __ram1_start__[];
+//int32_t *rx_samples = __ram1__;
+#define rx_samples __ram1_start__
+
 int16_t rx_savebuf[NUM_RX_SAMPLES];
 uint32_t rx_cb_count = 0;
 

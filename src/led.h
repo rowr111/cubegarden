@@ -33,6 +33,7 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb);
 
 void effectsStart(void);
 uint8_t effectsStop(void);
+extern uint8_t ledsOff;;
 
 uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t);

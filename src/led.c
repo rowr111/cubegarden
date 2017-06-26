@@ -64,7 +64,7 @@ static uint8_t sat_offset = 0;
 static int wavesign = -1;
 
 static uint8_t ledExitRequest = 0;
-static uint8_t ledsOff = 1;
+uint8_t ledsOff = 1;
 
 genome diploid;   // not static so we can access/debug from other files
 
