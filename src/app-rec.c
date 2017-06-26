@@ -127,7 +127,7 @@ void do_agc(int16_t *samples) {
 void update_sd(int16_t *samples) {
   unsigned int i;
 
-  do_agc(samples);
+  //do_agc(samples);
   
   if( sd_error ) // don't update the SD if things are broken
     return;
@@ -180,12 +180,14 @@ static void rec_start(OrchardAppContext *context) {
     sd_error = 1;
   else
     sd_error = 0;
+  sd_active = 1;
     
+  chThdSleepMilliseconds(100); // wait for any messages to print
+  
   palClearPad(IOPORT5, 0); // turn on red LED
   redraw_ui();
 
   analogUpdateMic(); // don't generate events as we're going to record in the app thread directly
-  sd_active = 1;
 
   orchardAppTimer(context, 1000 * 1000 * 500, true); //update ui maybe 10 times a second?
   
@@ -216,7 +218,7 @@ static void rec_exit(OrchardAppContext *context) {
 
   (void)context;
 
-  sd_active = 0;
+  //  sd_active = 0;
   
   chHeapFree(block);
   

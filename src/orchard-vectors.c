@@ -18,12 +18,12 @@ register void *stack_pointer asm("sp");
 
 void HardFault_Handler(void) {
 /*lint -restore*/
+  /* Break into the debugger */
+  asm("bkpt #0");
+
   // Hijack the process stack pointer to make backtrace work
   asm("mrs %0, psp" : "=r"(HARDFAULT_PSP) : :);
   stack_pointer = HARDFAULT_PSP;
-
-  /* Break into the debugger */
-  asm("bkpt #0");
 
   while(1);
 }

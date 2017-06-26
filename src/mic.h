@@ -1,10 +1,10 @@
-#define NUM_RX_SAMPLES 512
+//#define NUM_RX_SAMPLES 512
+#define NUM_RX_SAMPLES 256
 
 #define MIC_SAMPLE_DEPTH 128
 
 extern int32_t rx_samples[];
 extern int16_t rx_savebuf[];
-extern uint32_t mic_return[MIC_SAMPLE_DEPTH];
 
 extern uint32_t rx_int_count;
 extern uint32_t rx_handler_count;

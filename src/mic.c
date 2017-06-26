@@ -16,7 +16,7 @@
 void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n);
 int32_t rx_samples[NUM_RX_SAMPLES];
 int16_t rx_savebuf[NUM_RX_SAMPLES];
-uint32_t rx_handler_count = 0;
+uint32_t rx_cb_count = 0;
 
 uint8_t gen_mic_event = 0;
 
@@ -26,7 +26,8 @@ static I2SConfig i2s_config = {
   NUM_RX_SAMPLES,
   i2s_handler,
   { // sai_tx_state
-    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},  // mclk must be at least 2x bitclock
+    //    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},  // mclk must be at least 2x bitclock
+    {32000u, 8192000 /*mclk freq*/, 32, kSaiStereo},
     NULL,
     0,
     0,
@@ -42,7 +43,8 @@ static I2SConfig i2s_config = {
     0,
   },
   { // sai_rx_state
-    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},
+    //    {44100u, 11289600 /*mclk freq*/, 32, kSaiStereo},  // mclk must be at least 2x bitclock
+    {32000u, 8192000 /*mclk freq*/, 32, kSaiStereo},
     (uint8_t *) rx_samples,  // regardless fo sample size, driver thinks of this as char stream...for now.
     NUM_RX_SAMPLES,
     0,
@@ -82,8 +84,6 @@ static I2SConfig i2s_config = {
 extern event_source_t i2s_full_event;
 
 int rx_dma_count = 0;
-int rx_dma_lasterr = 0;
-int rx_i2s_lasterr = 0;
 
 // need to make vector derived from KINETIS_I2S_DMA_CHANNEL
 OSAL_IRQ_HANDLER(KINETIS_DMA2_IRQ_VECTOR) {
@@ -123,17 +123,22 @@ void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n) {
   (void) n;
   int i;
   
+  rx_cb_count++; // this is a count of I2S overflows
+
+  I2S0->RCSR |= 0x40000; // clear the fifo error flag, that's typically why we get here
+    
+#if 0
+  while( DMA->TCD[KINETIS_I2S_DMA_CHANNEL].CSR |= 0x40 ) // wait until the channel is not active
+    ;
   // reset the rx buffer so we're not overflowing into surrounding memory
   DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
   
   // for now just copy it into the save buffer over and over again.
   // in the future, this would then kick off a SPI MMC data write event to save out the blocks
-  rx_handler_count++; // this is a count of I2S errors
-  rx_dma_lasterr = DMA->ES;
-  rx_i2s_lasterr = I2S0->RCSR;
-
-  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
   
+  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
+#endif
+ 
 #if 0   // this gets called now only if we have an I2S error
   //  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
   for( i = 0; i < NUM_RX_SAMPLES; i++ ) { 

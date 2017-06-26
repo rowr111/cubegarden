@@ -83,10 +83,10 @@ static void agc(uint16_t  *sample, uint16_t *output) {
   uint16_t span = max - min;
   scale = 65535.0 / (float) span;
 
-  for( i = 0; i < NUM_RX_SAMPLES; i += 4 ) { // decimate by 4
+  for( i = 0; i < NUM_RX_SAMPLES; i += (NUM_RX_SAMPLES / NUM_SAMPLES) ) { // decimate by 4
     temp = sample[i] - min;
     temp = (uint32_t) (((float)temp) * scale);
-    output[i / 4] = (uint16_t) temp; 
+    output[i / (NUM_RX_SAMPLES / NUM_SAMPLES)] = (uint16_t) temp; 
   }
 }
 
