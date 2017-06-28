@@ -8,6 +8,7 @@
 
 #include "mic.h"
 #include "led.h"
+#include "userconfig.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -15,54 +16,17 @@
 static int sd_error = 0;
 extern MMCDriver MMCD1;
 
-extern int sd_active;
+int sd_active = 0;
+static int sd_initted = 0;
 
-int prompt_state = 1;
-uint32_t last_update = 0;
+static int prompt_state = 1;
+static int A_state = 0;
+static uint32_t last_update = 0;
 
-static void redraw_ui() {
-  char uiStr[32];
-  
-  coord_t width;
-  coord_t height;
-  coord_t tallheight;
-  font_t font;
-  font_t font2;
-  
-  orchardGfxStart();
+#define REC_IDLE 0
+#define REC_REC  1
 
-  font = gdispOpenFont("fixed_5x8");
-  width = gdispGetWidth();
-  height = gdispGetFontMetric(font, fontHeight);
-
-  gdispClear(Black);
-  gdispFillArea(0, 0, width, height, White);
-
-  gdispDrawStringBox(0, 0, width, height,
-                     "Clip Recorder", font, Black, justifyCenter);
-
-  gdispCloseFont(font);
-  font2 = gdispOpenFont("DejaVuSans32");
-  tallheight = gdispGetFontMetric(font2, fontHeight);
-
-#if 0
-  //  if( (ST2MS(chVTGetSystemTime()) / 1000) % 2 ) {
-  if( prompt_state ) {
-    chsnprintf(uiStr, sizeof(uiStr), "%s", "ACTIVE" );
-  } else {
-    chsnprintf(uiStr, sizeof(uiStr), "REC" );
-  }
-#else
-  chsnprintf(uiStr, sizeof(uiStr), "%s", "ACTIVE" );
-#endif
-  gdispDrawStringBox(0, height*2, width, tallheight,
-		     uiStr, font2, White, justifyCenter);
-  
-  gdispCloseFont(font);
-  gdispCloseFont(font2);
-  gdispFlush();
-  orchardGfxEnd();
-}
+static int rec_state = REC_IDLE;
 
 #define SECTOR_BYTES       MMCSD_BLOCK_SIZE  // should be 512
 
@@ -103,8 +67,92 @@ const char wav_header[WAV_DATA_OFFSET] =
     0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00,
     0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0xe0, 0x14, 0x28, 0x01 }; */
 
-static uint32_t sd_offset = CLIP1_OFFSET_BYTES + DATA_END_OFFSET; // start at end, to trigger initialization
 static uint8_t clip_num = 0;
+static uint32_t sd_offset = CLIP1_OFFSET_BYTES + DATA_END_OFFSET; // start at end, to trigger initialization
+
+
+static void redraw_ui() {
+  char uiStr[32];
+  
+  coord_t width;
+  coord_t height;
+  coord_t header_height;
+  coord_t tallheight;
+  font_t font;
+  font_t font2;
+
+  int i;
+  const struct userconfig *config;
+  
+  orchardGfxStart();
+
+  font = gdispOpenFont("fixed_5x8");
+  width = gdispGetWidth();
+  height = gdispGetFontMetric(font, fontHeight);
+  header_height = height;
+
+  gdispClear(Black);
+  gdispFillArea(0, 0, width, height, White);
+
+  gdispDrawStringBox(0, 0, width, height,
+                     "Clip Recorder", font, Black, justifyCenter);
+
+  if( rec_state == REC_REC ) {
+    font2 = gdispOpenFont("DejaVuSans32");
+    tallheight = gdispGetFontMetric(font2, fontHeight);
+
+    chsnprintf(uiStr, sizeof(uiStr), "REC %d", clip_num + 1 );
+    gdispDrawStringBox(0, height*2, width, tallheight,
+		       uiStr, font2, White, justifyCenter);
+  
+    gdispCloseFont(font2);
+
+    if( A_state == 0 )
+      gdispDrawStringBox(0, height*2 + tallheight, width, header_height,
+			 "Press & hold > to stop", font, White, justifyCenter);
+    else
+      gdispDrawStringBox(0, height*2 + tallheight, width, header_height,
+			 "Hold > for 3 seconds", font, White, justifyCenter);
+    
+  } else if( rec_state == REC_IDLE ) {
+    config = getConfig();
+    
+    color_t draw_color = White;
+    for (i = 0; i < MAX_CLIPS; i++) {
+      draw_color = White;
+      
+      if( config->cfg_clip_used[i] )
+	chsnprintf(uiStr, sizeof(uiStr), "Clip %d  (used)", i + 1);
+      else
+	chsnprintf(uiStr, sizeof(uiStr), "Clip %d (blank)", i + 1);
+	
+      if (i == clip_num) {
+	gdispFillArea(0, header_height + i * height,
+		      width, height, White);
+	draw_color = Black;
+      }
+      gdispDrawStringBox(0, header_height + i * height,
+			 width, height,
+			 uiStr, font, draw_color, justifyCenter);
+    }
+
+    draw_color = White;
+    if( clip_num == MAX_CLIPS ) {
+      gdispFillArea(0, header_height + i * height,
+		    width, height, White);
+      draw_color = Black;
+    }
+    chsnprintf(uiStr, sizeof(uiStr), "Reset clip used state");
+    gdispDrawStringBox(0, header_height + i * height,
+		       width, height,
+		       uiStr, font, draw_color, justifyCenter);
+  }
+
+  gdispCloseFont(font);
+  
+  gdispFlush();
+  orchardGfxEnd();
+}
 
 void do_agc(int16_t *samples) {
   int32_t min, max;
@@ -192,7 +240,7 @@ static uint32_t rec_init(OrchardAppContext *context) {
     return 1;
   }
 
- chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
+  // chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
 }
 
@@ -204,43 +252,121 @@ static void rec_start(OrchardAppContext *context) {
   //    chThdYield();
   //    chThdSleepMilliseconds(50);
   //  }
+
+  A_state = 0;
+  rec_state = REC_IDLE;
   
-  if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
-    chprintf(stream, "couldn't connect to MMC\n\r");
-    sd_error = 1;
-  } else
-    sd_error = 0;
+  if( !sd_initted ) { // don't re-init if we've initted once already
+    if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
+      chprintf(stream, "couldn't connect to MMC\n\r");
+      sd_error = 1;
+    } else {
+      sd_error = 0;
+      sd_initted = 1;
+    }
+  }
+  
   sd_active = 1;
     
   chThdSleepMilliseconds(100); // wait for any messages to print
   
-  palClearPad(IOPORT5, 0); // turn on red LED
+  palSetPad(IOPORT5, 0); // turn off red LED
   redraw_ui();
-
-  analogUpdateMic(); // don't generate events as we're going to record in the app thread directly
 
   last_update = ST2MS(chVTGetSystemTime());
   //orchardAppTimer(context, 1000 * 1000 * 50, true); //update ui maybe 10 times a second?
   
 }
 
+static int select_time = 0;
+static struct OrchardUiContext listUiContext;
+static const  char title[] = "Really clear state?";
+
 void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
   int16_t *samples;
+  const OrchardUi *listUi;
+  uint8_t selected;
 
   if (event->type == keyEvent) {
-    if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {
-      // orchardAppExit();  // I think this is a misfeature as "home" hold should be the way out
-    } else  if ( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      // put the code to "Commit" a recording here
+    if( rec_state == REC_IDLE ) {
+      palSetPad(IOPORT5, 0); // turn off red LED
+      if(event->key.flags == keyDown)  {
+	if(event->key.code == keyBottom) {
+	  clip_num = (clip_num + 1) % (MAX_CLIPS + 1);  // one off the bottom is for the UI entry to reset record state
+	  
+	  redraw_ui();
+	} else if( event->key.code == keyTop ) {
+	  chprintf(stream, "got keytop in app_rec\n\r");
+	  if( clip_num > 0 )
+	    clip_num = clip_num - 1;
+	  else
+	    clip_num = MAX_CLIPS; // one off the bottom is for the UI entry to reset record state
+	  
+	  redraw_ui();
+	} else if (event->key.code == keySelect)  {
+	  if( clip_num < MAX_CLIPS ) {
+	    palClearPad(IOPORT5, 0); // turn on red LED
+	    configClipMarkUsed(clip_num);
+	    configFlush();
+	    chThdSleepMilliseconds(100); // give some time for clocks to re-stabilize after writing to flash
+	    
+	    last_update = ST2MS(chVTGetSystemTime());
+	    select_time = ST2MS(chVTGetSystemTime());
+	    rec_state = REC_REC;
+	    sd_offset = clip_offset_bytes[clip_num] + DATA_END_OFFSET;	    
+	    redraw_ui();
+	    
+	    analogUpdateMic();
+	  } else if( clip_num == MAX_CLIPS ) {
+	    listUi = getUiByName("list");
+	    listUiContext.total = 2;  
+	    listUiContext.selected = 0;
+	    listUiContext.itemlist = (const char **) chHeapAlloc(NULL, sizeof(char *) * 3); // 3 lines incl header
+	    if( listUiContext.itemlist == NULL )
+	      return;
+	
+	    listUiContext.itemlist[0] = title;
+	    listUiContext.itemlist[1] = "Yes";
+	    listUiContext.itemlist[2] = "No";
+	
+	    if( listUi != NULL ) {
+	      context->instance->uicontext = &listUiContext;
+	      context->instance->ui = listUi;
+	    }
+	    listUi->start(context);
+	  }
+	}
+      }
+    } else if (rec_state == REC_REC) {
+      if(event->key.flags == keyDown)  {
+	if (event->key.code == keyRight)  {
+	  select_time = ST2MS(chVTGetSystemTime());
+	  A_state = 1;
+	  chprintf(stream, "A down %d\n\r", select_time);
+	  redraw_ui();
+	}
+      }
+      if(event->key.flags == keyUp) {
+	if (event->key.code == keyRight)  {
+	  A_state = 0;
+	  uint32_t curtime = ST2MS(chVTGetSystemTime());
+	  chprintf(stream, "A up %d\n\r", curtime - select_time);
+	  if( curtime - select_time > 3000 ) {
+	    rec_state = REC_IDLE;
+	    palSetPad(IOPORT5, 0); // turn off red LED
+	  }
+	  redraw_ui();
+	}
+      }
     }
   } else if( event->type == adcEvent) {
-    if( event->adc.code == adcCodeMic ) {
+    if( event->adc.code == adcCodeMic && rec_state == REC_REC ) {
       update_sd(analogReadMic()); // recording happens in the app thread, not event thread
       analogUpdateMic();
       
-      if( (ST2MS(chVTGetSystemTime()) - last_update) > 2000 ) {
+      if( (ST2MS(chVTGetSystemTime()) - last_update) > 1500 ) {
 	prompt_state = !prompt_state;
 	// just flash the LED
 	if( prompt_state ) {
@@ -249,6 +375,7 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	  palSetPad(IOPORT5, 0); // turn off red LED
 	}
 	last_update = ST2MS(chVTGetSystemTime());
+	
 	/*  // UI drawing takes too much CPU time, can't do it concurrently with recording
 	redraw_ui();
 	last_update = ST2MS(chVTGetSystemTime());*/
@@ -256,6 +383,20 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     }
   } else if( event->type == timerEvent ) {
     // redraw_ui();
+  } else if( event->type == uiEvent ) {
+    chprintf(stream, "got uievent in app_rec\n\r");
+    chHeapFree(listUiContext.itemlist); // free the itemlist passed to the UI
+    selected = (uint8_t) context->instance->ui_result;
+    context->instance->ui = NULL;
+    context->instance->uicontext = NULL;
+
+    if( selected == 0 ) { // this is the "yes" option
+      configClipClearMarks();
+      chThdSleepMilliseconds(100); // give some time for clocks to re-stabilize after writing to flash
+    } else { // no option
+      // do nothing
+    }
+    redraw_ui();
   }
 }
 
@@ -279,7 +420,7 @@ static void rec_exit(OrchardAppContext *context) {
   //    chprintf(stream, "mmcDisconnect failed\n\r");
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
-  chThdSetPriority(LOWPRIO + 2);
+  //  chThdSetPriority(LOWPRIO + 2);
 
   //  effectsStart();
 }

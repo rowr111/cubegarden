@@ -97,7 +97,7 @@ static uint8_t ui_override = 0;
 
 uint32_t uptime = 0;
 
-int sd_active = 0;
+extern int sd_active;
 
 void friend_cleanup(void);
 
@@ -120,6 +120,9 @@ static void handle_radio_page(eventid_t id) {
   (void) id;
   uint8_t oldfx;
 
+  if( sd_active ) // don't page during recording
+    return;
+  
   ui_override = 1;
   oldfx = effectsGetPattern();
   effectsSetPattern(effectsNameLookup("strobe"));
@@ -566,6 +569,9 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
   char *who;
   char  response[sizeof(genome) + GENE_NAMELENGTH + 1];
 
+  if( sd_active ) // don't have sex while recording
+    return;
+  
   family = (const struct genes *) storageGetData(GENE_BLOCK);
 
   if( strncmp((char *)data, family->name, GENE_NAMELENGTH) == 0 ) {

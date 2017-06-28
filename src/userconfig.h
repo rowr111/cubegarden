@@ -1,7 +1,9 @@
+#include "mic.h"
+
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    3
+#define CONFIG_VERSION    4
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -11,6 +13,7 @@ typedef struct userconfig {
   uint32_t  cfg_autosex;     // set if sex automatically allowed
   uint32_t  cfg_channel;     // our default channel
   uint32_t  cfg_txboost;     // set txboost
+  uint32_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
 void configStart(void);
@@ -23,6 +26,8 @@ void configClearAutoSex(void);
 void configToggleAutosex(void);
 void configSetChannel(uint32_t channel);
 void configToggleBoost(void);
+void configClipMarkUsed(uint32_t clip);
+void configClipClearMarks(void);
 void configFlush(void); // call on power-down to flush config state
 
 void configLazyFlush(void);  // call periodically to sync state, but only when dirty

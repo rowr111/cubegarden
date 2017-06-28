@@ -3,6 +3,8 @@
 
 #define MIC_SAMPLE_DEPTH 128
 
+#define MAX_CLIPS 6
+
 //extern int32_t rx_samples[];
 extern int32_t rx_samples[];
 extern int16_t rx_savebuf[];

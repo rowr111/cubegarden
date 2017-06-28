@@ -6,6 +6,8 @@
 #include "storage.h"
 #include "userconfig.h"
 
+#include "mic.h"
+
 #include <string.h>
 
 static userconfig config_cache;
@@ -52,6 +54,21 @@ void configSetChannel(uint32_t channel) {
   config_cache.cfg_channel = channel;
 }
 
+void configClipMarkUsed(uint32_t clip) {
+  if( clip >= MAX_CLIPS )
+    return;
+
+  config_cache.cfg_clip_used[clip] = 1;
+}
+
+void configClipClearMarks(void) {
+  int i;
+
+  for( i = 0; i < MAX_CLIPS; i++ ) {
+    config_cache.cfg_clip_used[i] = 0;
+  }
+}
+
 void configFlush(void) {
   storagePatchData(CONFIG_BLOCK, (uint32_t *) &config_cache, CONFIG_OFFSET, sizeof(struct userconfig));
 }
@@ -67,6 +84,7 @@ void configLazyFlush(void) {
 
 static void init_config(uint32_t block) {
   struct userconfig config;
+  int i;
 
   config.signature = CONFIG_SIGNATURE;
   config.version = CONFIG_VERSION;
@@ -76,6 +94,10 @@ static void init_config(uint32_t block) {
   config.cfg_autosex = 0;   // deny rapid breeding by default
   config.cfg_channel = 0;
   config.cfg_txboost = 0;   // range seems good enough without the boost
+
+  for( i = 0; i < MAX_CLIPS; i++ ) {
+    config.cfg_clip_used[i] = 0;
+  }
 
   storagePatchData(block, (uint32_t *) &config, CONFIG_OFFSET, sizeof(struct userconfig));
 }
