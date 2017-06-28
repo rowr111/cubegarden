@@ -45,7 +45,7 @@ static void redraw_ui() {
   font2 = gdispOpenFont("DejaVuSans32");
   tallheight = gdispGetFontMetric(font2, fontHeight);
 
-#if 1
+#if 0
   //  if( (ST2MS(chVTGetSystemTime()) / 1000) % 2 ) {
   if( prompt_state ) {
     chsnprintf(uiStr, sizeof(uiStr), "%s", "ACTIVE" );
@@ -162,8 +162,11 @@ void update_sd(int16_t *samples) {
       else 
 	block[i] = 0;
     }
-    if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) )
-      sd_error = 1;
+    if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) ) {
+      chprintf(stream, "mmc_write failed on first block\n\r");
+      // sd_error = 1;
+      return;
+    }
     
     sd_offset += SECTOR_BYTES;
   }
@@ -174,7 +177,7 @@ void update_sd(int16_t *samples) {
       MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, 
 		       (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) / SECTOR_BYTES) ) {
     chprintf(stream, "mmc_write failed\n\r");
-    sd_error = 1;
+    // sd_error = 1;
     return;
   }
   sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
@@ -202,9 +205,10 @@ static void rec_start(OrchardAppContext *context) {
   //    chThdSleepMilliseconds(50);
   //  }
   
-  if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) )
+  if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
+    chprintf(stream, "couldn't connect to MMC\n\r");
     sd_error = 1;
-  else
+  } else
     sd_error = 0;
   sd_active = 1;
     
@@ -215,6 +219,7 @@ static void rec_start(OrchardAppContext *context) {
 
   analogUpdateMic(); // don't generate events as we're going to record in the app thread directly
 
+  last_update = ST2MS(chVTGetSystemTime());
   //orchardAppTimer(context, 1000 * 1000 * 50, true); //update ui maybe 10 times a second?
   
 }
@@ -236,6 +241,7 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       analogUpdateMic();
       
       if( (ST2MS(chVTGetSystemTime()) - last_update) > 2000 ) {
+	prompt_state = !prompt_state;
 	// just flash the LED
 	if( prompt_state ) {
 	  palClearPad(IOPORT5, 0); // turn on red LED
@@ -243,7 +249,6 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	  palSetPad(IOPORT5, 0); // turn off red LED
 	}
 	last_update = ST2MS(chVTGetSystemTime());
-	prompt_state = !prompt_state;
 	/*  // UI drawing takes too much CPU time, can't do it concurrently with recording
 	redraw_ui();
 	last_update = ST2MS(chVTGetSystemTime());*/

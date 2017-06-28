@@ -245,6 +245,13 @@ int main(void) {
    *   RTOS is active.
    */
   halInit();
+
+  // some PCR overrides for fast SD cards ops to work more reliably
+  PORTD_PCR0 = 0x203; // pull up enabled, fast slew  (CS0)
+  PORTD_PCR1 = 0x203; // pull up enabled, fast slew (clk)
+  PORTD_PCR2 = 0x200; // fast slew (mosi)
+  PORTD_PCR3 = 0x200; // fast slew (miso)
+  
   // K22 has a separate setting for open-drain that has to be explicitly set for I2C
   // this breaks the chibiOS abstractions, which were not made to anticipate this oddity.
   PORT_PCR_REG(PORTB,2) |= PORTx_PCRn_ODE;
