@@ -266,7 +266,7 @@ int main(void) {
   palSetPad(IOPORT2, 1); // set shipmode_n to 1 (disable shipmode)
   palSetPad(IOPORT3, 8); // set BATT_SRST
   
-  palSetPad(IOPORT5, 0); // turn off red LED
+  palClearPad(IOPORT5, 0); // turn on red LED
   
   sdStart(&SD4, &serialConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
@@ -297,6 +297,8 @@ int main(void) {
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
   
+  chThdSleepMilliseconds(200);
+  palSetPad(IOPORT5, 0); // turn off red LED
   /*
    * Normal main() thread activity, spawning shells.
    */
