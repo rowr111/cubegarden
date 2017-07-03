@@ -380,7 +380,7 @@ OrchardTestResult test_gasgauge(const char *my_name, OrchardTestType test_type) 
 
     voltage = ggVoltage();
     
-    if( (version != 0x2AFF) || (voltage < 3000) || (voltage > 4300) ) {
+    if( ((version & 0xFFF0) != 0x2AF0) || (voltage < 3000) || (voltage > 4300) ) { // seen 0x2AFF and 0x2AFE in the field
       return orchardResultFail;
     } else {
       return orchardResultPass;
