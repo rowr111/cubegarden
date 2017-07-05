@@ -76,7 +76,7 @@ const PALConfig pal_default_config =
     {
       .port = IOPORT4,  // PORTD
       .pads = {
-        /* PTD0*/ PAL_MODE_ALTERNATIVE_2,   /* PTD1*/ PAL_MODE_ALTERNATIVE_2,   /* PTD2*/ PAL_MODE_ALTERNATIVE_2, // spi0_pcs0, spi0_clk, spi0_mosi
+        /* PTD0*/ PAL_MODE_OUTPUT_PUSHPULL, /* PTD1*/ PAL_MODE_ALTERNATIVE_2,   /* PTD2*/ PAL_MODE_ALTERNATIVE_2, // spi0_pcs0, spi0_clk, spi0_mosi
         /* PTD3*/ PAL_MODE_ALTERNATIVE_2,   /* PTD4*/ PAL_MODE_OUTPUT_PUSHPULL, /* PTD5*/ PAL_MODE_ALTERNATIVE_7, // spi0_miso, spi1_pcs0, spi1_sck
         /* PTD6*/ PAL_MODE_ALTERNATIVE_7,   /* PTD7*/ PAL_MODE_ALTERNATIVE_7,   /* PTD8*/ PAL_MODE_UNCONNECTED, // spi1_mosi, spi1_miso
         /* PTD9*/ PAL_MODE_UNCONNECTED,     /*PTD10*/ PAL_MODE_UNCONNECTED,     /*PTD11*/ PAL_MODE_UNCONNECTED,

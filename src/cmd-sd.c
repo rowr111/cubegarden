@@ -144,12 +144,12 @@ void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[])
   (void)argv;
   if (argc <= 0) {
     chprintf(chp, "Usage: sd [verb]:"SHELL_NEWLINE_STR);
-    chprintf(chp, "    mount     mount drive"SHELL_NEWLINE_STR);
-    chprintf(chp, "    unmount   unmount drive"SHELL_NEWLINE_STR);
+    //    chprintf(chp, "    mount     mount drive"SHELL_NEWLINE_STR);
+    //    chprintf(chp, "    unmount   unmount drive"SHELL_NEWLINE_STR);
     chprintf(chp, "    cid       dump card ID"SHELL_NEWLINE_STR);
-    chprintf(chp, "    r         read some sectors (testing)"SHELL_NEWLINE_STR);
-    chprintf(chp, "    dma       dma test (testing)"SHELL_NEWLINE_STR);
-    chprintf(chp, "    mon       monitor dma test (testing)"SHELL_NEWLINE_STR);
+    //    chprintf(chp, "    r         read some sectors (testing)"SHELL_NEWLINE_STR);
+    //    chprintf(chp, "    dma       dma test (testing)"SHELL_NEWLINE_STR);
+    //    chprintf(chp, "    mon       monitor dma test (testing)"SHELL_NEWLINE_STR);
     return;
   }
 
@@ -190,7 +190,7 @@ void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "\n\r");
     chHeapFree(block);
   }
-
+#if 0
   else if (!strcasecmp(argv[0], "w")) {
     if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) )
       chprintf(chp, "mmcConnect() failed\n\r");
@@ -258,7 +258,8 @@ void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[])
     if( !HAL_SUCCESS == MMCD1.vmt->disconnect(&MMCD1) )
       chprintf(chp, "mmcDisconnect failed\n\r");
   }
-
+#endif
+  
 #if 0
   else if (!strcasecmp(argv[0], "dma")) {
     try_dma();

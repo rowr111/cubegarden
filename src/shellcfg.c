@@ -49,7 +49,6 @@ void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void spiCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -77,7 +76,6 @@ static const ShellCommand commands[] = {
   {"c", capWCommand},
   {"chg", chgCommand},
   {"gg", ggCommand},
-  {"spi", spiCommand},
   {"fx", fxCommand},
   {"radio", cmd_radio},
   {"msg", cmd_msg},

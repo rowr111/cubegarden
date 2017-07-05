@@ -77,13 +77,21 @@ static const SPIConfig spi_config_mmc = {
   NULL,
   GPIOD,
   0, 
-  KINETIS_SPI_TAR_8BIT_FAST
+  KINETIS_SPI_TAR_8BIT_SD
+  //KINETIS_SPI_TAR_8BIT_MED
+};
+
+static const SPIConfig spi_config_mmc_ls = {
+  NULL,
+  GPIOD,
+  0, 
+  KINETIS_SPI_TAR_8BIT_SLOW
 };
 
 static const MMCConfig mmc_config = { 
   &SPID1,
-  &spi_config_mmc,
-  &spi_config_mmc
+  &spi_config_mmc_ls, // low speed config for init
+  &spi_config_mmc // high speed config for run
 };
 
 MMCDriver MMCD1;
@@ -191,6 +199,14 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   spiObjectInit(&SPID1);
   mmcObjectInit(&MMCD1);
+
+  // setup drive strengths on SPI0
+  PORTD_PCR0 = 0x103; // pull up enabled, fast slew  (CS0)
+  PORTD_PCR1 = 0x203; // pull up enabled, fast slew (clk)
+  PORTD_PCR2 = 0x200; // fast slew (mosi)
+  PORTD_PCR3 = 0x207; // slow slew, pull-up (miso)
+  palSetPad(spi_config_mmc.ssport, spi_config_mmc.sspad); // make sure CS is deselected
+  
   mmcStart(&MMCD1, &mmc_config); // driver, config
   
   evtTableInit(orchard_events, 32);
@@ -206,6 +222,13 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   micStart(); 
   i2sStartRx(&I2SD1); // start the audio sampling buffer
 
+#if 0
+  spiStart(&SPID1, &spi_config_mmc);
+  spiUnselect(&SPID1);
+  spiIgnore(&SPID1, 1);
+  spiUnselect(&SPID1);
+#endif
+  
   orchardTestRunAll(stream, orchardTestPoweron);
   /*
    * Activates the EXT driver 1.

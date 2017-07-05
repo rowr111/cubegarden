@@ -25,8 +25,10 @@ static uint32_t last_update = 0;
 
 #define REC_IDLE 0
 #define REC_REC  1
+#define REC_ERR  2
 
 static int rec_state = REC_IDLE;
+uint8_t sd_dbg_val = 0;
 
 #define SECTOR_BYTES       MMCSD_BLOCK_SIZE  // should be 512
 
@@ -134,7 +136,7 @@ static void redraw_ui() {
       gdispDrawStringBox(0, header_height + i * height,
 			 width, height,
 			 uiStr, font, draw_color, justifyCenter);
-    }
+    } 
 
     draw_color = White;
     if( clip_num == MAX_CLIPS ) {
@@ -146,6 +148,13 @@ static void redraw_ui() {
     gdispDrawStringBox(0, header_height + i * height,
 		       width, height,
 		       uiStr, font, draw_color, justifyCenter);
+  } else if( rec_state == REC_ERR ) {
+    gdispDrawStringBox(0, height*2, width, header_height,
+		       "SD card error!", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*3, width, header_height,
+		       "To record, power", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*4, width, header_height,
+		       "cycle the badge.", font, White, justifyCenter);
   }
 
   gdispCloseFont(font);
@@ -194,11 +203,14 @@ void do_agc(int16_t *samples) {
 
 void update_sd(int16_t *samples) {
   unsigned int i;
+  unsigned int retry;
 
   //do_agc(samples);
   
-  if( sd_error ) // don't update the SD if things are broken
+  if( sd_error ) { // don't update the SD if things are broken
+    chprintf(stream, "sd error abort!\n\r");
     return;
+  }
 
   // check if we fell off the end; if so, loop to the front, reconstruting the WAV header
   if( sd_offset >= (clip_offset_bytes[clip_num] + DATA_END_OFFSET) ) {
@@ -210,10 +222,22 @@ void update_sd(int16_t *samples) {
       else 
 	block[i] = 0;
     }
+    
     if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) ) {
       chprintf(stream, "mmc_write failed on first block\n\r");
+
+      retry = 0;
+      while( retry < 2 ) {
+	if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) ) {
+	  retry++;
+	  chprintf(stream, "mmc_write failed on first block (retry %d)\n\r", retry);
+	} else {
+	  chprintf(stream, "mmc_write on first block succeeded on retry\n\r");
+	  break;
+	}
+      }
       // sd_error = 1;
-      return;
+      // return; // actually keep going, since it's a stream
     }
     
     sd_offset += SECTOR_BYTES;
@@ -221,12 +245,29 @@ void update_sd(int16_t *samples) {
   
 
   // else keep filling in the data
+  retry = 0;
   if( !HAL_SUCCESS == 
       MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, 
 		       (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) / SECTOR_BYTES) ) {
-    chprintf(stream, "mmc_write failed\n\r");
+    chprintf(stream, "mmc_write failed (orig) code 0x%02x offset %d\n\r", sd_dbg_val, sd_offset);
+    while( retry < 2 ) {
+      if( !HAL_SUCCESS == 
+	  MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, 
+			   (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) / SECTOR_BYTES) ) {
+	retry++;
+	chprintf(stream, "mmc_write failed (retry %d) 0x%02x\n\r", retry, sd_dbg_val);
+      } else {
+	chprintf(stream, "mmc_write succeeded on retry\n\r");
+	
+	sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
+	return;
+      }
+    }
     // sd_error = 1;
-    return;
+    //    if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) { // this is a bad idea..
+    //      chprintf(stream, "couldn't re-connect to MMC\n\r");
+    //    }
+    // return; // actually keep going
   }
   sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
 }
@@ -236,7 +277,9 @@ static uint32_t rec_init(OrchardAppContext *context) {
 
   block = chHeapAlloc(NULL, sizeof(uint8_t) * SECTOR_BYTES * 1);
   if( block == NULL ) {
+    chprintf(stream, "couldn't allocate record block buffe\n\r");
     sd_error = 1;
+    rec_state = REC_ERR;
     return 1;
   }
 
@@ -260,6 +303,7 @@ static void rec_start(OrchardAppContext *context) {
     if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
       chprintf(stream, "couldn't connect to MMC\n\r");
       sd_error = 1;
+      rec_state = REC_ERR;
     } else {
       sd_error = 0;
       sd_initted = 1;
@@ -298,7 +342,6 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	  
 	  redraw_ui();
 	} else if( event->key.code == keyTop ) {
-	  chprintf(stream, "got keytop in app_rec\n\r");
 	  if( clip_num > 0 )
 	    clip_num = clip_num - 1;
 	  else
@@ -384,7 +427,6 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   } else if( event->type == timerEvent ) {
     // redraw_ui();
   } else if( event->type == uiEvent ) {
-    chprintf(stream, "got uievent in app_rec\n\r");
     chHeapFree(listUiContext.itemlist); // free the itemlist passed to the UI
     selected = (uint8_t) context->instance->ui_result;
     context->instance->ui = NULL;
@@ -403,18 +445,27 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 static void rec_exit(OrchardAppContext *context) {
 
   (void)context;
-
+  int retry = 0;
+  
   sd_active = 0;
   
   chHeapFree(block);
   
   palSetPad(IOPORT5, 0); // turn off red LED
 
-  chprintf(stream, "rec_exit\n\r");
   chThdSleepMilliseconds(100); // wait for any converions to complete
  
-  if( !HAL_SUCCESS == MMCD1.vmt->sync(&MMCD1) )
+  if( !HAL_SUCCESS == MMCD1.vmt->sync(&MMCD1) ) {
     chprintf(stream, "mmcSync failed\n\r" );
+    while( retry < 2 ) {
+      if( !HAL_SUCCESS == MMCD1.vmt->sync(&MMCD1) ) {
+	retry ++;
+	chprintf(stream, "mmcSync failed retry %d\n\r", retry );
+      } else {
+	break;
+      }
+    }
+  }
   
   //  if( !HAL_SUCCESS == MMCD1.vmt->disconnect(&MMCD1) )
   //    chprintf(stream, "mmcDisconnect failed\n\r");
