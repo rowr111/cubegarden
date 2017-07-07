@@ -89,21 +89,18 @@ extern event_source_t i2s_full_event;
 
 int rx_dma_count = 0;
 
+static void force_ordering(void) {
+  DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
+}
+static void force_ordering2(void) {
+  DMA->CINT = KINETIS_I2S_DMA_CHANNEL;
+}
+
 // need to make vector derived from KINETIS_I2S_DMA_CHANNEL
 OSAL_IRQ_HANDLER(KINETIS_DMA2_IRQ_VECTOR) {
   int i;
   
   OSAL_IRQ_PROLOGUE();
-  //  osalSysLockFromISR();
-  DMA->CINT = KINETIS_I2S_DMA_CHANNEL;
-  
-  // reset the destination address pointer
-  // we do this before the copy under the theory that we'll start
-  // overwriting the buffe only after some of the data has copied
-  DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
-  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
-
-  rx_dma_count++;
 
   //  memcpy( rx_savebuf, rx_samples, NUM_RX_SAMPLES * sizeof(uint32_t) );
   for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
@@ -112,12 +109,23 @@ OSAL_IRQ_HANDLER(KINETIS_DMA2_IRQ_VECTOR) {
     rx_savebuf[i] = (int16_t) (rx_samples[i] >> 16);
   }
 
+  // osalSysLockFromISR();
+  // reset the destination address pointer
+  // we do this before the copy under the theory that we'll start
+  // overwriting the buffe only after some of the data has copied
+  force_ordering();
+  force_ordering2();
+  
+  DMA->SERQ = KINETIS_I2S_DMA_CHANNEL; // re-enable requests after the rxbuffer pointer is reset
+  // osalSysUnlockFromISR();  
+
+  rx_dma_count++;
+
   // kick out an event to write data to disk
   chSysLockFromISR();
   chEvtBroadcastI(&i2s_full_event);
   chSysUnlockFromISR();
 
-  //  osalSysUnlockFromISR();  
   OSAL_IRQ_EPILOGUE();
 }
 
@@ -135,7 +143,8 @@ void i2s_handler(I2SDriver *i2sp, size_t offset, size_t n) {
   //  while( DMA->TCD[KINETIS_I2S_DMA_CHANNEL].CSR |= 0x40 ) // wait until the channel is not active
   //    ;
   // reset the rx buffer so we're not overflowing into surrounding memory
-  DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer;
+  force_ordering();
+  //DMA->TCD[KINETIS_I2S_DMA_CHANNEL].DADDR = I2SD1.config->rx_buffer; // this gets pulled into force_ordering
   
   // for now just copy it into the save buffer over and over again.
   // in the future, this would then kick off a SPI MMC data write event to save out the blocks

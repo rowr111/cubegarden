@@ -146,6 +146,8 @@ static void freefall(eventid_t id) {
 }
 
 void spiRuntSetup(SPIDriver *spip);
+unsigned int flash_init = 0;
+
 
 static thread_t *eventThr = NULL;
 static THD_WORKING_AREA(waOrchardEventThread, 0x900);
@@ -164,6 +166,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   
   geneStart();  // this has to start after random pool is initied
   configStart();
+
+  flash_init = 1;
 
   chgSetSafety(); // has to be first thing written to the battery controller
   
@@ -255,6 +259,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 }
 
 void spiRuntSetup(SPIDriver *spip);
+
 /*
  * Application entry point.
  */
@@ -305,6 +310,8 @@ int main(void) {
   chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
 	   chCoreGetStatusX());
 
+  flash_init = 0;
+  
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
 			       sizeof(waOrchardEventThread),
@@ -312,16 +319,20 @@ int main(void) {
 			       orchard_event_thread,
 			       NULL);
 
+  while(flash_init == 0) // wait until the flash inits from the thread that was spawned
+    chThdSleepMilliseconds(10);
+    
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
   ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
   effectsStart();
 
+  chThdSleepMilliseconds(200);
+  palSetPad(IOPORT5, 0); // turn off red LED
+  
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
   
-  chThdSleepMilliseconds(200);
-  palSetPad(IOPORT5, 0); // turn off red LED
   /*
    * Normal main() thread activity, spawning shells.
    */

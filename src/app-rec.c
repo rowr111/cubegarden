@@ -9,6 +9,7 @@
 #include "mic.h"
 #include "led.h"
 #include "userconfig.h"
+#include "radio.h" // absorb the "anonymous" extern
 
 #include <string.h>
 #include <stdlib.h>
@@ -22,10 +23,13 @@ static int sd_initted = 0;
 static int prompt_state = 1;
 static int A_state = 0;
 static uint32_t last_update = 0;
+static uint8_t prev_anonymous = 0;
 
 #define REC_IDLE 0
 #define REC_REC  1
 #define REC_ERR  2
+#define REC_STREAM_ERR  3
+#define REC_RECONNECT   4
 
 static int rec_state = REC_IDLE;
 uint8_t sd_dbg_val = 0;
@@ -155,6 +159,18 @@ static void redraw_ui() {
 		       "To record, power", font, White, justifyCenter);
     gdispDrawStringBox(0, height*4, width, header_height,
 		       "cycle the badge.", font, White, justifyCenter);
+  } else if( rec_state == REC_STREAM_ERR ) {
+    gdispDrawStringBox(0, height*2, width, header_height,
+		       "SD card error!", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*3, width, header_height,
+		       "Can't reconnect,", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*4, width, header_height,
+		       "restart app.", font, White, justifyCenter);
+  } else if( rec_state == REC_RECONNECT ) {
+    gdispDrawStringBox(0, height*2, width, header_height,
+		       "SD card error!", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*4, width, header_height,
+		       "Reconnecting...", font, White, justifyCenter);
   }
 
   gdispCloseFont(font);
@@ -207,10 +223,10 @@ void update_sd(int16_t *samples) {
 
   //do_agc(samples);
   
-  if( sd_error ) { // don't update the SD if things are broken
-    chprintf(stream, "sd error abort!\n\r");
-    return;
-  }
+  //  if( sd_error ) { // don't update the SD if things are broken
+  //    chprintf(stream, "sd error abort!\n\r");
+  //    return;
+  //  }
 
   // check if we fell off the end; if so, loop to the front, reconstruting the WAV header
   if( sd_offset >= (clip_offset_bytes[clip_num] + DATA_END_OFFSET) ) {
@@ -263,18 +279,43 @@ void update_sd(int16_t *samples) {
 	return;
       }
     }
-    // sd_error = 1;
-    //    if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) { // this is a bad idea..
-    //      chprintf(stream, "couldn't re-connect to MMC\n\r");
-    //    }
+    // if repeated failure, try to re-init/reconnect to the card
+    retry = 0;
+
+    rec_state = REC_RECONNECT;
+    redraw_ui();
+    chThdSleepMilliseconds(200); // this will cause a stutter, but we're fucked anyways at this point
+    while( retry < 5 ) {
+      if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) { 
+	retry++;
+	chThdSleepMilliseconds(200); // this will cause a stutter, but we're fucked anyways at this point
+      } else {
+	chprintf(stream, "reconnect succeeded on retry %d\n\r", retry + 1);
+	rec_state = REC_REC;
+	redraw_ui();
+	
+	sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
+	return;
+      }
+      chprintf(stream, "couldn't re-connect to MMC\n\r");
+      sd_error = 1;
+      rec_state = REC_STREAM_ERR; // notify user of need to restart the app
+      redraw_ui();
+    }
     // return; // actually keep going
   }
+  
   sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
 }
 
 static uint32_t rec_init(OrchardAppContext *context) {
   (void)context;
 
+  sd_error = 0;
+  prev_anonymous = anonymous;
+  anonymous = 1; // don't send/receive pings when recording
+  rec_state = REC_IDLE;
+  
   block = chHeapAlloc(NULL, sizeof(uint8_t) * SECTOR_BYTES * 1);
   if( block == NULL ) {
     chprintf(stream, "couldn't allocate record block buffe\n\r");
@@ -283,7 +324,7 @@ static uint32_t rec_init(OrchardAppContext *context) {
     return 1;
   }
 
-  // chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
+  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
 }
 
@@ -447,6 +488,7 @@ static void rec_exit(OrchardAppContext *context) {
   (void)context;
   int retry = 0;
   
+  anonymous = prev_anonymous;  // restore ping state
   sd_active = 0;
   
   chHeapFree(block);
@@ -471,7 +513,7 @@ static void rec_exit(OrchardAppContext *context) {
   //    chprintf(stream, "mmcDisconnect failed\n\r");
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
-  //  chThdSetPriority(LOWPRIO + 2);
+  chThdSetPriority(LOWPRIO + 2);
 
   //  effectsStart();
 }
