@@ -29,6 +29,7 @@
 
 uint32_t crcfails = 0;
 uint8_t radio_rssi = 0;
+uint8_t sexmode = 0;
 
 //#define DEBUG_CRC
 
@@ -683,9 +684,16 @@ void radioSend(KRadioDevice *radio,
     radio_set(radio, RADIO_RegTestPa1, 0x5D);
     radio_set(radio, RADIO_RegTestPa2, 0x7C);
   } else {
-    // don't configure external boost
-    radio_set(radio, RADIO_PaLevel, 0x7F);
     radio_set(radio, RADIO_Ocp, 0x0F);
+    // don't configure external boost
+    if( !sexmode ) {
+      // high power for pings
+      radio_set(radio, RADIO_PaLevel, 0x7F);
+    } else {
+      // lower power for sex
+      //      radio_set(radio, RADIO_PaLevel, 0x60 | (0x1F - 15)); // back off 10 dBm to avoid close-in distortion
+      radio_set(radio, RADIO_PaLevel, 0x40 | (0x1F - 14)); // back off 10 dBm to avoid close-in distortion
+    }
   }
 
   //chprintf(stream, "palevel: %02x\n\r", radio_get(radio, 0x11));

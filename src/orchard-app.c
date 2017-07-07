@@ -606,8 +606,10 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
       memcpy(response, &gamete, sizeof(genome));
       strncpy(&(response[sizeof(genome)]), who, GENE_NAMELENGTH);
       radioAcquire(radioDriver);
+      sexmode = 1;
       radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_sex_ack,
 		sizeof(response), response);
+      sexmode = 0;
       radioRelease(radioDriver);
 #endif
     }

@@ -629,8 +629,12 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	family = (const struct genes *) storageGetData(GENE_BLOCK);
 	strncpy(sexpacket, &(partner[1]), GENE_NAMELENGTH);
 	strncpy(&(sexpacket[strlen(&(partner[1]))+1]), family->name, GENE_NAMELENGTH);
+	radioAcquire(radioDriver);
+	sexmode = 1;
 	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_sex_req,
 		  GENE_NAMELENGTH * 2 + 2, sexpacket);
+	sexmode = 0;
+	radioRelease(radioDriver);
       }
 #endif
       configIncSexInitiations(); // track # times we tried to have sex

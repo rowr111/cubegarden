@@ -14,6 +14,7 @@ extern uint16_t radiotemp;
 extern uint8_t txboost;
 extern uint8_t anonymous;
 extern uint8_t radio_rssi;
+extern uint8_t sexmode; // reduce power during sex
 
 typedef struct _RadioPacket {
   uint8_t length;       /* Total length of packet, including length field */

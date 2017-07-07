@@ -156,9 +156,11 @@ static void redraw_ui() {
     gdispDrawStringBox(0, height*2, width, header_height,
 		       "SD card error!", font, White, justifyCenter);
     gdispDrawStringBox(0, height*3, width, header_height,
-		       "To record, power", font, White, justifyCenter);
+		       "To record, insert", font, White, justifyCenter);
     gdispDrawStringBox(0, height*4, width, header_height,
-		       "cycle the badge.", font, White, justifyCenter);
+		       "pre-formatted card and/or", font, White, justifyCenter);
+    gdispDrawStringBox(0, height*5, width, header_height,
+		       "power cycle the badge.", font, White, justifyCenter);
   } else if( rec_state == REC_STREAM_ERR ) {
     gdispDrawStringBox(0, height*2, width, header_height,
 		       "SD card error!", font, White, justifyCenter);
