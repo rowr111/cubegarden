@@ -105,6 +105,8 @@ static void sf_event(OrchardAppContext *ctx, const OrchardAppEvent *event) {
 
     gdispFlush();
     orchardGfxEnd();
+    
+    //    radio_blast(); // this was for radio testing only!
   }
 }
 

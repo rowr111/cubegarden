@@ -101,7 +101,7 @@ static void radio_addr(BaseSequentialStream *chp, int argc, char *argv[]) {
   chprintf(chp, "Set radio address to %d\r\n", addr);
 }
 
-#if 0 // leave this around to simplify specrtum analyzer characterization
+#if 1 // leave this around to simplify specrtum analyzer characterization
 static int should_stop(void) {
   uint8_t bfr[1];
   return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
@@ -110,9 +110,11 @@ static int should_stop(void) {
 void radio_blast(void) {
   chprintf(stream, "Hit any key to stop\n\r");
   while( !should_stop() ) {
+    radioAcquire(radioDriver);
     radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_ping,
 	      5, "test");
-    chThdSleepMilliseconds(5);
+    radioRelease(radioDriver);
+    chThdSleepMilliseconds(10);
   }
 }
 #endif
@@ -126,6 +128,7 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "   dump [addr] [count]  Dump a set of SPI registers\r\n");
     chprintf(chp, "   addr [addr]          Set radio node address\r\n");
     chprintf(chp, "   temp                 Get radio temperature\r\n");
+    chprintf(chp, "   blast                Transmit ping series for testing\r\n");
     return;
   }
 
@@ -139,8 +142,8 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     radio_addr(chp, argc, argv);
   else if (!strcasecmp(argv[0], "temp"))
     chprintf(chp, "Temperature :%d\r\n", radioTemperature(radioDriver));
-  //  else if (!strcasecmp(argv[0], "blast"))
-  //    radio_blast();
+  else if (!strcasecmp(argv[0], "blast"))
+    radio_blast();
   else
     chprintf(chp, "Unrecognized radio command\r\n");
 }

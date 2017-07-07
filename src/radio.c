@@ -194,7 +194,7 @@ static uint8_t const default_registers[] = {
   RADIO_SyncValue2, 0x4E, //SFD value for uncoded with phySUNMRFSKSFD = 0
 
   /* Radio packet mode config */
-  RADIO_PacketConfig1, PacketConfig1_PacketFormat_Variable_Length | PacketConfig1_AddresFiltering_Node_Or_Broadcast | PacketConfig1_Crc_On | PacketConfig1_CrcAutoClear_Off, // added crcautoclearoff
+  RADIO_PacketConfig1, PacketConfig1_PacketFormat_Variable_Length | PacketConfig1_AddresFiltering_Node_Or_Broadcast | PacketConfig1_Crc_On, // | PacketConfig1_CrcAutoClear_Off, // added crcautoclearoff
   RADIO_PacketConfig2, 0x00,
 
   /* Radio payload length initialization */
@@ -393,9 +393,13 @@ static void radio_unload_packet(eventid_t id) {
 
   /* read the remainder of the packet */
   spiReceive(radio->driver, sizeof(payload), payload);
-  spiReceive(radio->driver, sizeof(crc), &crc); // this is actually a dummy, used to clear FIFO and clear flags
+  //  spiReceive(radio->driver, sizeof(crc), &crc); // this is actually a dummy, used to clear FIFO and clear flags
   radio_unselect(radio);
 
+  /* Drain the Fifo, sometimes extra stuff enters and I dunno why */
+  while (radio_get(radio, RADIO_IrqFlags2) & IrqFlags2_FifoNotEmpty)
+    (void)radio_get(radio, RADIO_Fifo);
+  
 #ifdef DEBUG_CRC
   chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, radio_rssi );
 #endif
@@ -472,19 +476,22 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   radio_set_broadcast_address(radio, 255);
   radio_set_node_address(radio, 1);
 
-  /* Drain the Fifo */
-  while (radio_get(radio, RADIO_IrqFlags2) & IrqFlags2_FifoNotEmpty)
-    (void)radio_get(radio, RADIO_Fifo);
-
   radio_set(radio, RADIO_TestLna, 0x2D); // put LNA into high sensitivity mode
+  
+  radioWrite(radioDriver, RADIO_PacketConfig2, PacketConfig2_RxRestart);
   
   /* Move into "Rx" mode */
   radio->mode = mode_receiving;
   radio_set(radio, RADIO_OpMode, OpMode_Sequencer_On
                                | OpMode_Listen_Off
                                | OpMode_Receiver);
-  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
+  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady | DIO1_RxFifoNotEmpty);
+  //  radioWrite(radio, RADIO_DioMapping1, DIO0_RxCrkOk);
 
+  /* Drain the Fifo */
+  while (radio_get(radio, RADIO_IrqFlags2) & IrqFlags2_FifoNotEmpty)
+    (void)radio_get(radio, RADIO_Fifo);
+  
   osalMutexObjectInit(&(radio->radio_mutex));  
 }
 
@@ -704,7 +711,7 @@ void radioSend(KRadioDevice *radio,
   spiSend(radio->driver, bytes, payload);
   radio_unselect(radio);
 
-  flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" seems necessary on this radio version
+  //  flags = radioRead(radioDriver, RADIO_IrqFlags2); // this "pump" seems necessary on this radio version
   // chprintf(stream, "Flags entering Tx handler: %x\n\r", flags);
   /* Wait for the transmission to complete (will be unlocked in IRQ) */
   osalSysLock();
@@ -733,7 +740,8 @@ void radioSend(KRadioDevice *radio,
                                | OpMode_Listen_Off
                                | OpMode_Receiver);
   
-  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady);
+  radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady | DIO1_RxFifoNotEmpty);
+  //  radioWrite(radio, RADIO_DioMapping1, DIO0_RxCrkOk);
 }
 
 static uint32_t test_rxseq = 0;

@@ -1089,6 +1089,8 @@ void orchardAppInit(void) {
 
   chVTReset(&ping_timer);
   chVTSet(&ping_timer, MS2ST(PING_MIN_INTERVAL + rand() % PING_RAND_INTERVAL), run_ping, NULL);
+  chEvtBroadcast(&ping_timeout); // do a ping on startup
+
 
   for( i = 0; i < MAX_FRIENDS; i++ ) {
     friends[i] = NULL;

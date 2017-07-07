@@ -211,6 +211,12 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   PORTD_PCR3 = 0x207; // slow slew, pull-up (miso)
   palSetPad(spi_config_mmc.ssport, spi_config_mmc.sspad); // make sure CS is deselected
   
+  // setup drive strengths on SPI1
+  PORTD_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
+  PORTD_PCR5 = 0x703; // pull up enabled, fast slew (clk)
+  PORTD_PCR6 = 0x700; // fast slew (mosi)
+  PORTD_PCR7 = 0x707; // slow slew, pull-up (miso)
+  
   mmcStart(&MMCD1, &mmc_config); // driver, config
   
   evtTableInit(orchard_events, 32);
@@ -222,7 +228,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   radioStart(radioDriver, &SPID2);
   radioSetDefaultHandler(radioDriver, default_radio_handler);
   pagingStart();
-  
+
   micStart(); 
   i2sStartRx(&I2SD1); // start the audio sampling buffer
 
