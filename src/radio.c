@@ -692,7 +692,7 @@ void radioSend(KRadioDevice *radio,
     } else {
       // lower power for sex
       //      radio_set(radio, RADIO_PaLevel, 0x60 | (0x1F - 15)); // back off 10 dBm to avoid close-in distortion
-      radio_set(radio, RADIO_PaLevel, 0x40 | (0x1F - 14)); // back off 10 dBm to avoid close-in distortion
+      radio_set(radio, RADIO_PaLevel, 0x40 | (0x1F - 14)); // back off to avoid close-in distortion
     }
   }
 
