@@ -281,6 +281,8 @@ void update_sd(int16_t *samples) {
 	return;
       }
     }
+
+#if 0    
     // if repeated failure, try to re-init/reconnect to the card
     retry = 0;
 
@@ -290,7 +292,7 @@ void update_sd(int16_t *samples) {
     while( retry < 5 ) {
       if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) { 
 	retry++;
-	chThdSleepMilliseconds(200); // this will cause a stutter, but we're fucked anyways at this point
+	chThdSleepMilliseconds(500); // this will cause a stutter, but we're fucked anyways at this point
       } else {
 	chprintf(stream, "reconnect succeeded on retry %d\n\r", retry + 1);
 	rec_state = REC_REC;
@@ -305,6 +307,8 @@ void update_sd(int16_t *samples) {
       redraw_ui();
     }
     // return; // actually keep going
+#endif
+    // just keep going and skip the sector???
   }
   
   sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
@@ -326,18 +330,18 @@ static uint32_t rec_init(OrchardAppContext *context) {
     return 1;
   }
 
-  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
+  //  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
 }
 
 static void rec_start(OrchardAppContext *context) {
   (void)context;
 
-  //  while(ledsOff == 0) {
-  //    effectsStop();
-  //    chThdYield();
-  //    chThdSleepMilliseconds(50);
-  //  }
+  while(ledsOff == 0) {
+    effectsStop();
+    chThdYield();
+    chThdSleepMilliseconds(50);
+  }
 
   A_state = 0;
   rec_state = REC_IDLE;
@@ -515,9 +519,9 @@ static void rec_exit(OrchardAppContext *context) {
   //    chprintf(stream, "mmcDisconnect failed\n\r");
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
-  chThdSetPriority(LOWPRIO + 2);
+  //  chThdSetPriority(LOWPRIO + 2);
 
-  //  effectsStart();
+  effectsStart();
 }
 
 orchard_app("Record Clips", rec_init, rec_start, rec_event, rec_exit);

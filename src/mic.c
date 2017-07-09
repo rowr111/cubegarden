@@ -89,9 +89,11 @@ void micStart(void) {
   writeb( &DMA->CERQ, DMA_I2S ); // dma channel 2 is for rx
   writeb( &DMA->CERQ, DMA_BACKBUFFER ); // dma channel 3 is for backbuffer copying
 
-  writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
-  //DMA->DCHPRI2 = 0x81;  // for fixed priority schema
-  //DMA->DCHPRI1 = 0x82;
+  //  writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
+  writeb(&DMA->DCHPRI0, 0x03); // others cannot preempt; highest priority; can preempt others
+  writeb(&DMA->DCHPRI1, 0x02); 
+  writeb(&DMA->DCHPRI2, 0x81); // allow preemption
+  writeb(&DMA->DCHPRI3, 0xC0); // back-buffer copy cannot preempt or suspend any other channel
 
   // configure the I2S read TCD
   writel( &tcd->SADDR, (uint32_t) &(I2S->RDR[0]) ); // source is read fifo
