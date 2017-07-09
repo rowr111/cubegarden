@@ -230,7 +230,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   pagingStart();
 
   micStart(); 
-  i2sStartRx(&I2SD1); // start the audio sampling buffer
+  //i2sStartRx(&I2SD1); // start the audio sampling buffer 
 
 #if 0
   spiStart(&SPID1, &spi_config_mmc);
