@@ -96,9 +96,9 @@ void micStart(void) {
   writeb( &DMA->CERQ, DMA_BACKBUFFER ); // dma channel 3 is for backbuffer copying
 
   // writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
-  writeb(&DMA->DCHPRI0, 0xC1); // others cannot preempt; highest priority; can preempt others
-  writeb(&DMA->DCHPRI1, 0xC2); 
-  writeb(&DMA->DCHPRI2, 0x03); 
+  writeb(&DMA->DCHPRI0, 0xC1); // dummy setting, cannot preempt or suspend
+  writeb(&DMA->DCHPRI1, 0xC2); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI2, 0x03); // can preempt and suspend other requests
   writeb(&DMA->DCHPRI3, 0xC0); // back-buffer copy cannot preempt or suspend any other channel
 
   // configure the I2S read TCD
@@ -149,7 +149,7 @@ void micStart(void) {
 
   // configure channel 3 (backbuffer copy) DMA engine to fire interrupts when major loop is done
   // requests disabled on major loop complete, int handler re-enables
-  writew( &tcd2->CSR, DMA_CSR_INTMAJOR_MASK | DMA_CSR_BWC(2) | DMA_CSR_DREQ_MASK );
+  writew( &tcd2->CSR, DMA_CSR_INTMAJOR_MASK | DMA_CSR_BWC(2) | DMA_CSR_DREQ_MASK ); // some LED flicker seen if this BWC isn't on
 
   // now enable the requests to happen
   writeb( &DMA->SERQ, DMA_BACKBUFFER ); // first enable back buffer copy

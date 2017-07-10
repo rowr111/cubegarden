@@ -110,7 +110,7 @@ extern void programDumbRleFile(void);
 /* Command line related.                                                     */
 /*===========================================================================*/
 
-#define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(2048)
+#define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(1024)
 
 //#define stream (BaseSequentialStream *)&SD4
 
@@ -150,7 +150,7 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x900);
+static THD_WORKING_AREA(waOrchardEventThread, 0x600);
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;
@@ -219,7 +219,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   
   mmcStart(&MMCD1, &mmc_config); // driver, config
   
-  evtTableInit(orchard_events, 32);
+  evtTableInit(orchard_events, 12);
   orchardEventsStart();
   orchardAppInit();
 
@@ -257,6 +257,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, accel_freefall, freefall);
+  evtTableUnhook(orchard_events, accel_process, accel_proc);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
 

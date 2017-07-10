@@ -973,7 +973,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
 
   instance->keymask = captouchRead();
 
-  evtTableInit(orchard_app_events, 32);
+  evtTableInit(orchard_app_events, 16);
   evtTableHook(orchard_app_events, touch_event, touchHandler);
   evtTableHook(orchard_app_events, radio_app, radio_app_event);
   evtTableHook(orchard_app_events, ui_completed, ui_complete_cleanup);

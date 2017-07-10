@@ -10,6 +10,7 @@
 #include "led.h"
 #include "userconfig.h"
 #include "radio.h" // absorb the "anonymous" extern
+#include <math.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -31,7 +32,30 @@ static uint8_t prev_anonymous = 0;
 #define REC_RECONNECT   4
 
 static int rec_state = REC_IDLE;
+
+#define AGC_NOW_LOUD 0
+#define VOLDOWN_LOUD_THRESH  70 // it's been loud -- so likely to be loud again. clamp down on AGC more quickly in this state
+#define VOLUP_LOUD_THRESH 50  // if currently loud, and volume below this, start raising volume
+
+#define AGC_NOW_QUIET 1
+#define VOLDOWN_QUIET_THRESH 90  // linked to max multiply of 16x
+#define VOLUP_QUIET_THRESH 70    // if currently quiet, and volume is below this, start raising volume
+
+#define MAX_AGC_GAIN 16.0
+#define AGC_GAIN_STEP 0.5
+
 uint8_t sd_dbg_val = 0;
+static uint16_t cur_db = 120; 
+static uint16_t agc_state = AGC_NOW_LOUD;
+static float agc_gain = 1.0;
+static float last_agc_gain = 1.0;
+
+#define DCLOGLEN 16
+static float dc_level = 0.0;
+static float dclog[DCLOGLEN];
+static uint8_t dclogptr = 0;
+
+static uint8_t agc_enable = 1;
 
 #define SECTOR_BYTES       MMCSD_BLOCK_SIZE  // should be 512
 
@@ -76,7 +100,7 @@ static uint8_t clip_num = 0;
 static uint32_t sd_offset = CLIP1_OFFSET_BYTES + DATA_END_OFFSET; // start at end, to trigger initialization
 
 
-static void redraw_ui() {
+static void redraw_ui(void) {
   char uiStr[32];
   
   coord_t width;
@@ -113,11 +137,20 @@ static void redraw_ui() {
     gdispCloseFont(font2);
 
     if( A_state == 0 )
-      gdispDrawStringBox(0, height*2 + tallheight, width, header_height,
+      gdispDrawStringBox(0, height*2 + tallheight - 2, width, header_height,
 			 "Press & hold > to stop", font, White, justifyCenter);
     else
-      gdispDrawStringBox(0, height*2 + tallheight, width, header_height,
+      gdispDrawStringBox(0, height*2 + tallheight - 2, width, header_height,
 			 "Hold > for 3 seconds", font, White, justifyCenter);
+
+    if( agc_enable )
+      chsnprintf(uiStr, sizeof(uiStr), "Gain: %2.1f; ^ to disable", agc_gain );
+    else
+      chsnprintf(uiStr, sizeof(uiStr), "AGC off, hit ^ to enable", agc_gain );
+      
+    gdispDrawStringBox(0, height*3 + tallheight - 2, width, header_height,
+		       uiStr, font, White, justifyCenter);
+    
     
   } else if( rec_state == REC_IDLE ) {
     config = getConfig();
@@ -180,66 +213,43 @@ static void redraw_ui() {
   orchardGfxEnd();
 }
 
-void do_agc(int16_t *samples) {
-  int32_t min, max;
-  int32_t peak;
-  uint16_t i;
-  int shift = 0;
-
-  max = -32768;
-  min = 32767;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
-    if( samples[i] < min )
-      min = samples[i];
-    if(samples [i] > max )
-      max = samples[i];
-  }
-
-  if( abs(min) > max )
-    peak = abs(min);
-  else
-    peak = abs(max);
-
-  // find how many powers of 2 the leading 1 is down
-  while( ((peak & 0x8000) == 0) && (shift < 14) ) {
-    shift ++;
-    peak = peak << 1;
-  }
-  // back off for headroom
-  if( shift > 0 )
-    shift--;
-
-  // limit gain
-  if( shift > 9 )
-    shift = 9;
-
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
-    samples[i] = samples[i] * (1 << shift);
-  }
-}
-
 void update_sd(int16_t *samples) {
   unsigned int i;
   unsigned int retry;
   uint8_t *block; 
 
-  //do_agc(samples);
+  float agcval;
+  int reduce_gain = 0;
+  // apply AGC
+  if( agc_enable ) {
+    for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) {
+      agcval = (((float) samples[i] - dc_level) * agc_gain);
+      // check for clipping
+      if( agcval > 32767 ) {
+	agcval = 32767;
+	reduce_gain = 1;
+      } if( agcval < -32768 ) {
+	agcval = -32768;
+	reduce_gain = 1;
+      }
+      samples[i] = (int16_t) agcval;
+    }
+    
+    if( reduce_gain ) {
+      agc_state = AGC_NOW_LOUD; // set to loud thresholds, so we don't fight the clipping mechanism
+      agc_gain -= 4.0;
+      if( agc_gain < 1.0 )
+	agc_gain = 1.0;
+    }
+  }
   
-  //  if( sd_error ) { // don't update the SD if things are broken
-  //    chprintf(stream, "sd error abort!\n\r");
-  //    return;
-  //  }
-
   // check if we fell off the end; if so, loop to the front, reconstruting the WAV header, overwriting sound data
   if( sd_offset >= (clip_offset_bytes[clip_num] + DATA_END_OFFSET) ) {
     sd_offset = clip_offset_bytes[clip_num];
 
-    block = (uint8_t *) rx_savebuf;
-    for( i = 0; i < MMCSD_BLOCK_SIZE; i++ ) {
-      if( i < WAV_DATA_OFFSET )
-	block[i] = wav_header[i];
-      else 
-	block[i] = 0;
+    block = (uint8_t *) samples;
+    for( i = 0; i < WAV_DATA_OFFSET; i++ ) {
+      block[i] = wav_header[i];
     }
   }
     
@@ -293,13 +303,121 @@ void update_sd(int16_t *samples) {
   sd_offset += NUM_RX_SAMPLES * sizeof(int16_t) * NUM_RX_BLOCKS;
 }
 
+#define DB_WA_SIZE   THD_WORKING_AREA_SIZE(1280)
+THD_FUNCTION(dbThread, arg) {
+  (void) arg;
+  uint16_t i;
+  float cum = 0.0;
+  int32_t temp;
+  uint16_t samples[NUM_RX_SAMPLES];
+  int db = 0;
+  float avg = 0.0;
+
+  while (!chThdShouldTerminateX()) {
+    avg = 0.0;
+    // compute DC offset first -- for actual AGC comps
+    for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) {
+      avg += (float) rx_savebuf[i];
+    }
+    avg /= NUM_RX_SAMPLES * NUM_RX_BLOCKS;
+    dclog[dclogptr] = avg;
+    dclogptr = (dclogptr + 1) % DCLOGLEN;
+
+    avg = 0.0;
+    for( i = 0; i < DCLOGLEN; i++ ) {
+      avg += dclog[i];
+    }
+    avg /= (float) DCLOGLEN;
+    dc_level = avg;
+
+    // now normalize to a 0-65535 scale, so we can do the power math
+    for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+      samples[i] = (uint16_t) (((int32_t) rx_savebuf[i] + 32768L) & 0xFFFF);
+    }
+    // recompute a local DC offset now that we're normalized...lol!
+    cum = 0.0;
+    for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+      cum += (float)samples[i];
+    }
+    int32_t mid = (int32_t) (cum / (float) NUM_RX_SAMPLES);
+
+    // measure total power using RMS method
+    cum = 0.0;
+    for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+      temp = (((int32_t)samples[i]) - mid);
+      cum += (float) (temp * temp);
+    }
+    cum /= (float) NUM_RX_SAMPLES;
+    cum = sqrt(cum);
+    db = (int)  (24.0 + 20.0 * log10(cum)); // assumes 120dB is peak value, from AOP on datasheet
+    
+    dblog[dblogptr] = (uint8_t) db;
+    dblogptr = (dblogptr + 1) % DBLOGLEN;
+
+    // average out the instantaneous dB reading
+    cum = 0.0;
+    for( i = 0; i < DBLOGLEN; i++ ) {
+      cum += (float) dblog[i];
+    }
+    cum /= (float) DBLOGLEN;
+
+    cur_db = (uint16_t) cum;
+
+    // run the agc state machine
+    if( agc_state == AGC_NOW_QUIET ) {
+      if( (cur_db < VOLUP_QUIET_THRESH) && (agc_gain < MAX_AGC_GAIN) ) {
+	agc_gain += AGC_GAIN_STEP;
+      }
+      if( (cur_db > VOLDOWN_QUIET_THRESH) && (agc_gain > 1.0) ) {
+	agc_gain -= AGC_GAIN_STEP;
+      }
+      if( (cur_db > VOLDOWN_QUIET_THRESH) && agc_gain == 1.0 )
+	agc_state = AGC_NOW_LOUD;
+      
+    } else if( agc_state == AGC_NOW_LOUD ) {
+      if( (cur_db < VOLUP_LOUD_THRESH) && (agc_gain < MAX_AGC_GAIN) ) {
+	agc_gain += AGC_GAIN_STEP;
+      }
+      if( (cur_db > VOLDOWN_LOUD_THRESH) && (agc_gain > 1.0) ) {
+	agc_gain -= AGC_GAIN_STEP;
+      }
+      if( (cur_db < VOLUP_LOUD_THRESH) && (agc_gain == MAX_AGC_GAIN) )
+	agc_state = AGC_NOW_QUIET;
+    }
+
+    if( agc_gain > (MAX_AGC_GAIN - 0.1) ) // clean up rounding errors
+      agc_gain = MAX_AGC_GAIN;
+    if( agc_gain < 1.1 )
+      agc_gain = 1.0;
+
+    if( (agc_gain != last_agc_gain) && agc_enable ) {
+      redraw_ui();
+    }
+    last_agc_gain = agc_gain;
+
+    //    chprintf( stream, "%0.2f %d\n\r", agc_gain, agc_state );
+    chThdYield();
+    chThdSleepMilliseconds(100);
+  }
+  
+}
+
+static thread_t *dbtp;
 static uint32_t rec_init(OrchardAppContext *context) {
   (void)context;
-
+  int i;
+  
   sd_error = 0;
   prev_anonymous = anonymous;
   anonymous = 1; // don't send/receive pings when recording
   rec_state = REC_IDLE;
+
+  for( i = 0; i < DCLOGLEN; i++ ) {
+    dclog[i] = 0.0;
+  }
+  dbtp = chThdCreateFromHeap(NULL, DB_WA_SIZE,
+					  "decibels", LOWPRIO + 1,
+					  dbThread, NULL );
   
   //  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
@@ -344,7 +462,6 @@ static const  char title[] = "Really clear state?";
 void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
-  int16_t *samples;
   const OrchardUi *listUi;
   uint8_t selected;
 
@@ -405,6 +522,10 @@ void rec_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	  chprintf(stream, "A down %d\n\r", select_time);
 	  redraw_ui();
 	}
+	if (event->key.code == keyTop) {
+	  agc_enable = !agc_enable;
+	  redraw_ui();
+	}
       }
       if(event->key.flags == keyUp) {
 	if (event->key.code == keyRight)  {
@@ -461,6 +582,8 @@ static void rec_exit(OrchardAppContext *context) {
 
   (void)context;
   int retry = 0;
+
+  chThdTerminate(dbtp);
   
   anonymous = prev_anonymous;  // restore ping state
   sd_active = 0;

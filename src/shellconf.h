@@ -43,7 +43,7 @@
  * @brief   Shell maximum command history.
  */
 #if !defined(SHELL_MAX_HIST_BUFF) || defined(__DOXYGEN__)
-#define SHELL_MAX_HIST_BUFF         8 * SHELL_MAX_LINE_LENGTH
+#define SHELL_MAX_HIST_BUFF         6 * SHELL_MAX_LINE_LENGTH
 #endif
 
 /**

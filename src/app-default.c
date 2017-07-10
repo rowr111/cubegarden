@@ -203,36 +203,22 @@ static void dbcompute(uint16_t *sample) {
   tallheight = gdispGetFontMetric(font2, fontHeight);
 
   // now compute dbs...
-#if 0
-  uint16_t min, max;
-#endif
   uint16_t i;
   float cum = 0;
   int32_t temp;
 
-#if 0
-  min = 65535; max = 0;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
-    if( sample[i] > max )
-      max = sample[i];
-    if( sample[i] < min )
-      min = sample[i];
-  }
-  int32_t mid = (max + min) / 2;
-#else
   cum = 0.0;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+  for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) {
     cum += (float)sample[i];
   }
-  int32_t mid = (int32_t) (cum / (float) NUM_RX_SAMPLES);
-#endif
+  int32_t mid = (int32_t) (cum / (float) (NUM_RX_SAMPLES * NUM_RX_BLOCKS));
   
   cum = 0.0;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+  for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) {
     temp = (((int32_t)sample[i]) - mid);
     cum += (float) (temp * temp);
   }
-  cum /= (float) NUM_RX_SAMPLES;
+  cum /= (float) (NUM_RX_SAMPLES * NUM_RX_BLOCKS);
   cum = sqrt(cum);
   db = (int)  (24.0 + 20.0 * log10(cum)); // assumes 120dB is peak value, from AOP on datasheet
   dblog[dblogptr] = (uint8_t) db;
@@ -645,7 +631,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       if( event->adc.code == adcCodeMic ) {
 	sample_in = analogReadMic();
 	sample_t = (uint16_t *) sample_in;
-	for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
+	for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) {
 	  sample_t[i] = (uint16_t) (((int32_t) sample_in[i] + 32768L) & 0xFFFF);
 	}
 	samples = sample_t;
