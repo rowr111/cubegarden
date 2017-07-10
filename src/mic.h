@@ -1,5 +1,6 @@
 //#define NUM_RX_SAMPLES 512
 #define NUM_RX_SAMPLES 256
+#define NUM_RX_BLOCKS 4
 
 #define MIC_SAMPLE_DEPTH 128
 

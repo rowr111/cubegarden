@@ -18,7 +18,6 @@ static int sd_error = 0;
 extern MMCDriver MMCD1;
 
 int sd_active = 0;
-static int sd_initted = 0;
 
 static int prompt_state = 1;
 static int A_state = 0;
@@ -35,6 +34,8 @@ static int rec_state = REC_IDLE;
 uint8_t sd_dbg_val = 0;
 
 #define SECTOR_BYTES       MMCSD_BLOCK_SIZE  // should be 512
+
+#define STOP_FX 0
 
 // should see the string 'RIFF' at these offsets in the SD card if it's formatted correctly
 /*  // for 44.1khz
@@ -56,8 +57,6 @@ uint8_t sd_dbg_val = 0;
 
 const unsigned int clip_offset_bytes[] = { CLIP1_OFFSET_BYTES, CLIP2_OFFSET_BYTES, CLIP3_OFFSET_BYTES,
 					   CLIP4_OFFSET_BYTES, CLIP5_OFFSET_BYTES, CLIP6_OFFSET_BYTES };
-
-uint8_t *block = NULL;
 
 // all offsets are in bytes
 #define WAV_RIFF         0x0  // 'RIFF' located here
@@ -222,6 +221,7 @@ void do_agc(int16_t *samples) {
 void update_sd(int16_t *samples) {
   unsigned int i;
   unsigned int retry;
+  uint8_t *block; 
 
   //do_agc(samples);
   
@@ -230,48 +230,29 @@ void update_sd(int16_t *samples) {
   //    return;
   //  }
 
-  // check if we fell off the end; if so, loop to the front, reconstruting the WAV header
+  // check if we fell off the end; if so, loop to the front, reconstruting the WAV header, overwriting sound data
   if( sd_offset >= (clip_offset_bytes[clip_num] + DATA_END_OFFSET) ) {
     sd_offset = clip_offset_bytes[clip_num];
-    
+
+    block = (uint8_t *) rx_savebuf;
     for( i = 0; i < MMCSD_BLOCK_SIZE; i++ ) {
       if( i < WAV_DATA_OFFSET )
 	block[i] = wav_header[i];
       else 
 	block[i] = 0;
     }
-    
-    if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) ) {
-      chprintf(stream, "mmc_write failed on first block\n\r");
-
-      retry = 0;
-      while( retry < 2 ) {
-	if( !HAL_SUCCESS == MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, block, 1) ) {
-	  retry++;
-	  chprintf(stream, "mmc_write failed on first block (retry %d)\n\r", retry);
-	} else {
-	  chprintf(stream, "mmc_write on first block succeeded on retry\n\r");
-	  break;
-	}
-      }
-      // sd_error = 1;
-      // return; // actually keep going, since it's a stream
-    }
-    
-    sd_offset += SECTOR_BYTES;
   }
-  
-
+    
   // else keep filling in the data
   retry = 0;
   if( !HAL_SUCCESS == 
       MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, 
-		       (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) / SECTOR_BYTES) ) {
+		       (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) * NUM_RX_BLOCKS / SECTOR_BYTES) ) {
     chprintf(stream, "mmc_write failed (orig) code 0x%02x offset %d\n\r", sd_dbg_val, sd_offset);
     while( retry < 2 ) {
       if( !HAL_SUCCESS == 
 	  MMCD1.vmt->write(&MMCD1, sd_offset / SECTOR_BYTES, 
-			   (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) / SECTOR_BYTES) ) {
+			   (uint8_t *) samples, (NUM_RX_SAMPLES * sizeof(int16_t)) * NUM_RX_BLOCKS / SECTOR_BYTES) ) {
 	retry++;
 	chprintf(stream, "mmc_write failed (retry %d) 0x%02x\n\r", retry, sd_dbg_val);
       } else {
@@ -282,7 +263,6 @@ void update_sd(int16_t *samples) {
       }
     }
 
-#if 0    
     // if repeated failure, try to re-init/reconnect to the card
     retry = 0;
 
@@ -307,11 +287,10 @@ void update_sd(int16_t *samples) {
       redraw_ui();
     }
     // return; // actually keep going
-#endif
     // just keep going and skip the sector???
   }
   
-  sd_offset += NUM_RX_SAMPLES * sizeof(int16_t);
+  sd_offset += NUM_RX_SAMPLES * sizeof(int16_t) * NUM_RX_BLOCKS;
 }
 
 static uint32_t rec_init(OrchardAppContext *context) {
@@ -322,14 +301,6 @@ static uint32_t rec_init(OrchardAppContext *context) {
   anonymous = 1; // don't send/receive pings when recording
   rec_state = REC_IDLE;
   
-  block = chHeapAlloc(NULL, sizeof(uint8_t) * SECTOR_BYTES * 1);
-  if( block == NULL ) {
-    chprintf(stream, "couldn't allocate record block buffe\n\r");
-    sd_error = 1;
-    rec_state = REC_ERR;
-    return 1;
-  }
-
   //  chThdSetPriority(NORMALPRIO + 10); // give this thread higher priority
   return 0;
 }
@@ -337,24 +308,21 @@ static uint32_t rec_init(OrchardAppContext *context) {
 static void rec_start(OrchardAppContext *context) {
   (void)context;
 
+#if STOP_FX  
   while(ledsOff == 0) {
     effectsStop();
     chThdYield();
     chThdSleepMilliseconds(50);
   }
+#endif
 
   A_state = 0;
   rec_state = REC_IDLE;
   
-  if( !sd_initted ) { // don't re-init if we've initted once already
-    if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
-      chprintf(stream, "couldn't connect to MMC\n\r");
-      sd_error = 1;
-      rec_state = REC_ERR;
-    } else {
-      sd_error = 0;
-      sd_initted = 1;
-    }
+  if( !HAL_SUCCESS == MMCD1.vmt->connect(&MMCD1) ) {
+    chprintf(stream, "couldn't connect to MMC\n\r");
+    sd_error = 1;
+    rec_state = REC_ERR;
   }
   
   sd_active = 1;
@@ -497,8 +465,6 @@ static void rec_exit(OrchardAppContext *context) {
   anonymous = prev_anonymous;  // restore ping state
   sd_active = 0;
   
-  chHeapFree(block);
-  
   palSetPad(IOPORT5, 0); // turn off red LED
 
   chThdSleepMilliseconds(100); // wait for any converions to complete
@@ -520,8 +486,9 @@ static void rec_exit(OrchardAppContext *context) {
   chThdSleepMilliseconds(100); // wait for any converions to complete
   
   //  chThdSetPriority(LOWPRIO + 2);
-
+#if STOP_FX
   effectsStart();
+#endif
 }
 
 orchard_app("Record Clips", rec_init, rec_start, rec_event, rec_exit);

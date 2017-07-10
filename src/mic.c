@@ -20,7 +20,9 @@ extern int32_t __ram1_start__[];
 //int32_t *rx_samples = __ram1__;
 #define rx_samples __ram1_start__
 
-int16_t rx_savebuf[NUM_RX_SAMPLES];
+int16_t rx_savebuf[NUM_RX_SAMPLES * NUM_RX_BLOCKS];
+uint8_t rx_block = 0;
+
 uint32_t rx_cb_count = 0;
 
 uint8_t gen_mic_event = 0;
@@ -47,16 +49,20 @@ OSAL_IRQ_HANDLER(KINETIS_DMA3_IRQ_VECTOR) {
   for( i = 0; i < NUM_RX_SAMPLES; i++ ) {
     // !! we actually throw away a couple of bits, >> 14 would give us everything the mic gives us,
     // but we're limited on space and CPU so toss the LSBs...
-    rx_savebuf[i] = (int16_t) (rx_samples[i] >> 16);
+    rx_savebuf[i + rx_block * NUM_RX_SAMPLES] = (int16_t) (rx_samples[i] >> 16);
   }
 
   // re-enable the requests now that the back-buffer is copied
   writeb( &DMA->SERQ, DMA_BACKBUFFER );
 
-  // kick out an event to write data to disk
-  chSysLockFromISR();
-  chEvtBroadcastI(&i2s_full_event);
-  chSysUnlockFromISR();
+  rx_block ++;
+  if( rx_block == NUM_RX_BLOCKS ) {
+    rx_block = 0;
+    // kick out an event to write data to disk
+    chSysLockFromISR();
+    chEvtBroadcastI(&i2s_full_event);
+    chSysUnlockFromISR();
+  }
 
   OSAL_IRQ_EPILOGUE();
 }
@@ -89,10 +95,10 @@ void micStart(void) {
   writeb( &DMA->CERQ, DMA_I2S ); // dma channel 2 is for rx
   writeb( &DMA->CERQ, DMA_BACKBUFFER ); // dma channel 3 is for backbuffer copying
 
-  //  writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
-  writeb(&DMA->DCHPRI0, 0x03); // others cannot preempt; highest priority; can preempt others
-  writeb(&DMA->DCHPRI1, 0x02); 
-  writeb(&DMA->DCHPRI2, 0x81); // allow preemption
+  // writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
+  writeb(&DMA->DCHPRI0, 0xC1); // others cannot preempt; highest priority; can preempt others
+  writeb(&DMA->DCHPRI1, 0xC2); 
+  writeb(&DMA->DCHPRI2, 0x03); 
   writeb(&DMA->DCHPRI3, 0xC0); // back-buffer copy cannot preempt or suspend any other channel
 
   // configure the I2S read TCD
@@ -139,7 +145,7 @@ void micStart(void) {
 
   //tcd->CSR = DMA_CSR_INTMAJOR_MASK | DMA_CSR_DREQ_MASK | DMA_CSR_BWC(2);
   // configure channel 2 (i2s) DMA engine to link request to the back-buffer copy, and turn on bandwidth control
-  writew( &tcd->CSR, DMA_CSR_MAJORLINKCH(DMA_BACKBUFFER) | DMA_CSR_MAJORELINK(1) | DMA_CSR_BWC(2) );
+  writew( &tcd->CSR, DMA_CSR_MAJORLINKCH(DMA_BACKBUFFER) | DMA_CSR_MAJORELINK(1) /* | DMA_CSR_BWC(2) */ );
 
   // configure channel 3 (backbuffer copy) DMA engine to fire interrupts when major loop is done
   // requests disabled on major loop complete, int handler re-enables
