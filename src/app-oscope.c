@@ -11,14 +11,14 @@
 #include "fixmath.h"
 #include "fix16_fft.h"
 
-static int mode = 2;
+uint8_t scopemode_g = 2;
 
 #define NUM_SAMPLES MIC_SAMPLE_DEPTH
 
 uint8_t dblog[DBLOGLEN];
 uint8_t dblogptr = 0;
 
-static void agc(uint16_t  *sample, uint16_t *output) {
+void agc(uint16_t  *sample, uint16_t *output) {
   uint16_t min, max;
   uint16_t i;
   float scale;
@@ -48,7 +48,7 @@ static void agc(uint16_t  *sample, uint16_t *output) {
   }
 }
 
-static void agc_fft(uint8_t  *sample) {
+void agc_fft(uint8_t  *sample) {
   uint8_t min, max;
   uint8_t scale = 1;
   int16_t temp;
@@ -85,7 +85,7 @@ static void agc_fft(uint8_t  *sample) {
 }
 
 // happens within a gfxlock
-static void precompute(uint16_t *samples) {
+void precompute(uint16_t *samples) {
   fix16_t real[NUM_SAMPLES];
   fix16_t imag[NUM_SAMPLES];
   uint16_t agc_samp[NUM_SAMPLES];
@@ -96,7 +96,7 @@ static void precompute(uint16_t *samples) {
   uint16_t scale;
 
   agc( samples, agc_samp );
-  if ( mode ) {
+  if ( scopemode_g ) {
     for( i = 0; i < NUM_SAMPLES; i++ ) {
       fft_samp[i] = (uint8_t) (agc_samp[i] >> 8) & 0xFF;
     }
@@ -136,7 +136,7 @@ static void precompute(uint16_t *samples) {
   }
 }
 
-static void dbcompute(uint16_t *sample) {
+void dbcompute(uint16_t *sample) {
   char uiStr[32];
   
   coord_t width;
@@ -197,7 +197,7 @@ static void dbcompute(uint16_t *sample) {
 static void redraw_ui(uint16_t *samples) {
   
   orchardGfxStart();
-  if( mode == 0 || mode == 1 ) {
+  if( scopemode_g == 0 || scopemode_g == 1 ) {
     // call compute before flush, so stack isn't shared between two memory intensive functions
     precompute(samples);
   } else {
@@ -217,6 +217,8 @@ static uint32_t oscope_init(OrchardAppContext *context) {
 static void oscope_start(OrchardAppContext *context) {
   (void)context;
 
+  scopemode_g = 2; // start in dB mode
+  
   redraw_ui(NULL);
   analogUpdateMic();
 }
@@ -232,7 +234,7 @@ void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {
       // orchardAppExit();  // I think this is a misfeature as "home" hold should be the way out
     } else  if ( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      mode = (mode + 1) % 3;
+      scopemode_g = (scopemode_g + 1) % 3;
     }
   } else if( event->type == adcEvent) {
     if( event->adc.code == adcCodeMic ) {
