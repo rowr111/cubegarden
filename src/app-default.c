@@ -73,15 +73,15 @@ static void agc(uint16_t  *sample, uint16_t *output) {
     return;
 
   min = 65535; max = 0;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // input sample buffer is deeper, search all the way through
+  for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) { // input sample buffer is deeper, search all the way through
     if( sample[i] > max )
       max = sample[i];
     if( sample[i] < min )
       min = sample[i];
   }
 
-  uint16_t span = max - min;
-  scale = 65535.0 / (float) span;
+  float span = (float) max - (float) min;
+  scale = (65535.0 / span) * 0.9;
 
   for( i = 0; i < NUM_RX_SAMPLES; i += (NUM_RX_SAMPLES / NUM_SAMPLES) ) { // decimate by 4
     temp = sample[i] - min;

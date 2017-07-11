@@ -31,7 +31,7 @@ static void agc(uint16_t  *sample, uint16_t *output) {
     return;
 
   min = 65535; max = 0;
-  for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // input sample buffer is deeper, search all the way through
+  for( i = 0; i < NUM_RX_SAMPLES * NUM_RX_BLOCKS; i++ ) { // input sample buffer is deeper, search all the way through
     if( sample[i] > max )
       max = sample[i];
     if( sample[i] < min )
@@ -149,7 +149,6 @@ static void dbcompute(uint16_t *sample) {
   font = gdispOpenFont("fixed_5x8");
   width = gdispGetWidth();
   height = gdispGetFontMetric(font, fontHeight);
-
   gdispClear(Black);
   gdispFillArea(0, 0, width, height, White);
 
