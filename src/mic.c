@@ -98,8 +98,8 @@ void micStart(void) {
   // writel( &DMA->CR, readl(&DMA->CR) | DMA_CR_ERCA_MASK ); // round-robin priority
   writeb(&DMA->DCHPRI0, 0xC1); // dummy setting, cannot preempt or suspend
   writeb(&DMA->DCHPRI1, 0xC2); // dummy setting, cannot preempt or suspend 
-  writeb(&DMA->DCHPRI2, 0x03); // can preempt and suspend other requests
-  writeb(&DMA->DCHPRI3, 0xC0); // back-buffer copy cannot preempt or suspend any other channel
+  writeb(&DMA->DCHPRI2, 0x00); // cannot suspend a lower priority channel; cannot be suspended by others
+  writeb(&DMA->DCHPRI3, 0xC3); // back-buffer copy cannot suspend a lower priority channel, can be suspended
 
   // configure the I2S read TCD
   writel( &tcd->SADDR, (uint32_t) &(I2S->RDR[0]) ); // source is read fifo
