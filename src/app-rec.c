@@ -614,6 +614,6 @@ static void rec_exit(OrchardAppContext *context) {
 #endif
 }
 
-orchard_app("Record Clips", rec_init, rec_start, rec_event, rec_exit);
+orchard_app("Record Clips (beta)", rec_init, rec_start, rec_event, rec_exit);
 
 
