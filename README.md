@@ -1,15 +1,15 @@
-# Burning Man 2017 Badge Instructions
+# Cube Garden Development Instructions
+This code is based off https://github.com/bunnie/chibios-xz (bm17 branch).
 
 ## Getting Started
 
 We assume you are building on a Raspberry Pi (so ARM-native) device,
 and using gcc6. 
 
-1. Check out https://github.com/bunnie/chibios-xz (git checkout https://github.com/bunnie/chibios-xz chibios-bm17)
-2. Check out the bm17 branch (cd chibios-bm17; git checkout bm17)
-3. Change to the "src" dir
-4. Run "make -j3".  If you're cross-compiling it, add " TRGT=arm-none-eabi-" to the command.
-5. If you get a complaint about stubs-soft.h, create an empty file of that name in the directory where the error message is pointing to and the error will go away.
+1. Check out https://github.com/rowr111/cubegarden (git checkout https://github.com/rowr111/cubegarden cubegarden)
+2. Change to the "src" dir
+3. Run "make -j3".  If you're cross-compiling it, add " TRGT=arm-none-eabi-" to the command.
+4. If you get a complaint about stubs-soft.h, create an empty file of that name in the directory where the error message is pointing to and the error will go away.
 
 The build result will be "build/bm17.elf", an object file that can be
 loaded using openOCD into the badge.
