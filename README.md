@@ -4,20 +4,20 @@ This code is based off https://github.com/bunnie/chibios-xz (bm17 branch).
 ## Getting Started
 
 We assume you are building on a Raspberry Pi (so ARM-native) device,
-and using gcc6. 
+and using [gcc6](https://gcc.gnu.org/gcc-6/). 
 
 1. Check out https://github.com/rowr111/cubegarden (git checkout https://github.com/rowr111/cubegarden cubegarden)
 2. Change to the "src" dir
 3. Run "make -j3".  If you're cross-compiling it, add " TRGT=arm-none-eabi-" to the command.
 4. If you get a complaint about stubs-soft.h, create an empty file of that name in the directory where the error message is pointing to and the error will go away.
 
-The build result will be "build/bm17.elf", an object file that can be
-loaded using openOCD into the badge.
+The build result will be "build/bm17.[elf](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)", an object file that can be
+loaded using [openOCD](http://openocd.org/) into the badge.
 
 ## Connecting the SWD via OpenOCD
 
-We'll use the GPIOs on the Raspberry PI to communicate with badge over
-the SWD bus to load the firmware.
+We'll use the [GPIO](https://www.w3schools.com/nodejs/nodejs_raspberrypi_gpio_intro.asp)s on the Raspberry PI to communicate with badge over
+the [SWD](https://en.wikipedia.org/wiki/JTAG#Serial_Wire_Debug) [bus](https://en.wikipedia.org/wiki/Bus_(computing)) to load the firmware.
 
 * Connect SWD to "GPIO 21"
 * Connect SWC to "GPIO 20"
