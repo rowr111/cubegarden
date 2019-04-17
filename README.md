@@ -3,62 +3,111 @@ This code is based off https://github.com/bunnie/chibios-xz (bm17 branch).
 
 ## Getting Started
 
-We assume you are building on a Raspberry Pi (so ARM-native) device,
-and using [gcc6](https://gcc.gnu.org/gcc-6/). 
+The development starting point is a Raspberry Pi 3B+. If you need to image one,
+please grab the disk image from (TBD).
 
-1. Check out https://github.com/rowr111/cubegarden (git checkout https://github.com/rowr111/cubegarden cubegarden)
-2. Change to the "src" dir
-3. Run "make -j3".  If you're cross-compiling it, add " TRGT=arm-none-eabi-" to the command.
-4. If you get a complaint about stubs-soft.h, create an empty file of that name in the directory where the error message is pointing to and the error will go away.
+In this environment:
+
+* The code is pre-built
+* openocd is already installed
+
+This means you can skip a significant amount of tooling and futzing before getting started
+on dev work.
+
+To build the code:
+
+  cd ~/code/cubegarden/src
+  make -j3
 
 The build result will be "build/bm17.[elf](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)", an object file that can be
-loaded using [openOCD](http://openocd.org/) into the badge.
+loaded using [openOCD](http://openocd.org/) into the cube controller.
 
-## Connecting the SWD via OpenOCD
+If you're using a cube controller, you're in luck, the pinout of the
+cube controller exactly matches that of the Raspberry Pi, so plug the
+Raspberry Pi directly into the cube controller's header. Be sure to
+align pin 1 correctly, or you will damage the hardware.
+
+If you're developing using a BM17 badge, see the next section on how to
+wire up the badge to the Raspberry Pi.
+
+## Badge hack: wiring up the pins
 
 We'll use the [GPIO](https://www.w3schools.com/nodejs/nodejs_raspberrypi_gpio_intro.asp)s on the Raspberry PI to communicate with badge over
 the [SWD](https://en.wikipedia.org/wiki/JTAG#Serial_Wire_Debug) [bus](https://en.wikipedia.org/wiki/Bus_(computing)) to load the firmware.
 
-* Connect SWD to "GPIO 21"
-* Connect SWC to "GPIO 20"
-* Connect SRES to "GPIO 12"
-* Connect a GND
+  40-pin header on the Raspberry Pi (pin 1 is the corner closest to the metal shield with the debossed raspberry pi logo)
+  --------------------------------
+          +3V3 1  2   +5V
+  GPIO2   TDO  3  4   +5V
+  GPIO3        5  6   GND
+  GPIO4   TDI  7  8   TXD0    RX
+          GND  9  10  RXD0    TX
+  GPIO17 SRES  11 12  GPIO18  NMI
+  GPIO27  SWD  13 14  GND
+  GPIO22  SCK  15 16  GPIO23  TRST
+  --------------------------------
+
+* Connect SWD to pin 13
+* Connect SWC to pin 15
+* Connect SRES to pin 11
+* Connect RX to pin 8
+* Connect TX to pin 10
+* Connect a GND (say, pin 9)
 
 The pin numbers are labelled on the headers on the component side of the board (non-OLED side).
 
-It's recommended you solder any headers with the pins facing toward the component side (not toward
-the OLED side) so that firmware updates are still possible using a pogo pin jig. The pogo pins
-come down from the OLED side, so putting the pins facing outward will (a) cause you to be poked
-by the pins as you wear the badge and (b) interfere with the pogo pins for reflashing using the
-production jig.
+## Connecting to the controller and debuging your code
 
-You need to compile OpenOCD from source, and enable "bcm2835gpio".  Install the toolchain.  If you're using Raspbian, it's something like this:
+It's recommended you open three or four ssh terminals to the Raspberry Pi for the easiest debugging.
+The purpose of the terminals are as follows:
 
-    sudo apt-get install build-essential libtool gdb which
-    git clone --recursive git://git.code.sf.net/p/openocd/code openocd
-    cd openocd
-    ./bootstrap
-    ./configure --enable-bcm2835gpio --enable-sysfsgpio --disable-werror
-    make
-    sudo make install
+1. Terminal to control JTAG, the low-level bus used to push code onto the cube controller CPU.
+2. Terminal to control gdb. This is your line-by-line interactive debugger, where you can set
+breakpoints and observe variables.
+3. Terminal with your code text editor. This is where you're writing/updating your actual code.
+4. (optional) Terminal to monitor the serial port. This is only needed if you're doing "printf" style
+debugging in addition to the gdb debugging. 
 
-Then, run OpenOCD:
+### The JTAG controller
 
-    cd chibios-bm17/src
+From ~/code/cubegarden/src, run the following command:
+
     sudo openocd -f bcm-rpi.cfg
 
-## Loading the ELF File
+The terminal will give status updates about the CPU's operation, etc.; no further interaction necessary.
 
-In gdb, run "load [path-to-build]/build/bm17.elf" to upload the new OS to the board.
+### gdb
 
-## Attaching GDB for debugging
+From ~/code/cubegarden/src, run the following commands:
 
-If you've compiled your program using a normal toolchain, you can use GDB to load code and debug the software.  From your Desktop, run:
+   gdb
+   (gdb) target remote localhost:3333
+   (gdb) load build/bm17.elf
 
-    arm-none-eabi-gdb -ex "target remote 192.168.xxx.xxx:3333" [path-to-your-program].elf
+* The first command starts gdb.
+* The second command connects to openocd, which is a port at localhost:3333
+* The third command loads your most recent code build into the badge, permanently overwriting
+the previous code contents.
 
 To look at OS threads in GDB, add the symbols from the orchard.elf file you built at load address 0:
 
     (gdb) add-symbol-file [path-to-orchard.elf] 0
 
 You should now be able to look at threads using "info thr", and change threads with "thr [pid]".
+
+### Text editor
+
+Use emacs, vi, nano, etc. to edit your code.
+
+### Serial port
+
+Use the following command to connect to the serial port:
+
+  screen /dev/ttyS0 115200
+
+If the serial data seems fragmented, then likely you had a previous session you didn't
+quit out of correctly. Try screen -r, or killing any other screen processes resident in
+the system.
+
+To quit out of a screen session "gracefully", type control-A, then \, and then q
+   
