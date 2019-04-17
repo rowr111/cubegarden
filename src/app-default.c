@@ -532,6 +532,6 @@ static void led_exit(OrchardAppContext *context) {
   (void)context;
 }
 
-orchard_app("Blinkies and Sex!", led_init, led_start, led_event, led_exit);
+orchard_app("Phasians and Sex!", led_init, led_start, led_event, led_exit);
 
 

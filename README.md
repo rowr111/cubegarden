@@ -77,7 +77,7 @@ From ~/code/cubegarden/src, run the following command:
 
 The terminal will give status updates about the CPU's operation, etc.; no further interaction necessary. Here's what it looks like:
 
-[![asciicast](https://asciinema.org/a/mXFP6Y3cL3pnJuCij3oLczYOI.svg)](https://asciinema.org/a/mXFP6Y3cL3pnJuCij3oLczYOI)
+[![asciicast](https://asciinema.org/a/241414.svg)](https://asciinema.org/a/241414)
 
 ### gdb
 
@@ -91,6 +91,10 @@ From ~/code/cubegarden/src, run the following commands:
 * The second command connects to openocd, which is a port at localhost:3333
 * The third command loads your most recent code build into the badge, permanently overwriting
 the previous code contents.
+
+Here's a quick example of using gdb:
+
+[![asciicast](https://asciinema.org/a/241415.svg)](https://asciinema.org/a/241415)
 
 To look at OS threads in GDB, add the symbols from the orchard.elf file you built at load address 0:
 
@@ -113,7 +117,8 @@ quit out of correctly. Try screen -r, or killing any other screen processes resi
 the system.
 
 To quit out of a screen session "gracefully", type control-A, then \, and then q
-   
+
+[![asciicast](https://asciinema.org/a/241416.svg)](https://asciinema.org/a/241416)
 
 ### Random notes
 
