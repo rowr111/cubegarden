@@ -61,6 +61,11 @@ the [SWD](https://en.wikipedia.org/wiki/JTAG#Serial_Wire_Debug) [bus](https://en
 
 The pin numbers are labelled on the headers on the component side of the board (non-OLED side).
 
+Did your wires fall out? see these photos to help remind you how to wire them up:
+
+https://github.com/rowr111/cubegarden/blob/master/hardware/bm-badge-side.jpg
+https://github.com/rowr111/cubegarden/blob/master/hardware/bm-rpi-side.jpg
+
 ## Connecting to the controller and debuging your code
 
 It's recommended you open three or four ssh terminals to the Raspberry Pi for the easiest debugging.
