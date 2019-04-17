@@ -35,6 +35,7 @@ wire up the badge to the Raspberry Pi.
 We'll use the [GPIO](https://www.w3schools.com/nodejs/nodejs_raspberrypi_gpio_intro.asp)s on the Raspberry PI to communicate with badge over
 the [SWD](https://en.wikipedia.org/wiki/JTAG#Serial_Wire_Debug) [bus](https://en.wikipedia.org/wiki/Bus_(computing)) to load the firmware.
 
+```
    40-pin header on the Raspberry Pi (pin 1 is the corner closest to the metal shield with the debossed raspberry pi logo)
 
            +3V3 1  2   +5V
@@ -45,7 +46,7 @@ the [SWD](https://en.wikipedia.org/wiki/JTAG#Serial_Wire_Debug) [bus](https://en
    GPIO17 SRES  11 12  GPIO18  NMI
    GPIO27  SWD  13 14  GND
    GPIO22  SCK  15 16  GPIO23  TRST
-
+```
 
 * Connect SWD to pin 13
 * Connect SWC to pin 15
