@@ -4,7 +4,7 @@ This code is based off https://github.com/bunnie/chibios-xz (bm17 branch).
 ## Getting Started
 
 The development starting point is a Raspberry Pi 3B+. If you need to image one,
-please grab the disk image from (TBD).
+please grab the disk image from https://bunniefoo.com/bunnie/cubegarden-base.img.gz.
 
 In this environment:
 
