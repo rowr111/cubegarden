@@ -75,7 +75,9 @@ From ~/code/cubegarden/src, run the following command:
 
     sudo openocd -f bcm-rpi.cfg
 
-The terminal will give status updates about the CPU's operation, etc.; no further interaction necessary.
+The terminal will give status updates about the CPU's operation, etc.; no further interaction necessary. Here's what it looks like:
+
+[![asciicast](https://asciinema.org/a/mXFP6Y3cL3pnJuCij3oLczYOI.svg)](https://asciinema.org/a/mXFP6Y3cL3pnJuCij3oLczYOI)
 
 ### gdb
 
