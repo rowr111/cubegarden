@@ -83,9 +83,9 @@ The terminal will give status updates about the CPU's operation, etc.; no furthe
 
 From ~/code/cubegarden/src, run the following commands:
 
-   gdb
-   (gdb) target remote localhost:3333
-   (gdb) load build/bm17.elf
+    gdb
+    (gdb) target remote localhost:3333
+    (gdb) load build/bm17.elf
 
 * The first command starts gdb.
 * The second command connects to openocd, which is a port at localhost:3333
@@ -110,7 +110,7 @@ Use emacs, vi, nano, etc. to edit your code.
 
 Use the following command to connect to the serial port:
 
-  screen /dev/ttyS0 115200
+    screen /dev/ttyS0 115200
 
 If the serial data seems fragmented, then likely you had a previous session you didn't
 quit out of correctly. Try screen -r, or killing any other screen processes resident in
@@ -123,6 +123,8 @@ To quit out of a screen session "gracefully", type control-A, then \, and then q
 ### Random notes
 
 git key management:
+
+```
  `eval ssh-agent`
  ssh-add ~/.ssh/<key>
- 
+```
