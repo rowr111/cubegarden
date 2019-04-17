@@ -111,3 +111,10 @@ the system.
 
 To quit out of a screen session "gracefully", type control-A, then \, and then q
    
+
+### Random notes
+
+git key management:
+ `eval ssh-agent`
+ ssh-add ~/.ssh/<key>
+ 
