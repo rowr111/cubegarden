@@ -51,6 +51,8 @@ extern uint8_t sex_done;
 
 orchard_app_end();
 
+uint8_t anonymous = 0; // set this to make cubes not broadcast their presence, not detect others
+
 static const OrchardApp *orchard_app_list;
 static virtual_timer_t run_launcher_timer;
 static bool run_launcher_timer_engaged;
@@ -97,8 +99,6 @@ static uint8_t ui_override = 0;
 
 uint32_t uptime = 0;
 
-extern int sd_active;
-
 void friend_cleanup(void);
 
 #define MAIN_MENU_MASK  0x02
@@ -120,9 +120,6 @@ static void handle_radio_page(eventid_t id) {
   (void) id;
   uint8_t oldfx;
 
-  if( sd_active ) // don't page during recording
-    return;
-  
   ui_override = 1;
   oldfx = effectsGetPattern();
   effectsSetPattern(effectsNameLookup("strobe"));
@@ -569,9 +566,6 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
   char *who;
   char  response[sizeof(genome) + GENE_NAMELENGTH + 1];
 
-  if( sd_active ) // don't have sex while recording
-    return;
-  
   family = (const struct genes *) storageGetData(GENE_BLOCK);
 
   if( strncmp((char *)data, family->name, GENE_NAMELENGTH) == 0 ) {
@@ -928,10 +922,6 @@ static void i2s_full_handler(eventid_t id) {
     if( !ui_override )
       instance.app->event(instance.context, &evt);
   }
-  //  this is for MMC saving
-  //if( sd_active ) {
-  //update_sd(analogReadMic());
-  //}
   
 }
 

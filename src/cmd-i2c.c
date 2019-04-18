@@ -9,29 +9,6 @@ static int should_stop(void) {
   return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
 }
 
-void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
-  uint8_t val;
-
-  while( !should_stop() ) {
-    val = captouchRead();
-    chprintf(chp, "0x%02x\r", val);
-  }
-  chprintf(chp, SHELL_NEWLINE_STR);
-  
-}
-
-void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
-  uint8_t val;
-
-  chprintf(chp, "Calibrating touch surfaces"SHELL_NEWLINE_STR);
-  touch_force_cal();
-  
-}
-
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argc;

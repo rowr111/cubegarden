@@ -44,9 +44,6 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
  */
 void testCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void capCalCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void capWCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -60,7 +57,6 @@ void cmd_friendlist(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_sd(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -71,9 +67,6 @@ void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 static const ShellCommand commands[] = {
   {"test", testCommand},
   {"i2c", i2cCommand},
-  {"captest", capTestCommand},
-  {"capcal", capCalCommand},
-  {"c", capWCommand},
   {"chg", chgCommand},
   {"gg", ggCommand},
   {"fx", fxCommand},
@@ -86,7 +79,6 @@ static const ShellCommand commands[] = {
   {"friendlist", cmd_friendlist},
   {"friendping", cmd_friendping},
   {"friendsim", cmd_friendsim},
-  {"sd", cmd_sd},
   {"auditlog", cmd_printaudit},
   {"auditcheck", cmd_auditcheck},
   {"testall", cmd_testall},
