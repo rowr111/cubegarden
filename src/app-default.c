@@ -52,8 +52,8 @@ static uint8_t oscope_running = 0;
 static uint16_t *samples;
 static uint32_t oscope_trigger = 1;
 
-uint8_t sex_running = 0;
-uint8_t sex_done = 0;
+extern uint8_t sex_running = 0;
+extern uint8_t sex_done = 0;
 uint8_t sex_clear_event = 0;
 uint32_t sex_timer; 
 
@@ -84,10 +84,6 @@ static void do_oscope(void) {
     gdispFlush();
     orchardGfxEnd();
   } 
-}
-
-uint8_t getMutationRate(void) {
-  return ((256 / BUMP_LIMIT) * bump_level) + 2;
 }
 
 static void do_shaker(void) {

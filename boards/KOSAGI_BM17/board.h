@@ -25,7 +25,7 @@
  * Board identifier.
  */
 #define BOARD_KOSAGI_BM17
-#define BOARD_NAME                  "Burning Man 2017 Badge"
+#define BOARD_NAME                  "Cubegarden 2019"
 
 #define BOARD_XTAL_MHZ  8000000
 

@@ -145,15 +145,12 @@ CSRC = \
        $(BOARDSRC) \
        $(STREAMSSRC) \
        $(SHELLSRC) \
-       $(GFXSRC) \
        main.c \
        orchard-vectors.c \
        orchard-events.c \
        orchard-test.c \
        shellcfg.c \
        gitversion.c \
-       oled.c \
-       touch.c \
        charger.c \
        led.c \
        mic.c \
@@ -170,8 +167,9 @@ CSRC = \
        orchard-app.c \
        orchard-ui.c \
        analog.c \
+       app-dummy.c \
+       oscope-routines.c \
        $(wildcard cmd-*.c) \
-       $(wildcard app-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
        $(LIBFIXMATHSRC) \

@@ -54,7 +54,6 @@ extern const char *gitversion;
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, touchCb, PORTB, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
   }
@@ -171,15 +170,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   chgSetSafety(); // has to be first thing written to the battery controller
   
-  // init I2C objects for graphics
-  i2cObjectInit(&I2CD2);
-  i2cStart(&I2CD2, &i2c2_config);
-
-  oledStart();
-  gfxInit();
-
-  // oledBanner();
-
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
 
@@ -187,8 +177,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   chEvtObjectInit(&chg_keepalive_event);
 
   chgStart(1);
-
-  touchStart();
 
   adcStart(&ADCD1, &adccfg1);
   analogStart();
@@ -204,20 +192,11 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   spiObjectInit(&SPID1);
   mmcObjectInit(&MMCD1);
 
-  // setup drive strengths on SPI0
-  PORTD_PCR0 = 0x103; // pull up enabled, fast slew  (CS0)
-  PORTD_PCR1 = 0x203; // pull up enabled, fast slew (clk)
-  PORTD_PCR2 = 0x200; // fast slew (mosi)
-  PORTD_PCR3 = 0x207; // slow slew, pull-up (miso)
-  palSetPad(spi_config_mmc.ssport, spi_config_mmc.sspad); // make sure CS is deselected
-  
   // setup drive strengths on SPI1
   PORTD_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
   PORTD_PCR5 = 0x703; // pull up enabled, fast slew (clk)
   PORTD_PCR6 = 0x700; // fast slew (mosi)
   PORTD_PCR7 = 0x707; // slow slew, pull-up (miso)
-  
-  mmcStart(&MMCD1, &mmc_config); // driver, config
   
   evtTableInit(orchard_events, 12);
   orchardEventsStart();
@@ -232,13 +211,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   micStart(); 
   //i2sStartRx(&I2SD1); // start the audio sampling buffer 
 
-#if 0
-  spiStart(&SPID1, &spi_config_mmc);
-  spiUnselect(&SPID1);
-  spiIgnore(&SPID1, 1);
-  spiUnselect(&SPID1);
-#endif
-  
   orchardTestRunAll(stream, orchardTestPoweron);
   /*
    * Activates the EXT driver 1.
@@ -313,7 +285,7 @@ int main(void) {
   shellInit();
 
   chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
-  chprintf(stream, "bunnie-BM17 bootloader.  Based on build %s"SHELL_NEWLINE_STR,
+  chprintf(stream, "Cubegarden bootloader.  Based on build %s"SHELL_NEWLINE_STR,
 	   gitversion);
   chprintf(stream, "Core free memory : %d bytes"SHELL_NEWLINE_STR,
 	   chCoreGetStatusX());
