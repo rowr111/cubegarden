@@ -60,6 +60,7 @@ void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_name(BaseSequentialStream *chp, int argc, char *argv[]);
 #ifdef HAS_STC3115
 void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 #endif
@@ -82,6 +83,7 @@ static const ShellCommand commands[] = {
   {"auditlog", cmd_printaudit},
   {"auditcheck", cmd_auditcheck},
   {"testall", cmd_testall},
+  {"name", cmd_name},
 #ifdef HAS_STC3115
   {"gg2", gg2Command},
 #endif
