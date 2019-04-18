@@ -26,7 +26,7 @@ void cmd_name(BaseSequentialStream *chp, int argc, char *argv[])
   }
 
   if (strlen(argv[0]) < 2 ) {
-    chprintf(chp, "Name to short. Aborting."NL);
+    chprintf(chp, "Name too short. Aborting."NL);
     return;
   }
   strncpy(myname, argv[0], TEXTENTRY_MAXLEN);
