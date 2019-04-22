@@ -1,8 +1,17 @@
-These libraries taken out of launchpad.net's ARM GCC distro:
-https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q3-update/+download/gcc-arm-none-eabi-4_9-2015q3-20150921-linux.tar.bz2
-from the subdirectories arm-none-eabi/lib/armv7e-m/fpu/libc_nano.a
-and lib/gcc/arm-none-eabi/4.9.3/armv7e-m/fpu
+Files in this directory are needed to compile the code, but are specific to the version of raspbian you are using and the version of GCC (gnu compiler collection). As such they may not be included by default.
 
-more libs
-~/code/gcc-arm-none-eabi-6_2-2016q4/arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard 
- ~/code/gcc-arm-none-eabi-6_2-2016q4/lib/gcc/arm-none-eabi/6.2.1/thumb/v7e-m/fpv4-sp/hard
+Make sure the link below matches the gcc version of your current build system - these instructions assume raspbian 9 (Stretch) and GCC 6.3.0.
+
+https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2?revision=2cc92fb5-3e0e-402d-9197-bdfc8224d8a5?product=GNU Arm Embedded Toolchain,64-bit,,Linux,6-2017-q2-update
+
+You should download this tarball, extract the files, and then navigate to the directories that contain the libraries we need that match the badge's CPU.
+
+Copy the following files to the same directory as this readme:
+./arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a
+./lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv4-sp/hard/libgcc.a
+./arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libm.a
+
+The compiler expects two of the filenames to be slightly different, so you will need to additionally create symbolic links (shortcuts) to these files. 
+Run the following commands to create the links in the same directory:
+ln -s libgcc.a armv7e-m-fpu-libgcc.a
+ln -s libc_nano.a libc-nano-armv7e-m-fpu.a
