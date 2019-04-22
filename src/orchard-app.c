@@ -46,10 +46,16 @@
 #define SEXTEST 0
 #define SEX_TURNAROUND_TIME 4000 // 4 seconds for sex -- mostly to give sender time to "shake it"
 
-extern uint8_t sex_running;  // from app-default.c
-extern uint8_t sex_done;
+#define BUMP_LIMIT 32  // 32 shakes to get to the limit
+#define RETIRE_RATE 100 // retire one bump per "80ms"
+static uint8_t bump_level = 0;
+
+uint8_t sex_running = 0;
+uint8_t sex_done = 0;
 
 orchard_app_end();
+
+uint8_t anonymous = 0; // set this to make cubes not broadcast their presence, not detect others
 
 static const OrchardApp *orchard_app_list;
 static virtual_timer_t run_launcher_timer;
@@ -97,8 +103,6 @@ static uint8_t ui_override = 0;
 
 uint32_t uptime = 0;
 
-extern int sd_active;
-
 void friend_cleanup(void);
 
 #define MAIN_MENU_MASK  0x02
@@ -116,13 +120,14 @@ void wdogPing(void) {
 #endif
 }
 
+uint8_t getMutationRate(void) {
+  return ((256 / BUMP_LIMIT) * bump_level) + 2;
+}
+
 static void handle_radio_page(eventid_t id) {
   (void) id;
   uint8_t oldfx;
 
-  if( sd_active ) // don't page during recording
-    return;
-  
   ui_override = 1;
   oldfx = effectsGetPattern();
   effectsSetPattern(effectsNameLookup("strobe"));
@@ -569,9 +574,6 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
   char *who;
   char  response[sizeof(genome) + GENE_NAMELENGTH + 1];
 
-  if( sd_active ) // don't have sex while recording
-    return;
-  
   family = (const struct genes *) storageGetData(GENE_BLOCK);
 
   if( strncmp((char *)data, family->name, GENE_NAMELENGTH) == 0 ) {
@@ -580,7 +582,7 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
     if( config->cfg_autosex == 0 ) {
       // UI prompt and escape with return if denied
       ui_override = 1;
-      consent = getConsent(who);
+      consent = 1; // always DTF
       chThdSleepMilliseconds(300); // clear event queues
       ui_override = 0;
       analogUpdateMic(); // need this to restart the oscope if it's running
@@ -707,7 +709,7 @@ static void poke_run_launcher_timer(eventid_t id) {
 
   (void)id;
 
-  uint8_t val = captouchRead();
+  uint8_t val = 0; // no captouch
   if (run_launcher_timer_engaged) {
     /* Timer is engaged, but both buttons are still held.  Do nothing.*/
     if ((val & MAIN_MENU_MASK) == MAIN_MENU_VALUE)
@@ -928,10 +930,6 @@ static void i2s_full_handler(eventid_t id) {
     if( !ui_override )
       instance.app->event(instance.context, &evt);
   }
-  //  this is for MMC saving
-  //if( sd_active ) {
-  //update_sd(analogReadMic());
-  //}
   
 }
 
@@ -971,10 +969,10 @@ static THD_FUNCTION(orchard_app_thread, arg) {
 
   chRegSetThreadName("Orchard App");
 
-  instance->keymask = captouchRead();
+  //  instance->keymask = captouchRead();
+  instance->keymask = 0; // no captouch
 
   evtTableInit(orchard_app_events, 16);
-  evtTableHook(orchard_app_events, touch_event, touchHandler);
   evtTableHook(orchard_app_events, radio_app, radio_app_event);
   evtTableHook(orchard_app_events, ui_completed, ui_complete_cleanup);
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
@@ -1037,7 +1035,6 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableUnhook(orchard_app_events, ui_completed, ui_complete_cleanup);
   evtTableUnhook(orchard_app_events, radio_app, radio_app_event);
-  evtTableUnhook(orchard_app_events, touch_event, touchHandler);
 
   /* Atomically broadcasting the event source and terminating the thread,
      there is not a chSysUnlock() because the thread terminates upon return.*/
@@ -1061,7 +1058,7 @@ void orchardAppInit(void) {
 
   /* Hook this outside of the app-specific runloop, so it runs even if
      the app isn't listening for events.*/
-  evtTableHook(orchard_events, touch_event, poke_run_launcher_timer);
+  //  evtTableHook(orchard_events, touch_event, poke_run_launcher_timer);
   
   // usb detection and charge state management is also meta to the apps
   // sequence of events:

@@ -15,6 +15,7 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    next      next effect"NL);
     chprintf(chp, "    prev      previous effect"NL);
     chprintf(chp, "    list      list effects"NL);
+    chprintf(chp, "    <name>    effect name"NL);
     return;
   }
 
@@ -28,6 +29,10 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
 
   else if (!strcasecmp(argv[0], "list")) {
     listEffects();
+  }
+
+  else {
+    effectsSetPattern(effectsNameLookup(argv[0]));
   }
   
   return;
