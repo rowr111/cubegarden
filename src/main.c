@@ -187,6 +187,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   palClearPad(IOPORT1, 19); // clear RADIO_RESET, taking radio out of reset
   chThdSleepMilliseconds(5);
 
+  palClearPad(IOPORT2, 18); // turn off laser
+  
   uiStart();
 
   spiObjectInit(&SPID1);

@@ -158,4 +158,8 @@
 #define KINETIS_USB_USE_USB0                FALSE
 #define KINETIS_USB_USB0_IRQ_PRIORITY       5
 
+
+// turn on PWM channel 2
+#define KINETIS_PWM_USE_FTM2   TRUE
+
 #endif /* _MCUCONF_H_ */

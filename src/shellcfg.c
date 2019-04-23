@@ -61,6 +61,8 @@ void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_name(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_laser(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_pulse(BaseSequentialStream *chp, int argc, char *argv[]);
 #ifdef HAS_STC3115
 void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 #endif
@@ -84,6 +86,8 @@ static const ShellCommand commands[] = {
   {"auditcheck", cmd_auditcheck},
   {"testall", cmd_testall},
   {"name", cmd_name},
+  {"laser", cmd_laser},
+  {"pulse", cmd_pulse},
 #ifdef HAS_STC3115
   {"gg2", gg2Command},
 #endif
