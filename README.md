@@ -47,8 +47,8 @@ The -j3 option just multi-threads the build to make it run faster if you have a 
 The build result will be "build/bm17.[elf](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)", an object file that can be
 loaded using [openOCD](http://openocd.org/) into the cube controller.
 
-If you get an error about the submodules when building, this may because the submodules are not on the right version.
-make sure the submodules are on the right version:
+Errors: If you get an error about the submodules when building, this may because the submodules are not on the right version.
+If this happens, make sure the submodules are on the right version:
 * navigate to the ChibiOS dir and run `git checkout 9942787`
 * navigate to the ChibiOS-Contrib dir and run `git checkout e6b624e`
 
