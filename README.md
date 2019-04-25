@@ -67,10 +67,13 @@ Next, we'll start the software used to push the code and do debugging later:
 * Open a new ssh connection to the raspberry pi (don't close the existing)
 * From ~/code/cubegarden/src, run the following commands:
 
-    gdb
-    (gdb) target remote localhost:3333
-    (gdb) load build/bm17.elf
+```
+     gdb
+     (gdb) target remote localhost:3333
+     (gdb) load build/bm17.elf
+```
 
+What these commands do:
 * The first command starts gdb.
 * The second command connects to openocd, which is a port at localhost:3333
 * The third command loads your most recent code build into the badge, permanently overwriting
@@ -107,9 +110,7 @@ There are a few options for writing/editing the code:
 
 ## Debugging using gdb
 
-Here's a quick example of using gdb:
-
-[![asciicast](https://asciinema.org/a/241415.svg)](https://asciinema.org/a/241415)
+[Here's a quick example of using gdb](https://asciinema.org/a/241415).
 
 To look at OS threads in GDB, add the symbols from the orchard.elf file you built at load address 0:
 
