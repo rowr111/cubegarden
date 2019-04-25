@@ -22,7 +22,9 @@ Included items:
 * openocd (how we connect to the cube's electronics) is already installed
 
 Regardless of if you are using the existing image or not:
-You need a ssh key set up on the raspberry pi in order to commit to github from the raspberry pi.  See instructions [here](https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account).
+You need a ssh key set up on the raspberry pi in order to commit to github from the raspberry pi, etc.  
+* See instructions [here](https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account) for how to generate the key, add to ssh-agent, and add to your github account.
+  * ignore the part about checking for existing keys as there's one as part of the cloned rpi image that we don't want to use - just make a new one for yourself.
 
 ### connecting the raspberry pi to the board
 The cubegarden will have its own controller, but you can also use a BM17 badge for development:
