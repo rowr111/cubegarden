@@ -14,10 +14,11 @@ Welcome to the cubegarden readme! This code controls the lighting of a large tra
 ### Raspberry Pi 
 The development starting point is a Raspberry Pi 3B+. 
 Please use the raspberry pi disk image from https://bunniefoo.com/bunnie/cubegarden-base.img.gz.
+In this image things are already set up for you so it's easy to start developing.
 
-In this image things are already set up for you, so it's easy to start developing:
+Included items:
 * The code is already located at ~/code/cubegarden
-  * if you are not using the image/getting the code from scratch for some reason, be sure to recurse submodules when cloning the repo: git clone --recurse-submodules https://github.com/rowr111/cubegarden.git
+  * if you are not using the image/getting the code from scratch for some reason, be sure to recurse submodules when cloning the repo: `git clone --recurse-submodules https://github.com/rowr111/cubegarden.git`
 * openocd (how we connect to the cube's electronics) is already installed
 
 Regardless of if you are using the existing image or not:
@@ -34,7 +35,7 @@ The cubegarden will have its own controller, but you can also use a BM17 badge f
 First, we'll get up-to-date code from git and build it:
 * Open a ssh connection to the raspberry pi.
 * Do a git pull on ~/code/cubegarden to get the latest code. 
-* To build the code, navigate to ~/code/cubegarden/src and run the command 'make -j3'
+* To build the code, navigate to ~/code/cubegarden/src and run the command `make -j3`
 
 ```
   cd ~/code/cubegarden/src
@@ -48,8 +49,8 @@ loaded using [openOCD](http://openocd.org/) into the cube controller.
 
 If you get an error about the submodules when building, this may because the submodules are not on the right version.
 make sure the submodules are on the right version:
-* navigate to the ChibiOS dir and run 'git checkout 9942787'
-* navigate to the ChibiOS-Contrib dir and run 'git checkout e6b624e'
+* navigate to the ChibiOS dir and run `git checkout 9942787`
+* navigate to the ChibiOS-Contrib dir and run `git checkout e6b624e`
 
 ## Step 3: Open a connection to the controller
 Next, we need to open a connection to the controller so that we can push code, debug, and monitor everything.
@@ -82,14 +83,15 @@ This is the window from which you can do debugging tasks later - set breakpoints
 ## Step 5: Connect to the serial port to enable giving the controller direct commands and view debugging output
 * Open yet another ssh connection to the raspberry pi (still keep all existing connections open)
 * Use the [following command](https://asciinema.org/a/241416) to connect to the serial port (you do not need to navigate anywhere special first):
-
+```
     screen /dev/ttyS0 115200
-
+```
 If the serial data seems fragmented, then likely you had a previous session you didn't
 quit out of correctly. Try screen -r, or killing any other screen processes resident in
 the system.
 
 Everything should clear out and you are now connected directly to the controller. 
+
 **Hooray!  You are set up and the code is running!!**
 
 * If you type '**help**' and press enter you should see a list of commands you can issue to the badge.
@@ -103,7 +105,7 @@ There are a few options for writing/editing the code:
 * directly on the raspberry pi via text editors like emacs, vi, nano, etc. 
 * write code on your own computer using something like VS Code and then push your changes to the raspberry pi:
   * options here include:
-    * rsync -aiv -e ssh yourcodesource  pi@XXX.XX.XX.XXX:code/cubegarden/
+    * `rsync -aiv -e ssh yourcodesource  pi@XXX.XX.XX.XXX:code/cubegarden/`
 
 ## Debugging using gdb
 
