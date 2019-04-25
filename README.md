@@ -15,13 +15,10 @@ Welcome to the cubegarden readme! This code controls the lighting of a large tra
 The development starting point is a Raspberry Pi 3B+. 
 Please use the raspberry pi disk image from https://bunniefoo.com/bunnie/cubegarden-base.img.gz.
 
-In this image:
+In this image things are already set up for you, so it's easy to start developing:
 * The code is already located at ~/code/cubegarden
-  * if you are getting the code from scratch, be sure to recurse submodules when cloning the repo: git clone --recurse-submodules https://github.com/rowr111/cubegarden.git
+  * if you are not using the image/getting the code from scratch for some reason, be sure to recurse submodules when cloning the repo: git clone --recurse-submodules https://github.com/rowr111/cubegarden.git
 * openocd (how we connect to the cube's electronics) is already installed
-
-This means you can skip a significant amount of tooling and futzing before getting started
-on dev work.
 
 Regardless of if you are using the existing image or not:
 You need a ssh key set up on the raspberry pi in order to commit to github from the raspberry pi.  See instructions [here](https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account).
