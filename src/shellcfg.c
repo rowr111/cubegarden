@@ -61,11 +61,13 @@ void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_name(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[]);
 #ifdef HAS_STC3115
 void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
 #endif
 
 static const ShellCommand commands[] = {
+  {"bright", cmd_bright},
   {"test", testCommand},
   {"i2c", i2cCommand},
   {"chg", chgCommand},
