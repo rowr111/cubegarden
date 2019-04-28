@@ -3,6 +3,7 @@
 #include "led.h"
 #include "orchard-effects.h"
 #include "gfx.h"
+#include "mic.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -206,6 +207,46 @@ static Color Wheel(uint8_t wheelPos) {
   }
   return c;
 }
+
+extern uint8_t scopemode_g;
+extern uint8_t fft_bin;
+static void fftEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  int i;
+  
+  int level;
+  scopemode_g = 1; // this selects FFT mode
+  for (i = 0; i < count; i++) {  // this only considers the bottom 32 bins, which is about the right frequency region
+    // skip the 0th sample because it's a DC offset
+    level = mic_processed[i+1] / 256; //  * (NUM_SAMPLES / count) 
+    ledSetRGB(fb, i, level, 0, 0, level);  // no shift applied, so set to 0
+  }
+}
+orchard_effects("FFT", fftEffect);
+
+static void dbEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  int i;
+  int level;
+  
+  scopemode_g = 2; // this selects db mode
+  level = (int) (count * (cur_db / 90.0)); // 120.0 is the max actual dB
+  if( level > 255 )
+    level = 255;
+  
+  for (i = 0; i < count; i++) {  // this only considers the bottom 32 bins, which is about the right frequency region
+    if( i <= level )
+      ledSetRGB(fb, i, level, 0, level, shift);
+    else
+      ledSetRGB(fb, i, 0, 0, 0, shift);
+  }
+}
+orchard_effects("DB", dbEffect);
+
 
 static void do_lightgene(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;

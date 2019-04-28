@@ -51,7 +51,6 @@
 static uint8_t bump_level = 0;
 
 uint8_t sex_running = 0;
-uint8_t sex_done = 0;
 
 orchard_app_end();
 
@@ -503,15 +502,12 @@ static void handle_radio_sex_ack(uint8_t prot, uint8_t src, uint8_t dst,
   uint8_t curfam = 0;
   char *target;
   
-  if( !sex_running )  // check to avoid people from sending acks without reqs
-    return;
-  
   oldfam = (const struct genes *) storageGetData(GENE_BLOCK);
   target = (char *)(data + sizeof(genome));
   if(strncmp(target, oldfam->name, GENE_NAMELENGTH) != 0)
     return; // I was expecting sex, someone acked, but actually I was hearing my neighbors doing it
 
-  configIncSexResponses(); // record # times we've had sex
+  // configIncSexResponses(); // record # times we've had sex
   newfam =  (struct genes *) chHeapAlloc(NULL, sizeof(struct genes));
   osalDbgAssert( newfam != NULL, "couldn't allocate space for the new family\n\r" );
   
@@ -552,7 +548,6 @@ static void handle_radio_sex_ack(uint8_t prot, uint8_t src, uint8_t dst,
   
   storagePatchData(GENE_BLOCK, (uint32_t *) newfam, GENE_OFFSET, sizeof(struct genes));
   chHeapFree(newfam);
-  sex_done = 1;
 }
 
 #if SEXTEST
@@ -949,7 +944,9 @@ static void accel_bump_event(eventid_t id) {
     instance.app->event(instance.context, &evt);
 }
 
-static THD_WORKING_AREA(waOrchardAppThread, 0x980); // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
+static THD_WORKING_AREA(waOrchardAppThread, 0xD80);
+// was 0x980 with 256 length samples 0xD80 with 512 length samples
+// was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
 static THD_FUNCTION(orchard_app_thread, arg) {
 
   (void)arg;
@@ -1096,6 +1093,9 @@ void orchardAppInit(void) {
   }
   osalMutexObjectInit(&friend_mutex);
 }
+
+//#define ORCHARD_APP_PRIO (LOWPRIO + 2)
+#define ORCHARD_APP_PRIO (NORMALPRIO + 10)
 
 void orchardAppRestart(void) {
 

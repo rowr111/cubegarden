@@ -78,7 +78,7 @@ void micStart(void) {
 
   // setup sampling rate (32kHz)
   writel( &I2S->MCR, 0x40000000 ); // setup the clocks
-  writel( &I2S->MDR, 0xf9b70 );
+  writel( &I2S->MDR, 0x3db70 );  // 0xf9b70 = 32kHz, 0x7cb70 = 16kHz (technically out of spec), 0x3dcb70 = 8khz
 
   // configure receive framing
   writel( &I2S->RCR1, I2S_RX_WATERMARK ); // watermark
@@ -165,56 +165,6 @@ void analogUpdateMic(void) {
 }
 
 int16_t *analogReadMic(void) {
-  return rx_savebuf;
+    return rx_savebuf;
 }
-
-OrchardTestResult test_mic(const char *my_name, OrchardTestType test_type) {
-  (void) my_name;
-  uint16_t min, max;
-  int i, j;
-  char prompt[16];
-  
-  switch(test_type) {
-  case orchardTestPoweron:
-  case orchardTestTrivial:
-    return orchardResultNoTest;
-  case orchardTestInteractive:
-  case orchardTestComprehensive:
-    orchardTestPrompt("speak into", "microphone", 0);
-    min = 65535; max = 0;
-
-    for( j = 0; j < 20; j++ ) {
-      gen_mic_event = 1;
-      
-      chThdYield();
-      chThdSleepMilliseconds(200);  // wait for mic to sample
-
-      for( i = 0; i < NUM_RX_SAMPLES; i++ ) { // input sample buffer is deeper, search all the way through
-	if( rx_savebuf[i] > max )
-	  max = rx_savebuf[i];
-	if( rx_savebuf[i] < min )
-	  min = rx_savebuf[i];
-      }
-    }
-    
-    uint16_t span = max - min;
-    chsnprintf(prompt, sizeof(prompt), "span %d", span);
-
-    if( span > 100 ) {
-      orchardTestPrompt("mic test PASS", prompt, 0);
-      chprintf(stream, "mic test pass, span: %d\n\r", span);
-      return orchardResultPass;
-    } else {
-      orchardTestPrompt("mic test FAIL", prompt, 0);
-      chprintf(stream, "mic test fail, span: %d\n\r", span);
-      return orchardResultFail;
-    }
-    
-  default:
-    return orchardResultNoTest;
-  }
-  
-  return orchardResultNoTest;
-}
-orchard_test("mic", test_mic);
 

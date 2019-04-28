@@ -20,7 +20,7 @@
 // Multiplication by 256 gives a nice compromise between precision
 // and numeric range.
 #ifndef FIX16_FFT_INPUT_TYPE
-#define FIX16_FFT_INPUT_TYPE uint8_t
+#define FIX16_FFT_INPUT_TYPE uint16_t
 #endif
 
 #ifndef FIX16_FFT_INPUT_CONVERT
