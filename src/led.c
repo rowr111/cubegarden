@@ -3,7 +3,9 @@
 #include "led.h"
 #include "orchard-effects.h"
 #include "gfx.h"
+
 #include "mic.h"
+#include "analog.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -483,6 +485,134 @@ static void calmPatternFB(struct effects_config *config) {
 }
 orchard_effects("calm", calmPatternFB);
 #endif
+
+/* Jeanie's effects section */
+static void changeOnDropVividRainbow(struct effects_config *config){
+	uint8_t *fb = config->hwconfig->fb;
+	int count = config->count;
+	int i;
+
+	//I wanted to make all these const but they got grumpy with me and wouldn't compile
+	//when I tried to put them in the array. Something about C is making it grumpy..
+	RgbColor vividViolet = {159, 0, 255};
+	RgbColor vividCerulean = {0, 169, 238};
+	RgbColor electricGreen = {0, 250, 34};
+	RgbColor vividYellow = {255, 227, 2};
+	RgbColor vividOrangePeel = {255, 160, 0};
+	RgbColor vividRed = {248, 13, 27};
+	RgbColor vividRainbow[6] = {vividRed, vividOrangePeel, vividYellow, electricGreen, vividCerulean, vividViolet};
+
+	static int currentColor;
+	//if there isn't a color already we need to run this to set the color
+	for (i = 0; i < count; i++) {
+		RgbColor c = vividRainbow[currentColor];
+		ledSetRGB(fb, i, c.r, c.g, c.b, shift/2);
+	}
+
+	if(bumped){
+		bumped=0;
+		//chprintf(stream, "%s", "New Color: ");
+		//chprintf(stream, "%d\n\r", currentColor);
+		//update the color by one and set it
+		currentColor = (currentColor + 1)%6;
+		  for (i = 0; i < count; i++) {
+			RgbColor c = vividRainbow[currentColor];
+		    ledSetRGB(fb, i, c.r, c.g, c.b, shift/2);
+		  }
+	}
+}
+orchard_effects("changeOnDropVividRainbow", changeOnDropVividRainbow);
+
+//notes for this effect:
+//1) IRL you can probably decrease the temperature check frequency to loop%100
+//since it's not like temp will be changing all that often...
+//2) need to set some reasonable temperature range that will work well for on-playa
+//also need to offset the on-board temperature heating.. one option would be to get some default value at boot and subtract
+//otherwise could also just figure it out from testing.
+static void temperatureTestEffect(struct effects_config *config){
+	uint8_t *fb = config->hwconfig->fb;
+	int loop = config->loop;
+	int count = config->count;
+	int i;
+	//saturation percent for the temp colors (out of 100)
+	int satLevel = 80;
+
+	//set some floor/ceiling temperatures.
+	const float maxTemp = 40;
+	const float minTemp = 20;
+	//temp is in milli deg C
+	float temp;
+	static float persistentTemp;
+
+	if(loop%10==0){
+		analogUpdateTemperature();
+		temp = (float)analogReadTemperature()/(float)1000;
+		persistentTemp = temp;
+		persistentTemp = persistentTemp < minTemp ? minTemp : persistentTemp;
+		persistentTemp = persistentTemp > maxTemp ? maxTemp : persistentTemp;
+		//serial output:
+		//chprintf(stream, "%s", "Current Temp: ");
+		//chprintf(stream, "%f\n\r", persistentTemp);
+	}
+
+	//then convert to 0-255 for hsv color to make it purdy
+	//I'm using float bc I don't like integer rounding.. let's just chop it off afterward.
+	float tempHueFloat = ((persistentTemp-minTemp)/((maxTemp-minTemp))*255);
+	int tempHue = (int)tempHueFloat;
+	int tempSat = 255*satLevel/100;
+	HsvColor tempHSV = {tempHue, tempSat, 255};
+
+	//convert back to rgb and set the LED color
+	RgbColor c = HsvToRgb(tempHSV);
+	for (i = 0; i < count; i++) {
+		ledSetRGB(fb, i, c.r, c.g, c.b, shift);
+	}
+}
+orchard_effects("temperatureTestEffect", temperatureTestEffect);
+
+/*
+static void basicDrop(struct effects_config *config){
+  int count = config->count;
+  int loop = config->loop;
+  uint8_t *fb = config->hwconfig->fb;
+  int i;
+
+  float Gravity = -15;
+  
+  float Height = 1;
+  float ImpactVelocityStart = sqrt( -2 * Gravity );
+  static float ImpactVelocity;
+  static float TimeSinceLastBounce;
+  float Dampening;
+  int ClockTimeSinceLastBounce = chVTGetSystemTime();
+
+  ImpactVelocity = ImpactVelocityStart;
+  TimeSinceLastBounce = 0;
+  Dampening = 0.90;
+
+  if (bumped) {
+    TimeSinceLastBounce = chVTGetSystemTime() - ClockTimeSinceLastBounce;
+    Height = 0.5 * Gravity * pow( TimeSinceLastBounce/28 , 2.0 ) + ImpactVelocity * TimeSinceLastBounce/28;
+	chprintf(stream, "%s", "height: ");
+    chprintf(stream, "%f\n\r", Height);
+	chprintf(stream, "%s", "TimeSinceLastBounce: ");
+    chprintf(stream, "%f\n\r", TimeSinceLastBounce);
+    if ( Height < 0 ) {                      
+      Height = 0;
+      ImpactVelocity = Dampening * ImpactVelocity;
+      if ( ImpactVelocity < 0.01 ){
+    	chprintf(stream, "%s\n\r", "unbumped");
+        bumped = 0;
+      };
+    }
+    for (i = 0; i < count; i++) {
+    ledSetRGB(fb, i, 255*Height, 0, 0, shift);
+  }
+ }
+}
+orchard_effects("basicDrop", basicDrop);
+*/
+/* end of Jeanie's effects section */
 
 static void testPatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
