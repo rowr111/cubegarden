@@ -21,6 +21,15 @@ Included items:
   * if you are not using the image/getting the code from scratch for some reason, be sure to recurse submodules when cloning the repo: `git clone --recurse-submodules https://github.com/rowr111/cubegarden.git`
 * openocd (how we connect to the cube's electronics) is already installed
 
+Notes about connecting/shutting down the raspberry pi:
+* you must first plug the rapsberry pi into a hdmi monitor and configure it to be on your wireless network.
+  * login:  username is 'pi', pw is (ask us!)
+* after the rpi is set up on your wireless network, you can use ssh from a computer on your network to connect to it:
+  * this command from Terminal (mac) or powershell (windows) should do the trick: `ssh pi@cubedev.local`
+* you **must** shut down the raspberry pi, it is not an arduino that you can unplug freely.  
+  * run the command: `sudo shutdown -h now`
+    * the raspberry pi will close the ssh connection, you'll see a bit of blinking from the on-board led.  After that is quiet, you can unplug it.
+
 #### GitHub notes for the Raspberry Pi
 Regardless of if you are using the existing image or not:
 You need a ssh key set up on the raspberry pi in order to commit to github from the raspberry pi, etc.  
@@ -39,6 +48,10 @@ The cubegarden will have its own controller, but you can also use a BM17 badge f
   * Be sure to align pin 1 correctly, or you will damage the hardware.
 * Using a BM17 badge - please use the instructions [here](https://github.com/rowr111/cubegarden/wiki/wire-a-badge-to-a-raspberry-pi) to wire the badge to the raspberry pi.
   * **you must plug in the badge to usb power as well has having the battery connected in order to connect**
+  * turning the badge off after cubegarden code has been pushed to it:  
+    * you must both unplug it from USB power **and** disconnect the battery manually to turn it off.
+      * because the GUI has been removed in the cubegarden code, there is no way to power down the badge besides disconnecing the batter.
+      * to disconnect the battery you must unscrew the case on the badge.
 
 ## Step 2: building the cubegarden code
 First, we'll get up-to-date code from git and build it:
