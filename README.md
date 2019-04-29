@@ -50,7 +50,7 @@ The cubegarden will have its own controller, but you can also use a BM17 badge f
   * **you must plug in the badge to usb power as well has having the battery connected in order to connect**
   * turning the badge off after cubegarden code has been pushed to it:  
     * you must both unplug it from USB power **and** disconnect the battery manually to turn it off.
-      * because the GUI has been removed in the cubegarden code, there is no way to power down the badge besides disconnecing the batter.
+      * because the UI has been removed in the cubegarden code, there is no way to power down the badge besides disconnecing the battery.
       * to disconnect the battery you must unscrew the case on the badge.
 
 ## Step 2: building the cubegarden code
