@@ -5,6 +5,7 @@
 
 #define STC3115_ADDR 0x70
 #define FAN5421_ADDR 0x6A
+#define BQ24157_ADDR 0x6A
 #define LC709203_ADDR 0x0B
 
 #define FAN5421_CTL0_ADR 0
@@ -14,5 +15,13 @@
 #define FAN5421_IBAT_ADR 4
 #define FAN5421_SPCHG_ADR 5
 #define FAN5421_SAFE_ADR 6
+
+#define BQ24157_STAT_ADR 0
+#define BQ24157_CTRL_ADR 1
+#define BQ24157_BATV_ADR 2
+#define BQ24157_ID_ADR   3
+#define BQ24157_IBAT_ADR 4
+#define BQ24157_SPCHG_ADR 5
+#define BQ24157_SAFE_ADR 6
 
 #undef HAS_STC3115  // for units with the STC3115 unpopulated

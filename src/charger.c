@@ -29,7 +29,7 @@ int16_t ggStateofCharge(void) {
   retval = i2cMasterTransmitTimeout(&I2CD1, LC709203_ADDR, tx, 1, rx, 3, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
   if( retval != MSG_OK ) {
-    chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+    chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
   //chprintf(stream, "State of charge: %.1f%%"NL, (rx[0] | (rx[1] << 8)) / 10.0);
   soc = (int16_t) (rx[0] | (rx[1] << 8)) / 10;
@@ -56,7 +56,7 @@ int16_t ggVoltage(void) {
   retval = i2cMasterTransmitTimeout(&I2CD1, LC709203_ADDR, tx, 1, rx, 3, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
   if( retval != MSG_OK ) {
-    chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+    chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
   //  chprintf(stream, "Voltage: %dmV"NL, (rx[0] | (rx[1] << 8)));
   return (rx[0] | (rx[1] << 8));
@@ -118,17 +118,16 @@ void ggOn(void) {
   i2cReleaseBus(&I2CD1);
 }
 
-
 void chgKeepaliveHandler(eventid_t id) {
   (void) id;
   uint8_t tx[2];
   uint8_t rx[2];
 
-  tx[0] = FAN5421_CTL0_ADR;
+  tx[0] = BQ24157_STAT_ADR;
   tx[1] = 0xC0; // 32sec timer reset, enable stat pin
 
   i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
 
   // read gg voltage register
@@ -140,7 +139,7 @@ void chgKeepaliveHandler(eventid_t id) {
   uibat.batt_mv = rx[0] | (rx[1] << 8);
 #if 0   // for debug only
   if( (keepalive_mod++ % 10) == 0 )
-    chprintf((BaseSequentialStream *)&SD4, " %dmV"NL, uibat.batt_mv);
+    chprintf(stream, " %dmV"NL, uibat.batt_mv);
 #endif
 
   tx[0] = 0x0f; // ITE register
@@ -153,22 +152,21 @@ void chgKeepaliveHandler(eventid_t id) {
 void chgSetSafety(void) {
   uint8_t tx[2];
 
-  tx[0] = FAN5421_SAFE_ADR;
-  tx[1] = 0xF1; // 2050mA, 4.22V
-  //  tx[1] = 0x62; // 1150mA, 4.24V
-  //  tx[1] = 0x02; // 550mA, 4.24V
+  // 56 mOhm resistor
+  // (37.4mV + 54.4mV * Vmchrg[3] + 27.2mV * Vmchrg[2] + 13.6mV * Vmchrg[1] + 6.8mV * Vmchrg[0]) / 0.056ohm = I charge
+  tx[0] = BQ24157_SAFE_ADR;
+  tx[1] = 0x81;  // 1639mA *max* current (limited by chip), 4.22V *maximum* regulation voltage
   i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
-  //  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, NULL, 0, 500);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
 }
 
 int isCharging(void) {
   uint8_t tx[2], rx[1];
   
-  tx[0] = FAN5421_CTL0_ADR;
+  tx[0] = BQ24157_STAT_ADR;
   i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
     
   switch( (rx[0] >> 4) & 0x3 ) {
@@ -177,9 +175,9 @@ int isCharging(void) {
   case 1:
     return(1);
   case 2:
-    return(1);
+    return(0);
   case 3:
-    return(1);
+    return(0);
   default:
     return 0;
   }
@@ -188,23 +186,23 @@ int isCharging(void) {
 const char *chgStat(void) {
   uint8_t tx[2], rx[1];
   
-  tx[0] = FAN5421_CTL0_ADR;
+  tx[0] = BQ24157_STAT_ADR;
   i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
     
   switch( (rx[0] >> 4) & 0x3 ) {
   case 0:
     return("Idle");
   case 1:
-    tx[0] = FAN5421_SPCHG_ADR;
+    tx[0] = BQ24157_SPCHG_ADR;
     i2cAcquireBus(&I2CD1);
-    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
     if( (rx[0] >> 4) & 0x1 )
-      return("Slow chg");
+      return("DPM mode - slow chg");
     else
-      return("Fast chg");
+      return("Fast chg - no DPM detected");
   case 2:
     return("Charged");
   case 3:
@@ -217,9 +215,9 @@ const char *chgStat(void) {
 const char *chgFault(void) {
   uint8_t tx[2], rx[1];
   
-  tx[0] = FAN5421_CTL0_ADR;
+  tx[0] = BQ24157_STAT_ADR;
   i2cAcquireBus(&I2CD1);
-  i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
     
   switch( (rx[0] >> 4) & 0x3 ) {
@@ -232,11 +230,11 @@ const char *chgFault(void) {
     case 2:
       return( "Sleep mode" );
     case 3:
-      return( "Poor source" );
+      return( "Bad adapter" );
     case 4:
       return( "Battery OVP" );
     case 5:
-      return( "Thermal" );
+      return( "Thermal shutdown" );
     case 6:
       return( "Timeout" );
     case 7:
@@ -252,40 +250,41 @@ void chgAutoParams(void) {
   uint8_t rx[1];
   msg_t retval;
   
-  // now set current targets
-  tx[0] = FAN5421_IBAT_ADR;
-  tx[1] = 0xA << 3 | 0x1; // 1550mA, termination at 97mA (~0.02 * C)
-  //  tx[1] = 0x3 << 3 | 0x2; // 850mA, termination at 146mA (~C/10)
-  // tx[1] = 0x0 << 3 | 0x1; // 550mA, termination at 97mA (~C/5)
+  // set battery volage
+  tx[0] = BQ24157_BATV_ADR;
+  // 4.2V target regulation. 3.5V offset = 0.7V coded. 0.64 + 0.04 + 0.02 = 10_0011 = 0x23
+  tx[1] = 0x23 << 2 | 2; // 2 = disable otg, OTG enabled when pin is high
   i2cAcquireBus(&I2CD1);
-  retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
   if( retval != MSG_OK ) {
-    chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+    chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
     
-  tx[0] = FAN5421_SPCHG_ADR;
-  tx[1] = 0x04; // use IOCHARGE to set target current, VSP set to 4.52V
+  // special charger voltage settings
+  tx[0] = BQ24157_SPCHG_ADR;
+  tx[1] = 0x3; // 4.44V is DPM thresh, normal charge current sense voltage for IBAT
   i2cAcquireBus(&I2CD1);
-  retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
   if( retval != MSG_OK ) {
-    chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+    chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
-    
-  // target "float" voltage
-  tx[0] = FAN5421_OREG_ADR;
-  tx[1] = (0x23 << 2); // target 4.20 float voltage
-  //  tx[1] = (0x22 << 2); // target 4.18 float voltage -- a tiny bit of margin below 4.2v for safety
-  // tx[1] = (0x19 << 2); // target 4.00 float voltage
-  // tx[1] = (0x1E << 2); // target 4.10v float voltage
+  
+  // target charge current + termination current
+  tx[0] = BQ24157_IBAT_ADR;
+  // 1.55A target current. 
+  // 56 mOhm resistor
+  // (37.4mV + 27.2mV * Vichrg[3] + 13.6mV * Vichrg[2] + 6.8mV * Vichrg[1]) / 0.056ohm = I charge
+  // termination current offset is 3.4mV, +3.4mV/LSB
+  tx[1] = (0x7 << 4) | 0x1; // 1.51A charge rate, 6.8mV/0.056 = 120mA termination
   i2cAcquireBus(&I2CD1);
-  retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
   if( retval != MSG_OK ) {
-    chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+    chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
   }
-    
+
 }
 
 void chg_cb(void *arg) {
@@ -301,25 +300,27 @@ void chgStart(int force) {
   msg_t retval;
 
   if( force ) {
-    // force initiate charging
-    tx[0] = FAN5421_CTL1_ADR;
-    tx[1] = 0x18; // weak battery: 3.5V; charge current termination; charger enabled
+    // set control register
+    tx[0] = BQ24157_CTRL_ADR;
+    tx[1] = 0x3 << 6 | 0x3 << 4 | 0x8;
+    // charger mode, not HiZ, charger enabled, enable charge current term, weak battery==3.7V, Iin limit = no limit
+
     i2cAcquireBus(&I2CD1);
-    retval = i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+    retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
     if( retval != MSG_OK ) {
-      chprintf((BaseSequentialStream *)&SD4, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
+      chprintf(stream, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
     }
   } else {
-    tx[0] = FAN5421_CTL1_ADR;
+    tx[0] = BQ24157_CTRL_ADR;
     i2cAcquireBus(&I2CD1);
-    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
     
     tx[1] = rx[0] & 0xFB; // bit 2 low to start charging
-    tx[0] = FAN5421_CTL1_ADR;
+    tx[0] = BQ24157_CTRL_ADR;
     i2cAcquireBus(&I2CD1);
-    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
   }
     
@@ -341,12 +342,13 @@ OrchardTestResult test_charger(const char *my_name, OrchardTestType test_type) {
   case orchardTestTrivial:
   case orchardTestInteractive:
   case orchardTestComprehensive:
-    tx[0] = FAN5421_INFO_ADR;
+    tx[0] = BQ24157_ID_ADR;
     i2cAcquireBus(&I2CD1);
-    i2cMasterTransmitTimeout(&I2CD1, FAN5421_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
-    
-    if( rx[0] != 0x81 ) {
+
+    // should be 010 10 0X1 = 0101_00X1 = 0x51 || 0x53
+    if( !((rx[0] == 0x51) || (rx[0] == 0x53)) ) {
       return orchardResultFail;
     } else {
       return orchardResultPass;
