@@ -8,8 +8,7 @@
 #include "orchard-math.h"
 #include "orchard-ui.h"
 #include "touch.h"
-
-//#include "orchard-shell.h"
+#include "shellcfg.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -95,7 +94,7 @@ void cmd_gename(BaseSequentialStream *chp, int argc, char *argv[]) {
   generateName(genName);
   chprintf(chp, "%s\n\r", genName);
 }
-//orchard_command("gename", cmd_gename);
+orchard_shell("gename", cmd_gename);
 
 void computeGeneExpression(const genome *hapM, const genome *hapP,
 			   genome *expr) {
@@ -150,7 +149,7 @@ void cmd_testmap(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf( chp, "%d : %d\n\r", i, map(i, 0, 15, 0, 5) );
   }
 }
-//orchard_command("testmap", cmd_testmap);
+orchard_shell("testmap", cmd_testmap);
 #endif
 
 void print_haploid(BaseSequentialStream *chp, const genome *haploid) {
@@ -185,7 +184,7 @@ void cmd_genetweak(BaseSequentialStream *chp, int argc, char *argv[]) {
   chprintf( chp, "Revised structure.\n\r" );
   print_haploid(chp, &diploid);
 }
-//orchard_command("gtweak", cmd_genetweak);
+orchard_shell("gtweak", cmd_genetweak);
 
 void cmd_geneseq(BaseSequentialStream *chp, int argc, char *argv[]) {
   uint8_t which;
@@ -221,7 +220,7 @@ void cmd_geneseq(BaseSequentialStream *chp, int argc, char *argv[]) {
   computeGeneExpression(&(family->haploidM[which]), &(family->haploidP[which]), &diploid);
   print_haploid(chp, (const genome *) &diploid);
 }
-//orchard_command("geneseq", cmd_geneseq);
+orchard_shell("geneseq", cmd_geneseq);
 
 static void init_genes(uint32_t block) {
   struct genes family;

@@ -2,6 +2,7 @@
 #include "shell.h"
 #include "chprintf.h"
 #include "orchard-effects.h"
+#include "shellcfg.h"
 
 #define NL SHELL_NEWLINE_STR
 
@@ -32,3 +33,5 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
   
   return;
 }
+
+orchard_shell("fx", fxCommand);
