@@ -3,6 +3,7 @@
 #include "chprintf.h"
 
 #include <string.h>
+#include "shellcfg.h"
 
 void cmd_laser(BaseSequentialStream *chp, int argc, char *argv[])
 {
@@ -24,6 +25,7 @@ void cmd_laser(BaseSequentialStream *chp, int argc, char *argv[])
   
   return;
 }
+orchard_shell("laser", cmd_laser);
   // FTM2_CH0 / ALT3
 
 
@@ -122,3 +124,4 @@ void cmd_pulse(BaseSequentialStream *chp, int argc, char *argv[])
   
   return;
 }
+orchard_shell("pulse", cmd_pulse);

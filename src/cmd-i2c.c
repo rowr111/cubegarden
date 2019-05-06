@@ -3,6 +3,7 @@
 #include "chprintf.h"
 #include "i2c.h"
 #include <stdlib.h>
+#include "shellcfg.h"
 
 static int should_stop(void) {
   uint8_t bfr[1];
@@ -40,6 +41,7 @@ void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[])
   chprintf(chp, SHELL_NEWLINE_STR );
   return;
 }
+orchard_shell("i2c", i2cCommand);
 
 void capWCommand(BaseSequentialStream *chp, int argc, char *argv[])
 {

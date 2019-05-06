@@ -149,7 +149,7 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x600);
+static THD_WORKING_AREA(waOrchardEventThread, 0x800);
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;
@@ -314,7 +314,7 @@ int main(void) {
   
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
-  
+
   /*
    * Normal main() thread activity, spawning shells.
    */
