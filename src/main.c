@@ -39,6 +39,7 @@
 #include "paging.h"
 #include "analog.h"
 #include "pir.h"
+#include "barometer.h"
 
 #include "orchard-test.h"
 
@@ -212,7 +213,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   pagingStart();
 
   micStart(); 
-  //i2sStartRx(&I2SD1); // start the audio sampling buffer 
+  //i2sStartRx(&I2SD1); // start the audio sampling buffer
 
   orchardTestRunAll(stream, orchardTestPoweron);
   /*
@@ -318,6 +319,9 @@ int main(void) {
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
 
+  // init the barometer
+  baro_init();
+  
   /*
    * Normal main() thread activity, spawning shells.
    */

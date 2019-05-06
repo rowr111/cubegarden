@@ -170,6 +170,7 @@ CSRC = \
        app-dummy.c \
        oscope-routines.c \
        pir.c \
+       barometer.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
