@@ -340,7 +340,8 @@ int main(void) {
   
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
-  
+
+  //  shell_commands = orchard_shell_start();
   /*
    * Normal main() thread activity, spawning shells.
    */

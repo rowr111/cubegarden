@@ -26,6 +26,7 @@
 #include "hal.h"
 #include "shell.h"
 #include "chprintf.h"
+#include "shellcfg.h"
 
 char ** endptr;
 
@@ -42,6 +43,7 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
 /*
  * Shell commands
  */
+#if 0
 void testCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
 void capTestCommand(BaseSequentialStream *chp, int argc, char *argv[]);
@@ -95,13 +97,18 @@ static const ShellCommand commands[] = {
 #endif
   {NULL, NULL}
 };
+#else
+// const ShellCommand *shell_commands;
+#endif
 
 /*
  * Shell configuration
  */
+static char start[0] __attribute__((unused, aligned(4), section(".chibi_list_shell_1")));
+
 const ShellConfig shell_cfg = {
   (BaseSequentialStream *)&SD4,
-  commands,
+  (const ShellCommand *)&start,
   history_buffer,
   sizeof(history_buffer),
   completion_buffer

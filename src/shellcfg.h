@@ -27,7 +27,24 @@
 
 #include "shell.h"
 
-extern ShellConfig shell_cfg;
+extern const ShellConfig shell_cfg;
+
+#define orchard_shell_start() \
+({ \
+  static char start[0] __attribute__((unused,  \
+    aligned(4), section(".chibi_list_shell_1")));        \
+  (const ShellCommand *)&start;            \
+})
+
+#define orchard_shell(_name, _func) \
+  const ShellCommand _orchard_fx_list_##_func \
+  __attribute__((unused, aligned(4), section(".chibi_list_shell_2_" _name))) = \
+     { _name, _func }
+
+#define orchard_shell_end() \
+  const ShellCommand _orchard_fx_list_##_func \
+  __attribute__((unused, aligned(4), section(".chibi_list_shell_3_end"))) = \
+     { NULL, NULL }
 
 #endif  /* SHELLCFG_H */
 
