@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "led.h"
+#include "shellcfg.h"
 
 /* 
    Adding a new command:
@@ -42,3 +43,5 @@ void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[])
   
   return;
 }
+
+orchard_shell("bright", cmd_bright);

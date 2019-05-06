@@ -6,6 +6,7 @@
 
 #include "mic.h"
 #include "led.h"
+#include "shellcfg.h"
 
 static int should_stop(void) {
   uint8_t bfr[1];
@@ -46,3 +47,5 @@ void cmd_sound(BaseSequentialStream *chp, int argc, char *argv[]) {
   return;
 
 }
+
+orchard_shell("sound", cmd_sound);

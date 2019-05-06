@@ -6,6 +6,7 @@
 #include "chprintf.h"
 #include "charger.h"
 #include "i2c.h"
+#include "shellcfg.h"
 
 #define NL SHELL_NEWLINE_STR
 
@@ -223,3 +224,4 @@ void ggCommand(BaseSequentialStream *chp, int argc, char *argv[])
   
 }
 
+orchard_shell("gg", ggCommand);
