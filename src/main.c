@@ -38,6 +38,7 @@
 #include "mic.h"
 #include "paging.h"
 #include "analog.h"
+#include "pir.h"
 
 #include "orchard-test.h"
 
@@ -56,6 +57,7 @@ static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
   }
 };
 
@@ -155,6 +157,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   (void)arg;
   chRegSetThreadName("Events");
 
+  pirStart();
   accelStart(&I2CD1);
   flashStart();
   orchardTestInit();
@@ -223,12 +226,14 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableHook(orchard_events, accel_process, accel_proc);
   evtTableHook(orchard_events, accel_freefall, freefall);
+  evtTableHook(orchard_events, pir_process, pir_proc);
   
   orchardAppRestart();
   
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, pir_process, pir_proc);
   evtTableUnhook(orchard_events, accel_freefall, freefall);
   evtTableUnhook(orchard_events, accel_process, accel_proc);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);

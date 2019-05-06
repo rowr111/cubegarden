@@ -169,6 +169,7 @@ CSRC = \
        analog.c \
        app-dummy.c \
        oscope-routines.c \
+       pir.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
