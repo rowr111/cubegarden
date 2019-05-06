@@ -1,6 +1,7 @@
 #include "hal.h"
 #include "shell.h"
 #include "chprintf.h"
+#include "shellcfg.h"
 
 #include <string.h>
 
@@ -49,3 +50,5 @@ void cmd_accel(BaseSequentialStream *chp, int argc, char *argv[]) {
   return;
 
 }
+
+orchard_shell("accel", cmd_accel);

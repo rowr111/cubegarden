@@ -27,6 +27,7 @@
 
 #include "radio.h"
 #include "hex.h"
+#include "shellcfg.h"
 
 static void radio_get(BaseSequentialStream *chp, int argc, char *argv[]) {
 
@@ -148,7 +149,7 @@ void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "Unrecognized radio command\r\n");
 }
 
-//orchard_command("radio", cmd_radio);
+orchard_shell("radio", cmd_radio);
 
 
 void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]) {
@@ -169,4 +170,4 @@ void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]) {
     radioRelease(radioDriver);
   }
 }
-//orchard_command("msg", cmd_msg);
+orchard_shell("msg", cmd_msg);

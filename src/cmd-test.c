@@ -7,6 +7,7 @@
 #include "test-audit.h"
 
 #include "orchard-app.h"
+#include "shellcfg.h"
 
 int start_test = 0;
 int test_started = 0;
@@ -54,6 +55,7 @@ void testCommand(BaseSequentialStream *chp, int argc, char *argv[])
 
   return;
 }
+orchard_shell("test", testCommand);
 
 void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[])
 {
@@ -63,6 +65,7 @@ void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[])
   
   auditPrintLog(chp);
 }
+orchard_shell("auditlog", cmd_printaudit);
 
 void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[])
 {
@@ -76,6 +79,7 @@ void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[])
   test_type = (OrchardTestType) strtoul(argv[0], NULL, 0);
   chprintf(chp, "audit check result: %x\n\r", auditCheck(test_type));
 }
+orchard_shell("auditcheck", cmd_auditcheck);
 
 void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[])
 {
@@ -104,3 +108,5 @@ void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[])
   start_test = 0;
   test_started = 0;
 }
+
+orchard_shell("testall", cmd_testall);

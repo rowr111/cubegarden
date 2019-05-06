@@ -8,6 +8,7 @@
 #include "radio.h"
 
 #include "orchard.h"
+#include "shellcfg.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,7 @@ void cmd_friendlist(BaseSequentialStream *chp, int argc, char *argv[])
   }
 }
 
-//orchard_command("friendlist", cmd_friendlist);
+orchard_shell("friendlist", cmd_friendlist);
 
 void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]) {
   char **friends;
@@ -54,7 +55,7 @@ void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]) {
     strncpy(&(friends[i][1]), argv[1], GENE_NAMELENGTH);
   }
 }
-//orchard_command("friendadd", cmd_friendadd);
+orchard_shell("friendadd", cmd_friendadd);
 
 void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void) chp;
@@ -63,7 +64,7 @@ void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]) {
 
   chEvtBroadcast(&radio_app);
 }
-//orchard_command("friendping", cmd_friendping);
+orchard_shell("friendping", cmd_friendping);
 
 static int should_stop(void) {
   uint8_t bfr[1];
@@ -92,5 +93,5 @@ void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]) {
     chThdSleepMilliseconds((5000 + rand() % 2000) / 22); // simulate timeouts
   }
 }
-//orchard_command("friendsim", cmd_friendsim);
+orchard_shell("friendsim", cmd_friendsim);
 

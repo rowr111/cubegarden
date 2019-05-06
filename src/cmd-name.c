@@ -5,6 +5,7 @@
 #include "storage.h"
 #include "genes.h"
 #include <string.h>
+#include "shellcfg.h"
 
 #define NL SHELL_NEWLINE_STR
 #define TEXTENTRY_MAXLEN  19  // maximum length of any entered text, not including null char
@@ -43,3 +44,4 @@ void cmd_name(BaseSequentialStream *chp, int argc, char *argv[])
   
   return;
 }
+orchard_shell("name", cmd_name);
