@@ -41,69 +41,6 @@ char history_buffer[SHELL_MAX_HIST_BUFF];
 char *completion_buffer[SHELL_MAX_COMPLETIONS];
 
 /*
- * Shell commands
- */
-#if 0
-void testCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void i2cCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void chgCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void ggCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void fxCommand(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_radio(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_msg(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_gename(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_genetweak(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_geneseq(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendlocal(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendlist(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendadd(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendping(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_friendsim(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_printaudit(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_auditcheck(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_testall(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_name(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_sound(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_accel(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_page(BaseSequentialStream *chp, int argc, char *argv[]);
-#ifdef HAS_STC3115
-void gg2Command(BaseSequentialStream *chp, int argc, char *argv[]);
-#endif
-
-static const ShellCommand commands[] = {
-  {"page", cmd_page},
-  {"sound", cmd_sound},
-  {"accel", cmd_accel},
-  {"bright", cmd_bright},
-  {"test", testCommand},
-  {"i2c", i2cCommand},
-  {"chg", chgCommand},
-  {"gg", ggCommand},
-  {"fx", fxCommand},
-  {"radio", cmd_radio},
-  {"msg", cmd_msg},
-  {"gename", cmd_gename},
-  {"geneseq", cmd_geneseq},
-  {"genetweak", cmd_genetweak},
-  {"friendlocal", cmd_friendlocal},
-  {"friendlist", cmd_friendlist},
-  {"friendping", cmd_friendping},
-  {"friendsim", cmd_friendsim},
-  {"auditlog", cmd_printaudit},
-  {"auditcheck", cmd_auditcheck},
-  {"testall", cmd_testall},
-  {"name", cmd_name},
-#ifdef HAS_STC3115
-  {"gg2", gg2Command},
-#endif
-  {NULL, NULL}
-};
-#else
-// const ShellCommand *shell_commands;
-#endif
-
-/*
  * Shell configuration
  */
 static char start[0] __attribute__((unused, aligned(4), section(".chibi_list_shell_1")));
