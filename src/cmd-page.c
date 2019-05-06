@@ -1,6 +1,7 @@
 #include "hal.h"
 #include "shell.h"
 #include "chprintf.h"
+#include "shellcfg.h"
 
 #include <string.h>
 #include "orchard-app.h"
@@ -23,3 +24,5 @@ void cmd_page(BaseSequentialStream *chp, int argc, char *argv[]) {
   return;
 
 }
+
+orchard_shell("page", cmd_page);
