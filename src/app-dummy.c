@@ -128,6 +128,9 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
         //setShift(prevShift); //back to old brightness
       }
       prevChrgStat = currChrgStat;
+
+      //update temperature regularly for use by effects
+      analogUpdateTemperature();
       
   } else if( event->type == accelEvent ) {
     if( (bump_level < BUMP_LIMIT) )
