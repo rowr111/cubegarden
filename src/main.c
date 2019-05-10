@@ -54,13 +54,52 @@ struct evt_table orchard_events;
 
 extern const char *gitversion;
 
+void sw_irq(EXTDriver *extp, expchannel_t channel);
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
   }
 };
+
+static uint32_t sw_debounce;
+event_source_t sw_process;
+void sw_irq(EXTDriver *extp, expchannel_t channel) {
+  (void)extp;
+  (void)channel;
+  
+  chSysLockFromISR();
+  chEvtBroadcastI(&sw_process);
+  chSysUnlockFromISR();
+}
+
+void swStart(void) {
+  chEvtObjectInit(&sw_process);
+  sw_debounce = chVTGetSystemTime();
+}
+
+void sw_proc(eventid_t id) {
+
+  (void)id;
+  if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
+    chprintf(stream, "switch change effect\n\r");
+    effectsNextPattern(0);
+  }
+  sw_debounce = chVTGetSystemTime();
+  // check for press and hold
+  while( palReadPad(PORTA, 4) == PAL_LOW ) {
+    chprintf(stream, "porta 4 is low\n\r");
+    palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
+    if( chVTTimeElapsedSinceX(sw_debounce) > 5000 ) {
+      chargerShipMode();
+      sw_debounce = chVTGetSystemTime();
+    }
+    chThdYield();
+  }
+  sw_debounce = chVTGetSystemTime();
+}
 
 static const ADCConfig adccfg1 = {
   /* Perform initial calibration */
@@ -158,6 +197,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   (void)arg;
   chRegSetThreadName("Events");
 
+  swStart();
   pirStart();
   accelStart(&I2CD1);
   flashStart();
@@ -228,17 +268,62 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, accel_process, accel_proc);
   evtTableHook(orchard_events, accel_freefall, freefall);
   evtTableHook(orchard_events, pir_process, pir_proc);
+  evtTableHook(orchard_events, sw_process, sw_proc);
   
   orchardAppRestart();
   
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
   evtTableUnhook(orchard_events, accel_freefall, freefall);
   evtTableUnhook(orchard_events, accel_process, accel_proc);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
+
+  chSysLock();
+  chThdExitS(MSG_OK);
+}
+
+float baro_pressure;
+float baro_temp;
+
+static thread_t *baroThr = NULL;
+static THD_WORKING_AREA(waBaroThread, 0x200);
+static THD_FUNCTION(baro_thread, arg) {
+
+  (void)arg;
+  int16_t oversampling = 7;
+  int16_t ret;
+  float last_pressure, delta;
+  uint32_t baro_debounce;
+
+  chRegSetThreadName("Barometer");
+  
+  baro_debounce = chVTGetSystemTime();
+  
+  ret = baro_measureTempOnce(&baro_temp, oversampling);
+  ret = baro_measurePressureOnce(&baro_pressure, oversampling);
+  last_pressure = baro_pressure;
+  
+  while (!chThdShouldTerminateX()) {
+    ret = baro_measureTempOnce(&baro_temp, oversampling);
+    ret = baro_measurePressureOnce(&baro_pressure, oversampling);
+    delta = last_pressure - baro_pressure;
+    if( delta < 0.0 )
+      delta = - delta;
+
+    if( delta > 100.0 ) {
+      if( chVTTimeElapsedSinceX(baro_debounce) > 300 ) {
+	chprintf(stream, "baro change effect\n\r");
+	effectsNextPattern(0);
+      }
+    }
+    last_pressure = baro_pressure;
+    baro_debounce = chVTGetSystemTime();
+    chThdSleepMilliseconds(250); // update interval for barometer
+  }
 
   chSysLock();
   chThdExitS(MSG_OK);
@@ -320,8 +405,24 @@ int main(void) {
       __storage_start__, __storage_end__, __storage_size__);
 
   // init the barometer
+  chprintf(stream, "Initializing barometer.");
   baro_init();
-  
+  float temperature;
+  float pressure;
+  // do a dummy read to setup barometer internal state
+  baro_measureTempOnce(&temperature, 7);
+  chprintf(stream, ".");
+  baro_measurePressureOnce(&pressure, 7);
+  chprintf(stream, ".");
+  chprintf(stream, "done.\n\r");
+
+  // start the barometer monitoring thread
+  eventThr = chThdCreateStatic(waBaroThread,
+			       sizeof(waBaroThread),
+			       (NORMALPRIO - 6),
+			       baro_thread,
+			       NULL);
+
   /*
    * Normal main() thread activity, spawning shells.
    */

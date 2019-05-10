@@ -6,6 +6,7 @@
 
 #include "barometer.h"
 
+#if 0
 void baroCmd(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void) argc;
   (void) argv;
@@ -31,6 +32,20 @@ void baroCmd(BaseSequentialStream *chp, int argc, char *argv[]) {
   }
 
 }
+orchard_shell("baro", baroCmd);
+#else
 
+void baroCmd(BaseSequentialStream *chp, int argc, char *argv[]) {
+  (void) argc;
+  (void) argv;
+
+  // barometer measurements are automatically sampled by a background thread
+  // to avoid too much additional latency during effects processing
+
+  chprintf(chp, "Temperature: %0.2f C\n\r", baro_temp);
+  chprintf(chp, "Pressure: %0.2f Pascal\n\r", baro_pressure);
+
+}
+#endif
 
 orchard_shell("baro", baroCmd);

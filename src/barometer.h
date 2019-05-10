@@ -10,6 +10,9 @@
 #ifndef DPS422_H_INCLUDED
 #define DPS422_H_INCLUDED
 
+extern float baro_pressure;
+extern float baro_temp;
+
 // DPS310 has 10 milliseconds of spare time for each synchronous measurement / per second for asynchronous measurements
 // this is for error prevention on friday-afternoon-products :D
 // you can set it to 0 if you dare, but there is no warranty that it will still work

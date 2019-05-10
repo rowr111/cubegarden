@@ -323,6 +323,7 @@ void chgStart(int force) {
     i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
     i2cReleaseBus(&I2CD1);
   }
+  palClearPad(IOPORT3, 8); // enable charging pin
     
   chVTSet(&chg_vt, MS2ST(1000), chg_cb, NULL);
 }
