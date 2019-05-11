@@ -84,6 +84,7 @@ void sw_proc(eventid_t id) {
 
   (void)id;
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
+    chprintf(stream, "debug: PORTA->PCR[4] %08x, GPIOA->PDDR %08x, GPIOA->PDIR %08x \n\r", PORTA->PCR[4], GPIOA->PDDR, GPIOA->PDIR );
     chprintf(stream, "switch change effect\n\r");
     effectsNextPattern(0);
   }

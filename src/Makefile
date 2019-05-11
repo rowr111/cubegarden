@@ -171,6 +171,7 @@ CSRC = \
        oscope-routines.c \
        pir.c \
        barometer.c \
+       si1153.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
