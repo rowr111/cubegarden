@@ -298,7 +298,7 @@ static THD_FUNCTION(baro_thread, arg) {
   (void)arg;
   int16_t oversampling = 7;
   int16_t ret;
-  float last_pressure, delta;
+  float last_pressure;
   uint32_t baro_debounce;
 
   chRegSetThreadName("Barometer");
@@ -312,17 +312,6 @@ static THD_FUNCTION(baro_thread, arg) {
   while (!chThdShouldTerminateX()) {
     ret = baro_measureTempOnce(&baro_temp, oversampling);
     ret = baro_measurePressureOnce(&baro_pressure, oversampling);
-    delta = baro_pressure - last_pressure;
-    // we want delta to be signed, because we only want to respond to increasing pressure events
-    //if( delta < 0.0 ) 
-    //delta = - delta;
-
-    if( delta > 100.0 ) {
-      //if( chVTTimeElapsedSinceX(baro_debounce) > 300 ) {
-      chprintf(stream, "baro change effect\n\r");
-      effectsNextPattern(0);
-      //}
-    }
     last_pressure = baro_pressure;
     baro_debounce = chVTGetSystemTime();
     chThdSleepMilliseconds(250); // update interval for barometer
