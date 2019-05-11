@@ -40,6 +40,7 @@
 #include "analog.h"
 #include "pir.h"
 #include "barometer.h"
+#include "gyro.h"
 
 #include "orchard-test.h"
 
@@ -55,12 +56,40 @@ struct evt_table orchard_events;
 extern const char *gitversion;
 
 void sw_irq(EXTDriver *extp, expchannel_t channel);
+
+event_source_t gyro1_process;
+event_source_t gyro2_process;
+void gyro_irq1(EXTDriver *extp, expchannel_t channel) {
+  (void)extp;
+  (void)channel;
+  
+  chSysLockFromISR();
+  chEvtBroadcastI(&gyro1_process);
+  chSysUnlockFromISR();
+}
+void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
+  (void)extp;
+  (void)channel;
+  
+  chSysLockFromISR();
+  chEvtBroadcastI(&gyro2_process);
+  chSysUnlockFromISR();
+}
+int mems_event = 0;
+void gyro1_proc(eventid_t id) {
+  mems_event = 1;
+}
+void gyro2_proc(eventid_t id) {
+}
+
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq1, PORTA, 18},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq2, PORTD, 3},
   }
 };
 
@@ -265,18 +294,25 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
   
+  chEvtObjectInit(&gyro1_process);
+  chEvtObjectInit(&gyro2_process);
+  
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableHook(orchard_events, accel_process, accel_proc);
   evtTableHook(orchard_events, accel_freefall, freefall);
   evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
+  evtTableHook(orchard_events, gyro1_process, gyro1_proc);
+  evtTableHook(orchard_events, gyro2_process, gyro2_proc);
   
   orchardAppRestart();
   
   while (!chThdShouldTerminateX())
     chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
 
+  evtTableUnhook(orchard_events, gyro2_process, gyro2_proc);
+  evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
   evtTableUnhook(orchard_events, accel_freefall, freefall);

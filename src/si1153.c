@@ -114,9 +114,7 @@ int16_t Si115xBlockRead(HANDLE si115x_handle, uint8_t address, uint8_t length, u
  * @brief Hardware implemented delay function. Does not need to be accurate.
  *****************************************************************************/
 void delay_ms(int ms) {
-  int i;
-
-  chThdSleepMilliseconds(1); 
+  chThdSleepMilliseconds(ms); 
 }
 
 /**************************************************************************//**
