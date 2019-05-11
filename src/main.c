@@ -90,10 +90,10 @@ void sw_proc(eventid_t id) {
   sw_debounce = chVTGetSystemTime();
   // check for press and hold
   while( palReadPad(PORTA, 4) == PAL_LOW ) {
-    chprintf(stream, "porta 4 is low\n\r");
-    palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
-    if( chVTTimeElapsedSinceX(sw_debounce) > 5000 ) {
+    if( chVTTimeElapsedSinceX(sw_debounce) > 4000 ) {
+      chprintf(stream, "Shutting down after switch is released...\n\r");
       chargerShipMode();
+      chprintf(stream, "Shutdown failed, this statement should be unreachable\n\r");
       sw_debounce = chVTGetSystemTime();
     }
     chThdYield();
@@ -310,15 +310,16 @@ static THD_FUNCTION(baro_thread, arg) {
   while (!chThdShouldTerminateX()) {
     ret = baro_measureTempOnce(&baro_temp, oversampling);
     ret = baro_measurePressureOnce(&baro_pressure, oversampling);
-    delta = last_pressure - baro_pressure;
-    if( delta < 0.0 )
-      delta = - delta;
+    delta = baro_pressure - last_pressure;
+    // we want delta to be signed, because we only want to respond to increasing pressure events
+    //if( delta < 0.0 ) 
+    //delta = - delta;
 
     if( delta > 100.0 ) {
-      if( chVTTimeElapsedSinceX(baro_debounce) > 300 ) {
-	chprintf(stream, "baro change effect\n\r");
-	effectsNextPattern(0);
-      }
+      //if( chVTTimeElapsedSinceX(baro_debounce) > 300 ) {
+      chprintf(stream, "baro change effect\n\r");
+      effectsNextPattern(0);
+      //}
     }
     last_pressure = baro_pressure;
     baro_debounce = chVTGetSystemTime();
@@ -393,6 +394,7 @@ int main(void) {
   while(flash_init == 0) // wait until the flash inits from the thread that was spawned
     chThdSleepMilliseconds(10);
     
+  palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
   ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);

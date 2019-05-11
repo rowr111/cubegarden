@@ -329,6 +329,10 @@ void chgStart(int force) {
 }
 
 void chargerShipMode(void) {
+  while( palReadPad(PORTA, 4) == PAL_LOW ) // wait until button-up before shutting down
+    ;
+  chThdSleepMilliseconds(50); // debounce switch
+  
   palClearPad(IOPORT2, 1); // force ship mode, should shut the whole thing down...
 }
 
