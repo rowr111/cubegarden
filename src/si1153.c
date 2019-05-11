@@ -44,8 +44,6 @@ int16_t Si115xReadFromRegister(HANDLE sensorConfig, uint8_t address)
   i2cSensorConfig_t* i2cDrvHandle;
   i2cDrvHandle = (i2cSensorConfig_t *)sensorConfig;
 
-  i2cDrvHandle = (i2cSensorConfig_t *)sensorConfig;
-
   /* Select register to start reading from */
   tx[0] = address | 0x40;
 
@@ -53,7 +51,7 @@ int16_t Si115xReadFromRegister(HANDLE sensorConfig, uint8_t address)
   retval = i2cMasterTransmitTimeout(i2cDrvHandle->i2cPort, i2cDrvHandle->i2cAddress, tx, 1, rx, 1, TIME_INFINITE);
   i2cReleaseBus(i2cDrvHandle->i2cPort);
   
-  if (retval != WMSG_OK) {
+  if (retval != MSG_OK) {
     retval = 0xff;
     return((int) retval);
   }
@@ -69,7 +67,7 @@ int16_t Si115xBlockWrite(HANDLE si115x_handle, uint8_t address, uint8_t length, 
   uint8_t rx[1];
   msg_t retval;
   i2cSensorConfig_t* i2cDrvHandle;
-  i2cDrvHandle = (i2cSensorConfig_t *)sensorConfig;
+  i2cDrvHandle = (i2cSensorConfig_t *)si115x_handle;
   int i;
   
   /* Select register and data to write */
@@ -96,9 +94,7 @@ int16_t Si115xBlockRead(HANDLE si115x_handle, uint8_t address, uint8_t length, u
   uint8_t tx[2], rx[1];
   msg_t retval;
   i2cSensorConfig_t* i2cDrvHandle;
-  i2cDrvHandle = (i2cSensorConfig_t *)sensorConfig;
-
-  i2cDrvHandle = (i2cSensorConfig_t *)sensorConfig;
+  i2cDrvHandle = (i2cSensorConfig_t *)si115x_handle;
 
   /* Select register to start reading from */
   tx[0] = address;
@@ -107,7 +103,7 @@ int16_t Si115xBlockRead(HANDLE si115x_handle, uint8_t address, uint8_t length, u
   retval = i2cMasterTransmitTimeout(i2cDrvHandle->i2cPort, i2cDrvHandle->i2cAddress, tx, 1, data, length, TIME_INFINITE);
   i2cReleaseBus(i2cDrvHandle->i2cPort);
   
-  if (retval != WMSG_OK) {
+  if (retval != MSG_OK) {
     return((int) retval);
   }
   return((int) 0);

@@ -395,7 +395,7 @@ int main(void) {
   while(flash_init == 0) // wait until the flash inits from the thread that was spawned
     chThdSleepMilliseconds(10);
     
-  palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
+  //  palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
   ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);

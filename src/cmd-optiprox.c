@@ -66,7 +66,7 @@ void oproxCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
       
       if (result >= SENSOR_OVERFLOW_VALUE) {
 	// Overflow occurred
-	chprintf(stream, "PROX OVERFLOW\n\r");
+	chprintf(chp, "PROX OVERFLOW\n\r");
 	mag = 1; // Use 1 because we want to draw a very small square
       } else {
 	//Update display every 10 readings
@@ -74,7 +74,7 @@ void oproxCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
 	  countsDisplay = (int32_t) result;
 	// Display counts
 	mag = (uint16_t) result;
-	sprintf(ch0Str, "Mag: %d, Prox %d counts", mag, (int)countsDisplay);
+	chprintf(chp, "Mag: %d, Prox %d counts\n\r", mag, (int)countsDisplay);
       }
       countsDisplayCounter++;
     }
@@ -84,7 +84,7 @@ void oproxCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
       getSensorData(); 
       // Calculate lux values
       lux = (uint32_t)Si1153_getLuxReading(0, &samples);
-      chprintf(stream, "Ambient light: %d lux", (int)lux);
+      chprintf(chp, "Ambient light: %d lux\n\r", (int)lux);
     }
   } else {
     chprintf(chp, "Unrecognized command: %s"NL, argv[0]);
