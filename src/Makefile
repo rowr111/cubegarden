@@ -172,6 +172,7 @@ CSRC = \
        pir.c \
        barometer.c \
        si1153.c \
+       gyro.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
