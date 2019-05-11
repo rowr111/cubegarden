@@ -141,7 +141,7 @@ void micStart(void) {
   
   // enable interrupt to dump back buffer to processing buffer
   nvicEnableVector(DMA3_IRQn, KINETIS_I2S_RX_DMA_PRIORITY);
-  chprintf( stream, "DMA Rx Priority: %d\n", KINETIS_I2S_RX_DMA_PRIORITY );
+  // chprintf( stream, "DMA Rx Priority: %d\n", KINETIS_I2S_RX_DMA_PRIORITY );
 
   //tcd->CSR = DMA_CSR_INTMAJOR_MASK | DMA_CSR_DREQ_MASK | DMA_CSR_BWC(2);
   // configure channel 2 (i2s) DMA engine to link request to the back-buffer copy, and turn on bandwidth control
