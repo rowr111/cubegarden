@@ -97,6 +97,9 @@ void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "High impedance mode ");
     (rx[0] >> 1) & 0x1 ? chprintf( chp, "enabled"NL ) : chprintf( chp, "disabled"NL );
 
+    chprintf(chp, "Boost mode ");
+    (rx[0] >> 0) & 0x1 ? chprintf( chp, "enabled"NL ) : chprintf( chp, "disabled"NL );
+
     tx[0] = BQ24157_BATV_ADR;
     i2cAcquireBus(&I2CD1);
     retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);

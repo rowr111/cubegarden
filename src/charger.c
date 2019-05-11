@@ -329,11 +329,44 @@ void chgStart(int force) {
 }
 
 void chargerShipMode(void) {
-  while( palReadPad(PORTA, 4) == PAL_LOW ) // wait until button-up before shutting down
+  uint8_t tx[2], rx[1];
+  
+  while( !(GPIOA->PDIR & 0x10) ) // wait until button-up before shutting down
     ;
   chThdSleepMilliseconds(50); // debounce switch
+
+  // set control register
+  tx[0] = BQ24157_CTRL_ADR;
+  tx[1] = 0x3 << 6 | 0x3 << 4 | 0x8 | 0x4 | 0x2;
+  // charger mode, not HiZ, charger enabled, enable charge current term, weak battery==3.7V, Iin limit = no limit
+  // charger disabled, hi-Z mode, boost mode off
   
-  palClearPad(IOPORT2, 1); // force ship mode, should shut the whole thing down...
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  // palSetPad(IOPORT3, 8);  // disable charging pin, set battery to HiZ mode
+
+  while(1) {
+    tx[0] = BQ24157_STAT_ADR;
+    i2cAcquireBus(&I2CD1);
+    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+    i2cReleaseBus(&I2CD1);
+
+    if( rx[0] & 0x08 ) {
+      chprintf(stream, "Warning: BOOST mode detected, shutdown will fail\n\r");
+    }
+
+    // force switch pin high, so it can't trigger ship mode
+    GPIOA->PDDR |= 0x10;
+    GPIOA->PSOR = 0x10;
+
+    // make ship mode an input instead of driven
+    PORTB->PCR[1] &= ~0x1; // select pulldown
+    PORTB->PCR[1] |= 0x2; // enable pulldown
+    GPIOB->PDDR &= ~0x2;  // convert from output to input
+    // palClearPad(IOPORT2, 1); // force ship mode, should shut the whole thing down...
+  }
 }
 
 
