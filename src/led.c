@@ -392,7 +392,7 @@ static void lg4FB(struct effects_config *config) {
 }
 orchard_effects("Lg4", lg4FB);
 
-
+#if 0
 static void lameEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
@@ -408,6 +408,7 @@ static void lameEffect(struct effects_config *config) {
   }
 }
 orchard_effects("lame", lameEffect);
+#endif
 
 static void strobePatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
