@@ -466,6 +466,24 @@ orchard_effects("calm", calmPatternFB);
 #endif
 
 /* Jeanie's effects section */
+
+//just a boring blink
+static void boringStrobePatternFB(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  static int white = 0;
+  int i;
+
+  if(loop % 3 == 0){
+    white = white == 0 ? 255 : 0;
+     for (i = 0; i < count; i++) {
+		    	ledSetRGB(fb, i, white, white, white, shift);
+		  }
+  }
+}
+orchard_effects("boringStrobe", boringStrobePatternFB);
+
 static void changeOnDropVividRainbow(struct effects_config *config){
 	uint8_t *fb = config->hwconfig->fb;
 	int count = config->count;
@@ -524,12 +542,10 @@ static void temperatureTestEffect(struct effects_config *config){
 	static float persistentTemp;
 
 	if(loop%10==0){
-		analogUpdateTemperature();
 		temp = (float)analogReadTemperature()/(float)1000;
 		persistentTemp = temp;
 		persistentTemp = persistentTemp < minTemp ? minTemp : persistentTemp;
 		persistentTemp = persistentTemp > maxTemp ? maxTemp : persistentTemp;
-		//serial output:
 		//chprintf(stream, "%s", "Current Temp: ");
 		//chprintf(stream, "%f\n\r", persistentTemp);
 	}

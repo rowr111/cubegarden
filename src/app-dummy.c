@@ -112,6 +112,26 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   } else if (event->type == timerEvent) {
     if( bump_level > 0 )
       bump_level--;
+
+      //force dim during charging, set back to prev level when charging = 'ready'
+      static int prevChrgStat;
+      static int prevShift;
+      int currChrgStat = isCharging();
+      //only update brightness level when there is a change from/to 'ready' status
+      if (currChrgStat > 0 && prevChrgStat == 0) {
+        prevShift = getShift();
+        //todo: uncomment out below line for release!
+        //setShift(4); //safety mode level brightness
+      }
+      else if (currChrgStat == 0 && prevChrgStat > 0) {
+        //todo: uncomment out below line for release!
+        //setShift(prevShift); //back to old brightness
+      }
+      prevChrgStat = currChrgStat;
+
+      //update temperature regularly for use by effects
+      analogUpdateTemperature();
+      
   } else if( event->type == accelEvent ) {
     if( (bump_level < BUMP_LIMIT) )
       bump_level++;
