@@ -329,7 +329,7 @@ void chgStart(int force) {
 }
 
 void chargerShipMode(void) {
-  while( palReadPad(PORTA, 4) == PAL_LOW ) // wait until button-up before shutting down
+  while( !(GPIOA->PDIR & 0x10) ) // wait until button-up before shutting down
     ;
   chThdSleepMilliseconds(50); // debounce switch
   

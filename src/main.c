@@ -84,13 +84,14 @@ void sw_proc(eventid_t id) {
 
   (void)id;
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
-    chprintf(stream, "debug: PORTA->PCR[4] %08x, GPIOA->PDDR %08x, GPIOA->PDIR %08x \n\r", PORTA->PCR[4], GPIOA->PDDR, GPIOA->PDIR );
     chprintf(stream, "switch change effect\n\r");
     effectsNextPattern(0);
   }
   sw_debounce = chVTGetSystemTime();
   // check for press and hold
-  while( palReadPad(PORTA, 4) == PAL_LOW ) {
+  while( !(GPIOA->PDIR & 0x10) ) { // this checks pin 4 on port A being held down
+    // for some reason the native abstractions of chibiOS are failing on this pin :-/
+    //    chprintf(stream, "debug: PORTA->PCR[4] %08x, GPIOA->PDDR %08x, GPIOA->PDIR %08x \n\r", PORTA->PCR[4], GPIOA->PDDR, GPIOA->PDIR );
     if( chVTTimeElapsedSinceX(sw_debounce) > 4000 ) {
       chprintf(stream, "Shutting down after switch is released...\n\r");
       chargerShipMode();
@@ -395,7 +396,8 @@ int main(void) {
   while(flash_init == 0) // wait until the flash inits from the thread that was spawned
     chThdSleepMilliseconds(10);
     
-  //  palSetPadMode(PORTA, 4, PAL_MODE_INPUT_PULLUP);
+  PORTA->PCR[4] |= 0x10; // turn on passive filter for the switch pin
+  
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
   ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
