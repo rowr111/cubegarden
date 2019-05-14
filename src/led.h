@@ -36,7 +36,9 @@ uint8_t effectsStop(void);
 extern uint8_t ledsOff;;
 
 uint8_t effectsNameLookup(const char *name);
-void effectsSetPattern(uint8_t);
+void effectsSetPattern(uint8_t, uint16_t);
+void effectsSetTempPattern(uint8_t, uint16_t);
+void effectsCheckExpiredTempPattern();
 uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void setShift(uint8_t s);

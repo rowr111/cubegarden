@@ -7,6 +7,7 @@
 #include "mic.h"
 #include "analog.h"
 #include "accel.h"
+#include "barometer.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -50,6 +51,9 @@ static struct led_config {
 static effects_config fx_config;
 static uint8_t fx_index = 0;  // current effect
 static uint8_t fx_max = 0;    // max # of effects
+static uint8_t fx_previndex = 0; //previous effect
+static uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
+static uint32_t fx_starttime = 0; //start time for temporary effect
 
 static uint8_t shift = 1;  // start a little bit dimmer
 
@@ -467,6 +471,25 @@ orchard_effects("calm", calmPatternFB);
 #endif
 
 /* Jeanie's effects section */
+static void interactivePatternFB(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  int i;
+  if(bumped){
+    bumped = 0;
+    chprintf(stream, "%s\n\r", "Setting temp pattern!");
+    effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
+  }
+
+  int currHue = loop%255;
+  HsvColor currHSV = {currHue, 255, 255};
+  RgbColor c = HsvToRgb(currHSV); 
+  for (i = 0; i < count; i++) {  
+    ledSetRGB(fb, i, (c.r), (c.g), (int)(c.b), shift);
+    }
+}
+orchard_effects("AAAinteractive", interactivePatternFB);
 
 //just a boring blink
 static void boringStrobePatternFB(struct effects_config *config) {
@@ -522,9 +545,7 @@ static void changeOnDropVividRainbow(struct effects_config *config){
 orchard_effects("changeOnDropVividRainbow", changeOnDropVividRainbow);
 
 //notes for this effect:
-//1) IRL you can probably decrease the temperature check frequency to loop%100
-//since it's not like temp will be changing all that often...
-//2) need to set some reasonable temperature range that will work well for on-playa
+//need to set some reasonable temperature range that will work well for on-playa
 //also need to offset the on-board temperature heating.. one option would be to get some default value at boot and subtract
 //otherwise could also just figure it out from testing.
 static void temperatureTestEffect(struct effects_config *config){
@@ -663,6 +684,44 @@ static void accelEffect(struct effects_config *config) {
 }
 orchard_effects("accel", accelEffect);
 
+static void barometerTestEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  int i;
+
+  static float press;
+  press = press == 0 ? baro_pressure : press; 
+
+  static int on = 0;
+
+
+ if(loop % 10 == 0){
+   if (baro_pressure - press > 100){
+     chprintf(stream, "%s", "PRESSURE INCREASE!!!");
+     on = 1;
+   }
+   if (baro_pressure - press < -100){
+      chprintf(stream, "%s", "PRESSURE DECREASE!!!");
+      on = 0;
+   }
+   //chprintf(stream, "%s", "Current pressure: ");
+	 //chprintf(stream, "%f\n\r", baro_pressure);
+   //chprintf(stream, "%s", "Prev pressure: ");
+	 //chprintf(stream, "%f\n\r", press);
+   press = baro_pressure;
+ }
+
+  int currHue = loop%255;
+  HsvColor currHSV = {currHue, 255, 255};
+  RgbColor c = HsvToRgb(currHSV); 
+  for (i = 0; i < count; i++) {  
+    ledSetRGB(fb, i, (c.r*on), (c.g*on), (int)(c.b*on), shift);
+    }
+
+}
+orchard_effects("barometer", barometerTestEffect);
+
 /*
 static void basicDrop(struct effects_config *config){
   int count = config->count;
@@ -671,7 +730,7 @@ static void basicDrop(struct effects_config *config){
   int i;
 
   float Gravity = -15;
-  
+
   float Height = 1;
   float ImpactVelocityStart = sqrt( -2 * Gravity );
   static float ImpactVelocity;
@@ -1153,7 +1212,12 @@ static void draw_pattern(void) {
     bump_amount = 0;
   }
 
+  if(fx_duration != 0) {   //if we have a temporary pattern, check expiration
+    effectsCheckExpiredTempPattern();
+  }
+
   curfx += fx_index;
+
 
   curfx->computeEffect(&fx_config);
 }
@@ -1204,15 +1268,39 @@ const char *lightgeneName(void) {
   return diploid.name;
 }
 
-void effectsSetPattern(uint8_t index) {
+void effectsSetTempPattern(uint8_t index, uint16_t duration){
+  if(fx_duration == 0) { //if our existing effect is persistent, save it.
+      fx_previndex = fx_index;
+    }
+    fx_duration = duration;
+    fx_index = index;
+    fx_starttime = chVTGetSystemTime();
+    patternChanged = 1;
+    check_lightgene_hack();
+}
+
+void effectsCheckExpiredTempPattern(){
+  //after pattern time has expired, set back to previous pattern.
+  if(fx_starttime + fx_duration < chVTGetSystemTime()){
+    fx_index = fx_previndex; 
+    fx_duration = 0;
+  }
+}
+
+void effectsSetPattern(uint8_t index, uint16_t duration) {
   if(index > fx_max) {
     fx_index = 0;
     return;
   }
-
-  fx_index = index;
-  patternChanged = 1;
-  check_lightgene_hack();
+  if(duration > 0) { //temporary effect
+    effectsSetTempPattern(index, duration);
+  }
+  else {
+    fx_index = index;
+    fx_duration = 0;
+    patternChanged = 1;
+    check_lightgene_hack();
+  }
 }
 
 uint8_t effectsGetPattern(void) {
