@@ -373,12 +373,6 @@ int main(void) {
    */
   halInit();
 
-  // some PCR overrides for fast SD cards ops to work more reliably
-  PORTD_PCR0 = 0x203; // pull up enabled, fast slew  (CS0)
-  PORTD_PCR1 = 0x203; // pull up enabled, fast slew (clk)
-  PORTD_PCR2 = 0x200; // fast slew (mosi)
-  PORTD_PCR3 = 0x200; // fast slew (miso)
-  
   // K22 has a separate setting for open-drain that has to be explicitly set for I2C
   // this breaks the chibiOS abstractions, which were not made to anticipate this oddity.
   PORT_PCR_REG(PORTB,2) |= PORTx_PCRn_ODE;
@@ -421,6 +415,14 @@ int main(void) {
   while(flash_init == 0) // wait until the flash inits from the thread that was spawned
     chThdSleepMilliseconds(10);
     
+  if( *((unsigned char *)0x40020003) != (unsigned char) 0xf9 ) {
+    chprintf(stream, "WARNING: FOPT not set correctly, check factory options!\n\r");
+    chprintf(stream, "FOPT: %02x\n\r", *((unsigned char *)0x40020003));
+    chprintf(stream, "FSEC: %02x\n\r", *((unsigned char *)0x40020002));
+  } else {
+    chprintf(stream, "FOPT check OK.\n\r");
+  }
+  
   PORTA->PCR[4] |= 0x10; // turn on passive filter for the switch pin
   
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
