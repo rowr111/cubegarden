@@ -57,8 +57,6 @@ extern const char *gitversion;
 
 void sw_irq(EXTDriver *extp, expchannel_t channel);
 
-event_source_t gyro1_process;
-event_source_t gyro2_process;
 void gyro_irq1(EXTDriver *extp, expchannel_t channel) {
   (void)extp;
   (void)channel;
@@ -74,12 +72,6 @@ void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
   chSysLockFromISR();
   chEvtBroadcastI(&gyro2_process);
   chSysUnlockFromISR();
-}
-int mems_event = 0;
-void gyro1_proc(eventid_t id) {
-  mems_event = 1;
-}
-void gyro2_proc(eventid_t id) {
 }
 
 static const EXTConfig extcfg = {
@@ -231,6 +223,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   swStart();
   pirStart();
   accelStart(&I2CD1);
+  gyro_init();
   flashStart();
   orchardTestInit();
   
@@ -293,14 +286,11 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extInit();
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
-  
-  chEvtObjectInit(&gyro1_process);
-  chEvtObjectInit(&gyro2_process);
+
   
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
-  evtTableHook(orchard_events, accel_process, accel_proc);
-  evtTableHook(orchard_events, accel_freefall, freefall);
+  evtTableHook(orchard_events, gyro_freefall, freefall);
   evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
@@ -315,8 +305,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
-  evtTableUnhook(orchard_events, accel_freefall, freefall);
-  evtTableUnhook(orchard_events, accel_process, accel_proc);
+  evtTableUnhook(orchard_events, gyro_freefall, freefall);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
 

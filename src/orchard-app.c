@@ -20,8 +20,8 @@
 #include "radio.h"
 #include "TransceiverReg.h"
 #include "userconfig.h"
-#include "accel.h"
 #include "mic.h"
+#include "gyro.h"
 
 #include "shellcfg.h"
 
@@ -623,7 +623,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   uptime += CHARGECHECK_INTERVAL / 1000; // keep an uptime count in seconds
   
   // whenever this system task runs, add some entropy to the random number pool...
-  accelPoll(&accel);
+  gyro_Get_X_Axes(&accel);
   addEntropy(accel.x ^ accel.y ^ accel.z);
 
   // flush config data if it's changed

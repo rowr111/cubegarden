@@ -8,6 +8,10 @@
 #include "gyro.h"
 #include <string.h>
 
+event_source_t gyro1_process;
+event_source_t gyro2_process;
+event_source_t gyro_freefall;
+
 static LSM6DS3StatusTypeDef Set_X_ODR_When_Enabled(float odr);
 static LSM6DS3StatusTypeDef Set_G_ODR_When_Enabled(float odr);
 static LSM6DS3StatusTypeDef Set_X_ODR_When_Disabled(float odr);
@@ -6635,12 +6639,27 @@ mems_status_t LSM6DS3_ACC_GYRO_SH0_WriteByte(void *handle, u8_t SlvAddr, u8_t Re
 /* Includes ------------------------------------------------------------------*/
 
 /* Class Implementation ------------------------------------------------------*/
+int mems_event = 0;
+void gyro1_proc(eventid_t id) {
+  mems_event = 1;
+  LSM6DS3_Event_Status_t status;
+	gyro_Get_Event_Status(&status);
+	if (status.FreeFallStatus) {
+	  chEvtBroadcast(&gyro_freefall);
+	}
+}
+void gyro2_proc(eventid_t id) {
+}
 
 /** Constructor
  * @param i2c object of an helper class which handles the I2C peripheral
  * @param address the address of the component's instance
  */
 void gyro_init                                     (void) {
+  chEvtObjectInit(&gyro1_process);
+  chEvtObjectInit(&gyro2_process);
+  chEvtObjectInit(&gyro_freefall);
+
   /* Enable register address automatically incremented during a multiple byte
      access with a serial interface. */
   if ( LSM6DS3_ACC_GYRO_W_IF_Addr_Incr( (void *)this, LSM6DS3_ACC_GYRO_IF_INC_ENABLED ) == MEMS_ERROR )
@@ -6722,6 +6741,14 @@ void gyro_init                                     (void) {
   G_Last_ODR = 104.0f;
 
   G_isEnabled = 0;
+
+  //enable by default!
+  gyro_Enable_X();
+  gyro_Enable_Free_Fall_Detection();
+  gyro_Set_Free_Fall_Threshold(50); //todo: change to global constant, could also use tweaking
+  gyro_Enable_Pedometer();
+  gyro_Enable_Single_Tap_Detection();
+  gyro_Enable_Double_Tap_Detection();
 };
 
 /**
@@ -6854,7 +6881,7 @@ LSM6DS3StatusTypeDef gyro_ReadID(uint8_t *p_id)
  * @param  pData the pointer where the accelerometer data are stored
  * @retval LSM6DS3_STATUS_OK in case of success, an error code otherwise
  */
-LSM6DS3StatusTypeDef gyro_Get_X_Axes(int32_t *pData)
+LSM6DS3StatusTypeDef gyro_Get_X_Axes(struct accel_data *pData)
 {
   int16_t dataRaw[3];
   float sensitivity = 0;
@@ -6872,9 +6899,9 @@ LSM6DS3StatusTypeDef gyro_Get_X_Axes(int32_t *pData)
   }
   
   /* Calculate the data. */
-  pData[0] = ( int32_t )( dataRaw[0] * sensitivity );
-  pData[1] = ( int32_t )( dataRaw[1] * sensitivity );
-  pData[2] = ( int32_t )( dataRaw[2] * sensitivity );
+  pData->x = ( int32_t )( dataRaw[0] * sensitivity );
+  pData->y = ( int32_t )( dataRaw[1] * sensitivity );
+  pData->z = ( int32_t )( dataRaw[2] * sensitivity );
   
   return LSM6DS3_STATUS_OK;
 }

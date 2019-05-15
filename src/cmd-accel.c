@@ -17,7 +17,7 @@ void cmd_accel(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  struct accel_data data;
+  struct old_accel_data data;
   int x, y, z;
   
   if (argc <= 0) {

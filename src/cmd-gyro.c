@@ -26,13 +26,12 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "    tap       tap demo"SHELL_NEWLINE_STR);
     chprintf(chp, "    double    double tap demo"SHELL_NEWLINE_STR);
     chprintf(chp, "    pedo      pedometer demo"SHELL_NEWLINE_STR);
+    chprintf(chp, "    freefall  freefall demo"SHELL_NEWLINE_STR);
+    chprintf(chp, "    xyz"SHELL_NEWLINE_STR);
     return;
   }
 
   if (!strcasecmp(argv[0], "double")) {
-    gyro_init();
-    gyro_Enable_X();
-    gyro_Enable_Double_Tap_Detection();
     while( !should_stop() ) {
       if( mems_event ) { // mems_event set by external interrupt handler
 	mems_event = 0;
@@ -44,9 +43,6 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
       }
     }
   } else if(!strcasecmp(argv[0], "tap")) {
-    gyro_init();
-    gyro_Enable_X();
-    gyro_Enable_Single_Tap_Detection();
     while( !should_stop() ) {
       if( mems_event ) { // mems_event set by external interrupt handler
 	mems_event = 0;
@@ -60,10 +56,6 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
   } else if(!strcasecmp(argv[0], "pedo")) {
     uint32_t previous_tick = 0;
     uint16_t step_count = 0;
-    
-    gyro_init();
-    gyro_Enable_X();
-    gyro_Enable_Pedometer();
     previous_tick = chVTGetSystemTime();
     
     while( !should_stop() ) {
@@ -81,6 +73,26 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
 	  previous_tick = chVTGetSystemTime();
 	}
       }
+    }
+  }else if(!strcasecmp(argv[0], "freefall")) {
+    //gyro_init();
+    while( !should_stop() ) {
+      if( mems_event ) { // mems_event set by external interrupt handler
+      mems_event = 0;
+	    LSM6DS3_Event_Status_t status;
+	    gyro_Get_Event_Status(&status);
+	    if (status.FreeFallStatus) {
+	      chprintf(chp, "FreeFall Detected!\n\r");
+	      }
+      }
+    }
+  } else if(!strcasecmp(argv[0], "xyz")) {
+    struct accel_data xyzData;
+    while( !should_stop() ) {
+      gyro_Get_X_Axes(&xyzData);
+      chprintf(chp, "X: %d", xyzData.x);
+      chprintf(chp, " Y: %d", xyzData.y);
+      chprintf(chp, " Z: %d\n\r", xyzData.z);
     }
   } else {
     chprintf(chp, "Unrecognized command: %s"NL, argv[0]);

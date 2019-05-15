@@ -227,7 +227,7 @@ static I2CDriver *driver;
 event_source_t accel_x_axis_pulse;
 event_source_t accel_y_axis_pulse;
 event_source_t accel_z_axis_pulse;
-event_source_t accel_freefall;
+//event_source_t accel_freefall;
 event_source_t accel_process;
 event_source_t accel_landscape_portrait;
 
@@ -264,8 +264,8 @@ void accel_proc(eventid_t id) {
     i2cAcquireBus(driver);
     (void)accel_get(REG_FF_MT_SRC);
     i2cReleaseBus(driver);
-
-    chEvtBroadcast(&accel_freefall);
+    //temp disable
+    //chEvtBroadcast(&accel_freefall);
   }
 
   if (mask & REG_INT_SRC_LNDPRT) {
@@ -393,16 +393,16 @@ void accelStart(I2CDriver *i2cp) {
   chEvtObjectInit(&accel_x_axis_pulse);
   chEvtObjectInit(&accel_y_axis_pulse);
   chEvtObjectInit(&accel_z_axis_pulse);
-  chEvtObjectInit(&accel_freefall);
+  //chEvtObjectInit(&accel_freefall);
   chEvtObjectInit(&accel_process);
   chEvtObjectInit(&accel_landscape_portrait);
 
   // enable freefall by default
-  accelEnableFreefall(24, 40); // first arg somewhere between 20-24, lower is more sensitive
+  //accelEnableFreefall(24, 40); // first arg somewhere between 20-24, lower is more sensitive
   // 22 = 1.5g, 40 = 50ms
 }
 
-msg_t accelPoll(struct accel_data *data) {
+msg_t accelPoll(struct old_accel_data *data) {
   uint8_t tx[1];
   uint8_t rx[7];
 

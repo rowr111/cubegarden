@@ -6,8 +6,8 @@
 
 #include "mic.h"
 #include "analog.h"
-#include "accel.h"
 #include "barometer.h"
+#include "gyro.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -639,25 +639,19 @@ static void accelEffect(struct effects_config *config) {
 
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
-  //int loop = config->loop; //currently unused
+  int loop = config->loop; 
   int i;
 
-  //let's get the xyz coordinates
   struct accel_data data;
-  int x, y, z;
-  accelPoll(&data);
-  if( data.x >= 2048 ) {
-    x = (int)data.x - 4095;
-    } else x = data.x;
-  if( data.y >= 2048 ) {
-    y = (int)data.y - 4095;
-    } else y = data.y;
-  if( data.z >= 2048 ) {
-      z = (int)data.z - 4095;
-    } else z = data.z;
+  //let's get the xyz coordinates every so often..
+  //things seem to get grumpy if you get the values too often :o
+  if(loop % 3 == 0){ 
+   gyro_Get_X_Axes(&data);
+  }
+
 
   //let's make an angle from the xy coordinates
-  float angle = atan2(-y, -x) * (180/3.14159) - 90;
+  float angle = atan2(data.x, data.y) * (180/3.14159) - 90;
   angle = angle < 0 ? 360 + angle : angle;  // Ensure positive angle
   //convert it into the hue 
 	int angleHue = (int)((angle/360)*255);

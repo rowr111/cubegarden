@@ -3045,13 +3045,19 @@ typedef struct
  * Abstract class of an LSM6DS3 Inertial Measurement Unit (IMU) 6 axes
  * sensor.
  */
+    struct accel_data {
+      int32_t x;
+      int32_t y;
+      int32_t z;
+    };
+
     void gyro_init                                     (void);
     LSM6DS3StatusTypeDef gyro_Enable_X                     (void);
     LSM6DS3StatusTypeDef gyro_Enable_G                     (void);
     LSM6DS3StatusTypeDef gyro_Disable_X                    (void);
     LSM6DS3StatusTypeDef gyro_Disable_G                    (void);
     LSM6DS3StatusTypeDef gyro_ReadID                       (uint8_t *p_id);
-    LSM6DS3StatusTypeDef gyro_Get_X_Axes                   (int32_t *pData);
+    LSM6DS3StatusTypeDef gyro_Get_X_Axes                   (struct accel_data *pData);
     LSM6DS3StatusTypeDef gyro_Get_G_Axes                   (int32_t *pData);
     LSM6DS3StatusTypeDef gyro_Get_X_Sensitivity            (float *pfData);
     LSM6DS3StatusTypeDef gyro_Get_G_Sensitivity            (float *pfData);
@@ -3097,6 +3103,13 @@ typedef struct
     LSM6DS3StatusTypeDef gyro_Get_Event_Status             (LSM6DS3_Event_Status_t *status);
     LSM6DS3StatusTypeDef gyro_ReadReg                      (uint8_t reg, uint8_t *data);
     LSM6DS3StatusTypeDef gyro_WriteReg                     (uint8_t reg, uint8_t data);
+
+    void gyro1_proc(eventid_t id);
+    void gyro2_proc(eventid_t id);
+
+    extern event_source_t gyro1_process;
+    extern event_source_t gyro2_process;
+    extern event_source_t gyro_freefall;
 
 #ifdef __cplusplus
 extern "C" {
