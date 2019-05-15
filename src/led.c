@@ -489,7 +489,7 @@ static void interactivePatternFB(struct effects_config *config) {
     ledSetRGB(fb, i, (c.r), (c.g), (int)(c.b), shift);
     }
 }
-orchard_effects("AAAinteractive", interactivePatternFB);
+orchard_effects("interactive", interactivePatternFB);
 
 //just a boring blink
 static void boringStrobePatternFB(struct effects_config *config) {
@@ -593,7 +593,7 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   int loop = config->loop;
   int i;
   float level;
-  
+
   scopemode_g = 2; // this selects db mode
   //let's assume some background and max decibel level 
   int bkgndDB = 30;

@@ -313,8 +313,10 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   chThdExitS(MSG_OK);
 }
 
-float baro_pressure;
-float baro_temp;
+float baro_pressure = -1.0;
+float baro_temp = -1.0;
+float baro_avg = -1.0;
+uint8_t baro_avg_valid = 0;
 
 static thread_t *baroThr = NULL;
 static THD_WORKING_AREA(waBaroThread, 0x200);
@@ -324,22 +326,54 @@ static THD_FUNCTION(baro_thread, arg) {
   int16_t oversampling = 7;
   int16_t ret;
   float last_pressure;
-  uint32_t baro_debounce;
-
-  chRegSetThreadName("Barometer");
+  float baro_history[BARO_HISTORY];
+  float acc;
+  int index = 0;
+  int i;
+  int loops = 0;
   
-  baro_debounce = chVTGetSystemTime();
+  chRegSetThreadName("Barometer");
+  chThdSleepMilliseconds(250); // wait for other subsystems to finish booting
+
+  for( i = 0; i < BARO_HISTORY; i++ ) {
+    baro_history[i] = 10000.0;
+  }
+  
+  // init the barometer
+  chprintf(stream, "Initializing barometer.");
+  baro_init();
+  float temperature;
+  float pressure;
+  // do a dummy read to setup barometer internal state
+  baro_measureTempOnce(&temperature, 7);
+  chprintf(stream, ".");
+  baro_measurePressureOnce(&pressure, 7);
+  chprintf(stream, ".");
+  chprintf(stream, "done.\n\r");
   
   ret = baro_measureTempOnce(&baro_temp, oversampling);
   ret = baro_measurePressureOnce(&baro_pressure, oversampling);
   last_pressure = baro_pressure;
-  
+
   while (!chThdShouldTerminateX()) {
-    ret = baro_measureTempOnce(&baro_temp, oversampling);
+    if( (loops % 30) == 0 ) { // temperature doesn't need to update as fast as barometer
+      ret = baro_measureTempOnce(&baro_temp, oversampling);
+    }
+    loops++;
     ret = baro_measurePressureOnce(&baro_pressure, oversampling);
+    baro_history[index] = baro_pressure;
+    index = (index + 1) % BARO_HISTORY;
+    if( index == (BARO_HISTORY - 1) )
+      baro_avg_valid = 1;
+    
+    for( acc = 0, i = 0; i < BARO_HISTORY; i++ ) {
+      acc += baro_history[i];
+    }
+    baro_avg = acc / (float) BARO_HISTORY;
+    
     last_pressure = baro_pressure;
-    baro_debounce = chVTGetSystemTime();
-    chThdSleepMilliseconds(250); // update interval for barometer
+  
+    chThdSleepMilliseconds(10); // give some time for other threads
   }
 
   chSysLock();
@@ -362,12 +396,6 @@ int main(void) {
    */
   halInit();
 
-  // some PCR overrides for fast SD cards ops to work more reliably
-  PORTD_PCR0 = 0x203; // pull up enabled, fast slew  (CS0)
-  PORTD_PCR1 = 0x203; // pull up enabled, fast slew (clk)
-  PORTD_PCR2 = 0x200; // fast slew (mosi)
-  PORTD_PCR3 = 0x200; // fast slew (miso)
-  
   // K22 has a separate setting for open-drain that has to be explicitly set for I2C
   // this breaks the chibiOS abstractions, which were not made to anticipate this oddity.
   PORT_PCR_REG(PORTB,2) |= PORTx_PCRn_ODE;
@@ -390,6 +418,10 @@ int main(void) {
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);
 
+  chprintf(stream, "i2c check\n\r" );
+  chgAutoParams();
+  chprintf(stream, "done\n\r" );
+
   shellInit();
 
   chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
@@ -410,6 +442,14 @@ int main(void) {
   while(flash_init == 0) // wait until the flash inits from the thread that was spawned
     chThdSleepMilliseconds(10);
     
+  if( *((unsigned char *)0x40020003) != (unsigned char) 0xf9 ) {
+    chprintf(stream, "WARNING: FOPT not set correctly, check factory options!\n\r");
+    chprintf(stream, "FOPT: %02x\n\r", *((unsigned char *)0x40020003));
+    chprintf(stream, "FSEC: %02x\n\r", *((unsigned char *)0x40020002));
+  } else {
+    chprintf(stream, "FOPT check OK.\n\r");
+  }
+  
   PORTA->PCR[4] |= 0x10; // turn on passive filter for the switch pin
   
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
@@ -422,18 +462,6 @@ int main(void) {
   
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
-
-  // init the barometer
-  chprintf(stream, "Initializing barometer.");
-  baro_init();
-  float temperature;
-  float pressure;
-  // do a dummy read to setup barometer internal state
-  baro_measureTempOnce(&temperature, 7);
-  chprintf(stream, ".");
-  baro_measurePressureOnce(&pressure, 7);
-  chprintf(stream, ".");
-  chprintf(stream, "done.\n\r");
 
   // start the barometer monitoring thread
   eventThr = chThdCreateStatic(waBaroThread,
