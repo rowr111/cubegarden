@@ -10,8 +10,12 @@
 #ifndef DPS422_H_INCLUDED
 #define DPS422_H_INCLUDED
 
+#define BARO_HISTORY 16
+
 extern float baro_pressure;
 extern float baro_temp;
+extern float baro_avg;
+extern uint8_t baro_avg_valid;
 
 // DPS310 has 10 milliseconds of spare time for each synchronous measurement / per second for asynchronous measurements
 // this is for error prevention on friday-afternoon-products :D
