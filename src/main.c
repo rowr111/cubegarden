@@ -34,7 +34,6 @@
 #include "userconfig.h"
 #include "orchard-app.h"
 #include "charger.h"
-#include "accel.h"
 #include "mic.h"
 #include "paging.h"
 #include "analog.h"
@@ -76,7 +75,6 @@ void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, accel_irq, PORTC, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
@@ -222,7 +220,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   swStart();
   pirStart();
-  accelStart(&I2CD1);
   gyro_init();
   flashStart();
   orchardTestInit();
