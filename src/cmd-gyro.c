@@ -7,6 +7,7 @@
 #include "i2c.h"
 #include "gyro.h"
 #include "shellcfg.h"
+#include "math.h"
 
 #define NL SHELL_NEWLINE_STR
 
@@ -28,6 +29,7 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "    pedo      pedometer demo"SHELL_NEWLINE_STR);
     chprintf(chp, "    freefall  freefall demo"SHELL_NEWLINE_STR);
     chprintf(chp, "    xyz"SHELL_NEWLINE_STR);
+    chprintf(chp, "    stepdir   stepdirection demo"SHELL_NEWLINE_STR);
     return;
   }
 
@@ -87,12 +89,30 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
       }
     }
   } else if(!strcasecmp(argv[0], "xyz")) {
-    struct accel_data xyzData;
+      struct accel_data xyzData;
+      while( !should_stop() ) {
+        gyro_Get_X_Axes(&xyzData);
+        chprintf(chp, "X: %d", xyzData.x);
+        chprintf(chp, " Y: %d", xyzData.y);
+        chprintf(chp, " Z: %d\n\r", xyzData.z);
+      }
+    } else if(!strcasecmp(argv[0], "stepdir")) {
+      //direction of acceleration (in the x/y plane) upon step
+    gyro_Set_Pedometer_Threshold(LSM6DS3_PEDOMETER_THRESHOLD_MID); //make it a little more sensitive, def is MID_HIGH
+    uint16_t step_count = 0;
     while( !should_stop() ) {
-      gyro_Get_X_Axes(&xyzData);
-      chprintf(chp, "X: %d", xyzData.x);
-      chprintf(chp, " Y: %d", xyzData.y);
-      chprintf(chp, " Z: %d\n\r", xyzData.z);
+      if( mems_event ) { // mems_event set by external interrupt handler
+      mems_event = 0;
+      LSM6DS3_Event_Status_t status;
+      gyro_Get_Event_Status(&status);
+        if (status.StepStatus) {
+          gyro_Get_Step_Counter(&step_count);
+          struct accel_data accelData;
+          gyro_Get_X_Axes(&accelData);
+          float directionDeg = atan2(accelData.x, accelData.y) * 180/3.14159;
+          chprintf(chp, "Accel direction on step (degree): %f\n\r", directionDeg);
+        }
+      }
     }
   } else {
     chprintf(chp, "Unrecognized command: %s"NL, argv[0]);

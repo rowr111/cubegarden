@@ -54,7 +54,7 @@ uint8_t sex_running = 0;
 
 orchard_app_end();
 
-uint8_t anonymous = 0; // set this to make cubes not broadcast their presence, not detect others
+uint8_t anonymous = 1; // set this to make cubes not broadcast their presence, not detect others
 
 static const OrchardApp *orchard_app_list;
 static virtual_timer_t run_launcher_timer;
