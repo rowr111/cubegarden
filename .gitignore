@@ -43,4 +43,7 @@
 *~
 *.bin 
 
+# Visual Studio Code
+.vscode
+
 gitversion.c
