@@ -41,6 +41,8 @@ void effectsSetTempPattern(uint8_t, uint16_t);
 void effectsCheckExpiredTempPattern();
 uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
+void pressureChanged(void);
+void singletap(void);
 void setShift(uint8_t s);
 uint8_t getShift(void);
 void effectsNextPattern(int skipstrobe);

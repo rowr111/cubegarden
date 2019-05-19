@@ -10,7 +10,8 @@
 #ifndef DPS422_H_INCLUDED
 #define DPS422_H_INCLUDED
 
-#define BARO_HISTORY 16
+#define BARO_HISTORY 32
+#define BARO_CHANGE_SENSITIVITY 20
 
 extern float baro_pressure;
 extern float baro_temp;

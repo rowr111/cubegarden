@@ -55,11 +55,15 @@ static uint8_t fx_previndex = 0; //previous effect
 static uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
 static uint32_t fx_starttime = 0; //start time for temporary effect
 
-static uint8_t shift = 1;  // start a little bit dimmer
+static uint8_t shift = 2;  // start a little bit dimmer
 
 static uint32_t bump_amount = 0;
 static uint8_t bumped = 0;
+static uint8_t pressure_changed = 0;
+static uint8_t singletapped = 0;
+static unsigned int pressurechangedtime = 0;
 static unsigned int bumptime = 0;
+static unsigned int singletaptime = 0;
 static unsigned long reftime = 0;
 static unsigned long reftime_tau = 0;
 static unsigned long offset = 0;
@@ -476,20 +480,34 @@ static void interactivePatternFB(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop;
   int i;
-  if(bumped){
-    bumped = 0;
-    chprintf(stream, "%s\n\r", "Setting temp pattern!");
+
+  static uint8_t tapfactor = 1;
+
+  if(pressure_changed){
+    pressure_changed = 0;
+    chprintf(stream, "%s\n\r", "pressure changed, strobing!");
     effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
   }
 
-  int currHue = loop%255;
+  if(bumped){
+    bumped = 0;
+    chprintf(stream, "%s\n\r", "bumped, strobing!");
+    effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
+  }
+
+  if(singletapped){
+    singletapped = 0;
+    tapfactor = tapfactor == 5 ? 1 : tapfactor + 1;
+  }
+
+  int currHue = (loop*tapfactor)%255;
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV); 
   for (i = 0; i < count; i++) {  
     ledSetRGB(fb, i, (c.r), (c.g), (int)(c.b), shift);
     }
 }
-orchard_effects("interactive", interactivePatternFB);
+orchard_effects("AAAinteractive", interactivePatternFB);
 
 //just a boring blink
 static void boringStrobePatternFB(struct effects_config *config) {
@@ -1185,12 +1203,28 @@ orchard_effects("larsonScanner", larsonScannerFB);
 #endif
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
+#define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
+#define SINGLETAP_DEBOUNCE 300 // 300ms debounce to next singletap
 
 void bump(uint32_t amount) {
   bump_amount = amount;
   if( chVTGetSystemTime() - bumptime > BUMP_DEBOUNCE ) {
     bumptime = chVTGetSystemTime();
     bumped = 1;
+  }
+}
+
+void pressureChanged(void){
+  if( chVTGetSystemTime() - pressurechangedtime > PRESSURE_DEBOUNCE ) {
+    pressurechangedtime = chVTGetSystemTime();
+    pressure_changed = 1;
+  }
+}
+
+void singletap(void) {
+  if( chVTGetSystemTime() - singletaptime > SINGLETAP_DEBOUNCE ) {
+    singletaptime = chVTGetSystemTime();
+    singletapped = 1;
   }
 }
 

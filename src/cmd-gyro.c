@@ -46,34 +46,34 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
     }
   } else if(!strcasecmp(argv[0], "tap")) {
     while( !should_stop() ) {
+      //gyro_Set_Tap_Threshold(LSM6DS3_TAP_THRESHOLD_LOW);
       if( mems_event ) { // mems_event set by external interrupt handler
-	mems_event = 0;
-	LSM6DS3_Event_Status_t status;
-	gyro_Get_Event_Status(&status);
-	if (status.TapStatus) {
-	  chprintf(chp, "Single Tap Detected!\n\r");
-	}
+        mems_event = 0;
+        LSM6DS3_Event_Status_t status;
+        gyro_Get_Event_Status(&status);
+        if (status.TapStatus) {
+          chprintf(chp, "Single Tap Detected!\n\r");
+	      }
       }
     }
   } else if(!strcasecmp(argv[0], "pedo")) {
     uint32_t previous_tick = 0;
     uint16_t step_count = 0;
     previous_tick = chVTGetSystemTime();
-    
     while( !should_stop() ) {
       if( mems_event ) { // mems_event set by external interrupt handler
-	mems_event = 0;
-	LSM6DS3_Event_Status_t status;
-	gyro_Get_Event_Status(&status);
-	if (status.StepStatus) {
-	  gyro_Get_Step_Counter(&step_count);
-	  chprintf(chp, "Step counter: %d\n\r", step_count);
-	}
-	if( chVTTimeElapsedSinceX(previous_tick) > 3000 ) { 
-	  gyro_Get_Step_Counter(&step_count);
-	  chprintf(chp, "Step counter: %d\n\r", step_count);
-	  previous_tick = chVTGetSystemTime();
-	}
+        mems_event = 0;
+        LSM6DS3_Event_Status_t status;
+        gyro_Get_Event_Status(&status);
+        if (status.StepStatus) {
+          gyro_Get_Step_Counter(&step_count);
+          chprintf(chp, "Step counter: %d\n\r", step_count);
+	      }
+        if( chVTTimeElapsedSinceX(previous_tick) > 3000 ) { 
+          gyro_Get_Step_Counter(&step_count);
+          chprintf(chp, "Step counter: %d\n\r", step_count);
+          previous_tick = chVTGetSystemTime();
+        }
       }
     }
   }else if(!strcasecmp(argv[0], "freefall")) {

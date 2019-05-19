@@ -3110,6 +3110,7 @@ typedef struct
     extern event_source_t gyro1_process;
     extern event_source_t gyro2_process;
     extern event_source_t gyro_freefall;
+    extern event_source_t gyro_singletap;
 
 #ifdef __cplusplus
 extern "C" {

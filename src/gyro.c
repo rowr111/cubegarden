@@ -11,6 +11,7 @@
 event_source_t gyro1_process;
 event_source_t gyro2_process;
 event_source_t gyro_freefall;
+event_source_t gyro_singletap;
 
 static LSM6DS3StatusTypeDef Set_X_ODR_When_Enabled(float odr);
 static LSM6DS3StatusTypeDef Set_G_ODR_When_Enabled(float odr);
@@ -6647,6 +6648,9 @@ void gyro1_proc(eventid_t id) {
 	if (status.FreeFallStatus) {
 	  chEvtBroadcast(&gyro_freefall);
 	}
+  if (status.TapStatus) {
+	  chEvtBroadcast(&gyro_singletap);
+	}
 }
 void gyro2_proc(eventid_t id) {
 }
@@ -6659,6 +6663,7 @@ void gyro_init                                     (void) {
   chEvtObjectInit(&gyro1_process);
   chEvtObjectInit(&gyro2_process);
   chEvtObjectInit(&gyro_freefall);
+  chEvtObjectInit(&gyro_singletap);
 
   /* Enable register address automatically incremented during a multiple byte
      access with a serial interface. */

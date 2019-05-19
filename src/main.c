@@ -202,9 +202,15 @@ static void orchard_app_restart(eventid_t id) {
 static void freefall(eventid_t id) {
 
   (void)id;
-  chprintf(stream, "A");
+  chprintf(stream, "freefall\r\n");
   bump(5);
   chEvtBroadcast(&accel_bump);
+}
+
+static void singletapchanged(eventid_t id) {
+  (void)id;
+  chprintf(stream, "singletap\r\n");
+  singletap();
 }
 
 void spiRuntSetup(SPIDriver *spip);
@@ -288,6 +294,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableHook(orchard_events, gyro_freefall, freefall);
+  evtTableHook(orchard_events, gyro_singletap, singletapchanged);
   evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
@@ -302,6 +309,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
+  evtTableUnhook(orchard_events, gyro_singletap, singletapchanged);
   evtTableUnhook(orchard_events, gyro_freefall, freefall);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
@@ -359,6 +367,12 @@ static THD_FUNCTION(baro_thread, arg) {
     loops++;
     ret = baro_measurePressureOnce(&baro_pressure, oversampling);
     baro_history[index] = baro_pressure;
+
+    if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > BARO_CHANGE_SENSITIVITY){
+      chprintf(stream, "pressure changed suddenly!\r\n");
+      pressureChanged();
+    }
+
     index = (index + 1) % BARO_HISTORY;
     if( index == (BARO_HISTORY - 1) )
       baro_avg_valid = 1;
