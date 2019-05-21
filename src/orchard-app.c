@@ -23,6 +23,7 @@
 #include "mic.h"
 #include "gyro.h"
 #include "time.h"
+#include "cmd-forward.h"
 
 #include "shellcfg.h"
 
@@ -1082,6 +1083,7 @@ void orchardAppInit(void) {
   radioSetHandler(radioDriver, radio_prot_sex_req, handle_radio_sex_req );
   radioSetHandler(radioDriver, radio_prot_sex_ack, handle_radio_sex_ack );
   radioSetHandler(radioDriver, radio_prot_time, handleRadioTime);
+  radioSetHandler(radioDriver, radio_prot_forward, handleRadioForward);
 
   chVTReset(&chargecheck_timer);
   chVTSet(&chargecheck_timer, MS2ST(CHARGECHECK_INTERVAL), run_chargecheck, NULL);

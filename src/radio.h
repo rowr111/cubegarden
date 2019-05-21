@@ -32,6 +32,7 @@ enum radio_protocols {
   radio_prot_dut_to_peer = 6,
   radio_prot_peer_to_dut = 7,
   radio_prot_time        = 8,
+  radio_prot_forward     = 9,
 };
 
 extern KRadioDevice KRADIO1;
