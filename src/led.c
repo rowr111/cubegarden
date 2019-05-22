@@ -16,6 +16,7 @@
 
 #include "genes.h"
 #include "storage.h"
+#include "time.h"
 
 #include "orchard-test.h"
 #include "test-audit.h"
@@ -517,7 +518,7 @@ static void boringStrobePatternFB(struct effects_config *config) {
   static int white = 0;
   int i;
 
-  if(loop % 3 == 0){
+  if(loop % 6 == 0){
     white = white == 0 ? 255 : 0;
      for (i = 0; i < count; i++) {
 		    	ledSetRGB(fb, i, white, white, white, shift);
@@ -1233,7 +1234,7 @@ static void draw_pattern(void) {
   
   curfx = orchard_effects_start();
   
-  fx_config.loop++;
+  fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
 
   if( bump_amount != 0 ) {
     fx_config.loop += bump_amount;
@@ -1439,7 +1440,7 @@ void effectsStart(void) {
   
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
-  fx_config.loop = 0;
+  fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
   
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
