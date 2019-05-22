@@ -38,6 +38,7 @@
 #include "mic.h"
 #include "paging.h"
 #include "analog.h"
+#include "time.h"
 
 #include "orchard-test.h"
 
@@ -240,6 +241,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 #endif
   
   orchardTestRunAll(stream, orchardTestPoweron);
+  timekeeper = true;
+  
   /*
    * Activates the EXT driver 1.
    */
