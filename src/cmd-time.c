@@ -8,6 +8,12 @@
 #include "paging.h"
 #include "time.h"
 
+static int should_stop(void) {
+  uint8_t bfr[1];
+  return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
+}
+
+extern int32_t offsetMs;
 void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 
   (void)argc;
@@ -42,6 +48,12 @@ void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 
   if (!strcasecmp(argv[0], "status")) {
     chprintf(chp, "Time broadcast: %s"SHELL_NEWLINE_STR, timekeeper ? "on" : "off");
+  }
+
+  if (!strcasecmp(argv[0], "offset")) {
+    while( !should_stop() ) {
+      chprintf(chp, "%d\r", offsetMs);
+    }
   }
   
   return;
