@@ -13,10 +13,11 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
   
   if (argc <= 0) {
     chprintf(chp, "Usage: fx [verb]:"SHELL_NEWLINE_STR);
-    chprintf(chp, "    next      next effect"NL);
-    chprintf(chp, "    prev      previous effect"NL);
-    chprintf(chp, "    list      list effects"NL);
-    chprintf(chp, "    <name>    effect name, effect duration (in ms, 0 == persistent)"NL);
+    chprintf(chp, "    next         next effect"NL);
+    chprintf(chp, "    prev         previous effect"NL);
+    chprintf(chp, "    list         list effects"NL);
+    chprintf(chp, "    get          return name of current effect"NL);
+    chprintf(chp, "    use <effect> [duration] switch to given effect for duration ms, 0 = indefinite"NL);
     return;
   }
 
@@ -32,8 +33,13 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     listEffects();
   }
 
-  else {
-      effectsSetPattern(effectsNameLookup(argv[0]), atoi(argv[1]));
+  else if (!strcasecmp(argv[0], "get")) {
+    chprintf(chp, "%s"SHELL_NEWLINE_STR, effectsCurName());
+  }
+
+  else if (!strcasecmp(argv[0], "use") && argc >= 2) {
+    int duration = argc == 3 ? atoi(argv[1]) : 0;
+    effectsSetPattern(effectsNameLookup(argv[1]), duration);
   }
   
   return;
