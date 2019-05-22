@@ -8,7 +8,7 @@
 /**
  * Offset from network time in milliseconds.
  */
-uint32_t offsetMs = 0;
+int32_t offsetMs = 0;
 
 /**
  * Returns current network time in milliseconds from boot of time master.
