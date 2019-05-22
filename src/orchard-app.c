@@ -615,6 +615,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
   struct accel_data accel; // for entropy call
   int16_t voltage;
+  static prev_shift = 2;
+  static was_charging = 0;
 
   wdogPing(); // ping the watchdog
   
@@ -633,6 +635,20 @@ static void handle_chargecheck_timeout(eventid_t id) {
   // flush config data if it's changed
   configLazyFlush();
 
+  // dim while charging
+  if( isCharging() ) {
+    if( !was_charging ) {
+      prev_shift = getShift();
+      was_charging = 1;
+      setShift(6); // dim greatly for faster charging
+    }
+  } else {
+    if( was_charging ) {
+      setShift(prev_shift);
+      was_charging = 0;
+    }
+  }
+  
   // check if battery is too low, and shut down if it is
   // but only if we're not plugged in to a charger
   if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
@@ -640,8 +656,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   }
 
   if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
-    if( getShift() < 3 )
-      setShift(3);
+    if( getShift() < 4 )
+      setShift(4);
   }
 
   if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead

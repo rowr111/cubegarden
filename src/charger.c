@@ -277,7 +277,7 @@ void chgAutoParams(void) {
   // 56 mOhm resistor
   // (37.4mV + 27.2mV * Vichrg[3] + 13.6mV * Vichrg[2] + 6.8mV * Vichrg[1]) / 0.056ohm = I charge
   // termination current offset is 3.4mV, +3.4mV/LSB
-  tx[1] = (0x7 << 4) | 0x1; // 1.51A charge rate, 6.8mV/0.056 = 120mA termination
+  tx[1] = (0x7 << 4) | 0x3; // 1.51A charge rate, (1*6.8mV + 1*3.4mV + 3.4mV)/0.056 = 242mA termination
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
