@@ -27,6 +27,9 @@ extern event_source_t ui_completed;
 
 extern uint32_t uptime;
 
+// If this node should broadcast time
+extern bool timekeeper;
+
 void orchardAppInit(void);
 void orchardAppRestart(void);
 void orchardAppWatchdog(void);

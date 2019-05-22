@@ -170,6 +170,7 @@ CSRC = \
        orchard-app.c \
        orchard-ui.c \
        analog.c \
+       time.c \
        $(wildcard cmd-*.c) \
        $(wildcard app-*.c) \
        $(wildcard ui-*.c) \

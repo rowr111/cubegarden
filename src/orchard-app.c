@@ -22,6 +22,7 @@
 #include "userconfig.h"
 #include "accel.h"
 #include "mic.h"
+#include "time.h"
 
 #include "shellcfg.h"
 
@@ -96,6 +97,8 @@ mutex_t friend_mutex;
 static uint8_t ui_override = 0;
 
 uint32_t uptime = 0;
+
+bool timekeeper = false;
 
 void friend_cleanup(void);
 
@@ -650,6 +653,11 @@ static void handle_chargecheck_timeout(eventid_t id) {
       setShift(4);
   }
 
+  if (timekeeper && (uptime % 60) == 0) { // Run once a minute
+    chprintf(stream, "Broadcasting time: $d", getNetworkTimeMs());
+    broadcastTime();
+  }
+
   // "pump" is now gone when switching interrupt mode from crcOK to packet ready
   uint8_t dummy;
   radioAcquire(radioDriver);
@@ -1073,6 +1081,7 @@ void orchardAppInit(void) {
   radioSetHandler(radioDriver, radio_prot_ping, radio_ping_received);
   radioSetHandler(radioDriver, radio_prot_sex_req, handle_radio_sex_req );
   radioSetHandler(radioDriver, radio_prot_sex_ack, handle_radio_sex_ack );
+  radioSetHandler(radioDriver, radio_prot_time, handleRadioTime);
 
   chVTReset(&chargecheck_timer);
   chVTSet(&chargecheck_timer, MS2ST(CHARGECHECK_INTERVAL), run_chargecheck, NULL);
