@@ -654,8 +654,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
       setShift(4);
   }
 
-  if (timekeeper && (uptime % 60) == 0) { // Run once a minute
-    chprintf(stream, "Broadcasting time: $d", getNetworkTimeMs());
+  if (timekeeper && (uptime % 30) == 0) { // Run every 30 seconds for faster testing
+    chprintf(stream, "Broadcasting time: %d\n\r", getNetworkTimeMs());
     broadcastTime();
   }
 
