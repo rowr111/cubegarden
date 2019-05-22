@@ -31,5 +31,5 @@ void pirStart(void) {
 void pir_proc(eventid_t id) {
 
   (void)id;
-  //chprintf(stream, "PIR event\n\r");
+  chprintf(stream, "PIR event\n\r");  // this should no longer print spuriously
 }
