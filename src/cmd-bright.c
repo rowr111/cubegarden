@@ -23,7 +23,7 @@ void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[])
   uint8_t s;
   
   if (argc <= 0) {
-    chprintf(chp, "Usage: bright [+/-]:"SHELL_NEWLINE_STR);
+    chprintf(chp, "Usage: bright [+/-,0-7]:"SHELL_NEWLINE_STR);
     return;
   }
 
@@ -37,11 +37,17 @@ void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[])
     if( s > 0 )
       s--;
     setShift(s);
+  } else if( argv[0][0] >= '0' && argv[0][0] <= '7' ) {
+    setShift( 7 - (argv[0][0] - '0') );
   } else {
-    chprintf(chp, "bright takes argument of either + or -\n\r");
+    chprintf(chp, "bright takes argument of either +, -, or a number 0-7\n\r");
   }
   
   return;
 }
+void cmd_bright_alias(BaseSequentialStream *chp, int argc, char *argv[]) {
+  cmd_bright(chp, argc, argv);
+}
 
 orchard_shell("bright", cmd_bright);
+orchard_shell("b", cmd_bright_alias);
