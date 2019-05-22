@@ -43,7 +43,7 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
 /*
  * Shell configuration
  */
-static char start[0] __attribute__((unused, aligned(4), section(".chibi_list_shell_1")));
+static char start[0] __attribute__((unused, aligned(4), section(".chibi_list_zshell_1")));
 
 const ShellConfig shell_cfg = {
   (BaseSequentialStream *)&SD4,
@@ -52,5 +52,7 @@ const ShellConfig shell_cfg = {
   sizeof(history_buffer),
   completion_buffer
 };
+
+orchard_shell_end(); // make sure this function gets created to mark the end of the shell list
 
 /** @} */
