@@ -446,7 +446,7 @@ int main(void) {
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,
 			       sizeof(waOrchardEventThread),
-			       (NORMALPRIO - 1),
+			       (NORMALPRIO + 16),
 			       orchard_event_thread,
 			       NULL);
 

@@ -14,9 +14,9 @@ int32_t offsetMs = 0;
  * Returns current network time in milliseconds from boot of time master.
  * If no time message has been received, simply returns system time unmodified.
  */
-uint32_t getNetworkTimeMs(void) {
-  uint32_t systemTimeMs = ST2MS(chVTGetSystemTime());
-  uint32_t networkTimeMs = systemTimeMs - offsetMs;
+int32_t getNetworkTimeMs(void) {
+  int32_t systemTimeMs = (int32_t) ST2MS(chVTGetSystemTime());
+  int32_t networkTimeMs = (int32_t) systemTimeMs - offsetMs;
 
   return networkTimeMs;
 }

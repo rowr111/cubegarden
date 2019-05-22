@@ -1388,24 +1388,29 @@ static void blendFbs(void) {
   }
 }
 
+int32_t time_slop = 230;
 // static THD_WORKING_AREA(waEffectsThread, 256);
 static THD_FUNCTION(effects_thread, arg) {
 
   (void)arg;
   chRegSetThreadName("effects");
-  uint32_t last_time = getNetworkTimeMs();
+  int32_t last_time = getNetworkTimeMs();
   int32_t offset;
   
   while (!ledsOff) {
 
     // handle the case of e.g. negative clock drift or big step adjustment
     // in negative time direction
+    // also re-init loop to the same modulus as the master
     offset = getNetworkTimeMs() - last_time;
     offset = offset < 0 ? -offset : offset;
-    if( offset > 2 * EFFECTS_REDRAW_MS )
+    if( offset > 10 * EFFECTS_REDRAW_MS ) {
       last_time = getNetworkTimeMs();
+      fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
+      chprintf(stream, "Major time adjustment: loop %d, last_time %d\n\r", fx_config.loop, last_time );
+    }
 
-    if( (getNetworkTimeMs() - last_time) > EFFECTS_REDRAW_MS ) {
+    if( (getNetworkTimeMs() - last_time + time_slop) > EFFECTS_REDRAW_MS ) {
       last_time += EFFECTS_REDRAW_MS;
       
       blendFbs();
@@ -1421,6 +1426,8 @@ static THD_FUNCTION(effects_thread, arg) {
 
       // re-render the internal framebuffer animations
       draw_pattern();
+    } else {
+      chThdSleepMilliseconds(1);
     }
 
     if( ledExitRequest ) {
