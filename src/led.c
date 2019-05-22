@@ -884,7 +884,7 @@ static void draw_pattern(void) {
   
   curfx = orchard_effects_start();
   
-  fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
+  fx_config.loop++;
 
   if( bump_amount != 0 ) {
     fx_config.loop += bump_amount;
@@ -1014,25 +1014,41 @@ static THD_FUNCTION(effects_thread, arg) {
 
   (void)arg;
   chRegSetThreadName("effects");
+  uint32_t last_time = getNetworkTimeMs();
+  int32_t offset;
 
   while (!ledsOff) {
-    blendFbs();
+
+    // handle the case of e.g. negative clock drift or big step adjustment
+    // in negative time direction
+    offset = getNetworkTimeMs() - last_time;
+    offset = offset < 0 ? -offset : offset;
+    if( offset > 2 * EFFECTS_REDRAW_MS )
+      last_time = getNetworkTimeMs();
     
-    // transmit the actual framebuffer to the LED chain
-    chSysLock();
-    ledUpdate(led_config.final_fb, led_config.pixel_count);
-    chSysUnlock();
+    if( (getNetworkTimeMs() - last_time) > EFFECTS_REDRAW_MS ) {
+      last_time += EFFECTS_REDRAW_MS;
 
-    // wait until the next update cycle
-    chThdYield();
-    chThdSleepMilliseconds(EFFECTS_REDRAW_MS);
+      blendFbs();
 
-    // re-render the internal framebuffer animations
-    draw_pattern();
+      // transmit the actual framebuffer to the LED chain
+      chSysLock();
+      ledUpdate(led_config.final_fb, led_config.pixel_count);
+      chSysUnlock();
+
+      // wait until the next update cycle
+      chThdYield();
+      chThdSleepMilliseconds(1);
+      
+      // re-render the internal framebuffer animations
+      draw_pattern();
+    } else {
+      chThdSleepMilliseconds(1);
+    }
 
     if( ledExitRequest ) {
       // force one full cycle through an update on request to force LEDs off
-      blendFbs(); 
+      blendFbs();
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       ledsOff = 1;
