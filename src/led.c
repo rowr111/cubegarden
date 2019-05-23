@@ -29,6 +29,9 @@ orchard_effects_end();
 extern void ledUpdate(uint8_t *fb, uint32_t len);
 
 static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift);
+static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift);
 static void ledSetColor(void *ptr, int x, Color c, uint8_t shift);
 static void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
@@ -148,11 +151,22 @@ static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t
   buf[2] = b >> shift;
 }
 
+static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift) {
+  ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
+}
+
+static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
+  for (int i = 0; i < n; i++) {
+    ledSetRGB(ptr, i, r, g, b, shift);
+  }
+}
+
+static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift) {
+  ledSetAllRGB(ptr, n, c.r, c.g, c.b, shift);
+}
+
 static void ledSetColor(void *ptr, int x, Color c, uint8_t shift) {
-  uint8_t *buf = ((uint8_t *)ptr) + (3 * x);
-  buf[0] = c.g >> shift;
-  buf[1] = c.r >> shift;
-  buf[2] = c.b >> shift;
+  ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
 }
 
 static Color ledGetColor(void *ptr, int x) {
@@ -443,9 +457,7 @@ static void strobePatternFB(struct effects_config *config) {
   }
 
   else if( !strobemode && (chVTGetSystemTime() > nexttime) ) {
-    for( i = 0; i < count; i++ ) {
-      ledSetRGB(fb, i, 0, 0, 0, shift);
-    }
+    ledSetAllRGB(fb, count, 0, 0, 0, shift);
     
     nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
     strobemode = 1;
@@ -480,7 +492,6 @@ static void interactivePatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int i;
 
   static uint8_t tapfactor = 1;
 
@@ -504,9 +515,7 @@ static void interactivePatternFB(struct effects_config *config) {
   int currHue = (loop*tapfactor)%255;
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV); 
-  for (i = 0; i < count; i++) {  
-    ledSetRGB(fb, i, (c.r), (c.g), (int)(c.b), shift);
-    }
+  ledSetAllRGB(fb, count, (c.r), (c.g), (int)(c.b), shift);
 }
 orchard_effects("AAAinteractive", interactivePatternFB);
 
@@ -516,13 +525,10 @@ static void boringStrobePatternFB(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop;
   static int white = 0;
-  int i;
 
   if(loop % 6 == 0){
     white = white == 0 ? 255 : 0;
-     for (i = 0; i < count; i++) {
-		    	ledSetRGB(fb, i, white, white, white, shift);
-		  }
+    ledSetAllRGB(fb, count, white, white, white, shift);
   }
 }
 orchard_effects("boringStrobe", boringStrobePatternFB);
@@ -530,7 +536,6 @@ orchard_effects("boringStrobe", boringStrobePatternFB);
 static void changeOnDropVividRainbow(struct effects_config *config){
 	uint8_t *fb = config->hwconfig->fb;
 	int count = config->count;
-	int i;
 
 	//I wanted to make all these const but they got grumpy with me and wouldn't compile
 	//when I tried to put them in the array. Something about C is making it grumpy..
@@ -544,10 +549,7 @@ static void changeOnDropVividRainbow(struct effects_config *config){
 
 	static int currentColor;
 	//if there isn't a color already we need to run this to set the color
-	for (i = 0; i < count; i++) {
-		RgbColor c = vividRainbow[currentColor];
-		ledSetRGB(fb, i, c.r, c.g, c.b, shift/2);
-	}
+  ledSetAllRgbColor(fb, count, vividRainbow[currentColor], shift/2);
 
 	if(bumped){
 		bumped=0;
@@ -555,10 +557,7 @@ static void changeOnDropVividRainbow(struct effects_config *config){
 		//chprintf(stream, "%d\n\r", currentColor);
 		//update the color by one and set it
 		currentColor = (currentColor + 1)%6;
-		  for (i = 0; i < count; i++) {
-			RgbColor c = vividRainbow[currentColor];
-		    ledSetRGB(fb, i, c.r, c.g, c.b, shift/2);
-		  }
+    ledSetAllRgbColor(fb, count, vividRainbow[currentColor], shift/2);
 	}
 }
 orchard_effects("changeOnDropVividRainbow", changeOnDropVividRainbow);
@@ -571,7 +570,6 @@ static void temperatureTestEffect(struct effects_config *config){
 	uint8_t *fb = config->hwconfig->fb;
 	int loop = config->loop;
 	int count = config->count;
-	int i;
 	//saturation percent for the temp colors (out of 100)
 	int satLevel = 80;
 
@@ -599,10 +597,7 @@ static void temperatureTestEffect(struct effects_config *config){
 	HsvColor tempHSV = {tempHue, tempSat, 255};
 
 	//convert back to rgb and set the LED color
-	RgbColor c = HsvToRgb(tempHSV);
-	for (i = 0; i < count; i++) {
-		ledSetRGB(fb, i, c.r, c.g, c.b, shift);
-	}
+	ledSetAllRgbColor(fb, count, HsvToRgb(tempHSV), shift);
 }
 orchard_effects("temperatureTestEffect", temperatureTestEffect);
 
@@ -610,7 +605,6 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int i;
   float level;
 
   scopemode_g = 2; // this selects db mode
@@ -647,9 +641,7 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV);
   
-  for (i = 0; i < count; i++) {  
-      ledSetRGB(fb, i, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
-  }
+  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 
@@ -659,7 +651,6 @@ static void accelEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop; 
-  int i;
 
   struct accel_data data;
   //let's get the xyz coordinates every so often..
@@ -690,10 +681,7 @@ static void accelEffect(struct effects_config *config) {
 	HsvColor angleHSV = {avgAngle, 255, 255};
 
 	//convert back to rgb and set the LED color
-	RgbColor c = HsvToRgb(angleHSV);
-	for (i = 0; i < count; i++) {
-		ledSetRGB(fb, i, c.r, c.g, c.b, shift);
-	}
+	ledSetAllRgbColor(fb, count, HsvToRgb(angleHSV), shift);
 }
 orchard_effects("accel", accelEffect);
 
@@ -701,7 +689,6 @@ static void barometerTestEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int i;
 
   static float press;
   press = press == 0 ? baro_pressure : press; 
@@ -728,10 +715,7 @@ static void barometerTestEffect(struct effects_config *config) {
   int currHue = loop%255;
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV); 
-  for (i = 0; i < count; i++) {  
-    ledSetRGB(fb, i, (c.r*on), (c.g*on), (int)(c.b*on), shift);
-    }
-
+  ledSetAllRGB(fb, count, (c.r*on), (c.g*on), (int)(c.b*on), shift);
 }
 orchard_effects("barometer", barometerTestEffect);
 
