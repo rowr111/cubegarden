@@ -24,6 +24,9 @@ orchard_effects_end();
 extern void ledUpdate(uint8_t *fb, uint32_t len);
 
 static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift);
+static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift);
 static void ledSetColor(void *ptr, int x, Color c, uint8_t shift);
 static void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
@@ -136,11 +139,22 @@ static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t
   buf[2] = b >> shift;
 }
 
+static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift) {
+  ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
+}
+
+static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
+  for (int i = 0; i < n; i++) {
+    ledSetRGB(ptr, i, r, g, b, shift);
+  }
+}
+
+static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift) {
+  ledSetAllRGB(ptr, n, c.r, c.g, c.b, shift);
+}
+
 static void ledSetColor(void *ptr, int x, Color c, uint8_t shift) {
-  uint8_t *buf = ((uint8_t *)ptr) + (3 * x);
-  buf[0] = c.g >> shift;
-  buf[1] = c.r >> shift;
-  buf[2] = c.b >> shift;
+  ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
 }
 
 static Color ledGetColor(void *ptr, int x) {
@@ -396,9 +410,7 @@ static void strobePatternFB(struct effects_config *config) {
   }
 
   else if( !strobemode && (chVTGetSystemTime() > nexttime) ) {
-    for( i = 0; i < count; i++ ) {
-      ledSetRGB(fb, i, 0, 0, 0, shift);
-    }
+    ledSetAllRGB(fb, count, 0, 0, 0, shift);
     
     nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
     strobemode = 1;
@@ -414,13 +426,10 @@ static void boringStrobePatternFB(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop;
   static int white = 0;
-  int i;
 
   if(loop % 6 == 0){
     white = white == 0 ? 255 : 0;
-     for (i = 0; i < count; i++) {
-		    	ledSetRGB(fb, i, white, white, white, shift);
-		  }
+    ledSetAllRGB(fb, count, white, white, white, shift);
   }
 }
 orchard_effects("boringStrobe", boringStrobePatternFB);
