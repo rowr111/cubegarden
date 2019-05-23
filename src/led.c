@@ -1,13 +1,7 @@
 #include "ch.h"
 #include "hal.h"
-#include "led.h"
 #include "orchard-effects.h"
-#include "gfx.h"
-
-#include "mic.h"
-#include "analog.h"
-#include "barometer.h"
-#include "gyro.h"
+#include "led.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -190,7 +184,7 @@ Color alphaPix( Color c, uint8_t alpha ) {
   return( rc );  
 }
 
-static void do_lightgene(struct effects_config *config) {
+void do_lightgene(effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   uint32_t count = config->count;
   uint32_t loop = config->loop & 0x1FF;
@@ -319,304 +313,11 @@ static void do_lightgene(struct effects_config *config) {
   }
 }
 
-static void lg0FB(struct effects_config *config) {
-  do_lightgene(config);
-}
-orchard_effects("Lg0", lg0FB);
-
-static void lg1FB(struct effects_config *config) {
-  do_lightgene(config);
-}
-orchard_effects("Lg1", lg1FB);
-
-static void lg2FB(struct effects_config *config) {
-  do_lightgene(config);
-}
-orchard_effects("Lg2", lg2FB);
-
-static void lg3FB(struct effects_config *config) {
-  do_lightgene(config);
-}
-orchard_effects("Lg3", lg3FB);
-
-static void lg4FB(struct effects_config *config) {
-  do_lightgene(config);
-}
-orchard_effects("Lg4", lg4FB);
-
-static void strobePatternFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  
-  uint16_t i;
-  uint8_t oldshift = shift;
-  static uint32_t  nexttime = 0;
-  static uint8_t   strobemode = 1;
-  
-  shift = 0;
-
-  if( strobemode && (chVTGetSystemTime() > nexttime) ) {
-    for( i = 0; i < count; i++ ) {
-      if( (rand() % (unsigned int) count) < ((unsigned int) count / 3) )
-	ledSetRGB(fb, i, 255, 255, 255, shift);
-      else
-	ledSetRGB(fb, i, 0, 0, 0, shift);
-    }
-
-    nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
-    strobemode = 0;
-  }
-
-  else if( !strobemode && (chVTGetSystemTime() > nexttime) ) {
-    ledSetAllRGB(fb, count, 0, 0, 0, shift);
-    
-    nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
-    strobemode = 1;
-  }
-
-  shift = oldshift;
-}
-orchard_effects("strobe", strobePatternFB);
-
-/* Jeanie's effects section */
-static void interactivePatternFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-
-  static uint8_t tapfactor = 1;
-
-  if(pressure_changed){
-    pressure_changed = 0;
-    chprintf(stream, "%s\n\r", "pressure changed, strobing!");
-    effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
-  }
-
-  if(bumped){
-    bumped = 0;
-    chprintf(stream, "%s\n\r", "bumped, strobing!");
-    effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
-  }
-
-  if(singletapped){
-    singletapped = 0;
-    tapfactor = tapfactor == 5 ? 1 : tapfactor + 1;
-  }
-
-  int currHue = (loop*tapfactor)%255;
-  HsvColor currHSV = {currHue, 255, 255};
-  RgbColor c = HsvToRgb(currHSV); 
-  ledSetAllRGB(fb, count, (c.r), (c.g), (int)(c.b), shift);
-}
-orchard_effects("AAAinteractive", interactivePatternFB);
-
-//just a boring blink
-static void boringStrobePatternFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  static int white = 0;
-
-  if(loop % 6 == 0){
-    white = white == 0 ? 255 : 0;
-    ledSetAllRGB(fb, count, white, white, white, shift);
-  }
-}
-orchard_effects("boringStrobe", boringStrobePatternFB);
-
-static void changeOnDropVividRainbow(struct effects_config *config){
-	uint8_t *fb = config->hwconfig->fb;
-	int count = config->count;
-
-	static int currentColor;
-	//if there isn't a color already we need to run this to set the color
-  ledSetAllRgbColor(fb, count, vividRainbow[currentColor], shift/2);
-
-	if(bumped){
-		bumped=0;
-		//chprintf(stream, "%s", "New Color: ");
-		//chprintf(stream, "%d\n\r", currentColor);
-		//update the color by one and set it
-		currentColor = (currentColor + 1)%6;
-    ledSetAllRgbColor(fb, count, vividRainbow[currentColor], shift/2);
-	}
-}
-orchard_effects("changeOnDropVividRainbow", changeOnDropVividRainbow);
-
-//notes for this effect:
-//need to set some reasonable temperature range that will work well for on-playa
-//also need to offset the on-board temperature heating.. one option would be to get some default value at boot and subtract
-//otherwise could also just figure it out from testing.
-static void temperatureTestEffect(struct effects_config *config){
-	uint8_t *fb = config->hwconfig->fb;
-	int loop = config->loop;
-	int count = config->count;
-	//saturation percent for the temp colors (out of 100)
-	int satLevel = 80;
-
-	//set some floor/ceiling temperatures.
-	const float maxTemp = 40;
-	const float minTemp = 20;
-	//temp is in milli deg C
-	float temp;
-	static float persistentTemp;
-
-	if(loop%10==0){
-		temp = (float)analogReadTemperature()/(float)1000;
-		persistentTemp = temp;
-		persistentTemp = persistentTemp < minTemp ? minTemp : persistentTemp;
-		persistentTemp = persistentTemp > maxTemp ? maxTemp : persistentTemp;
-		//chprintf(stream, "%s", "Current Temp: ");
-		//chprintf(stream, "%f\n\r", persistentTemp);
-	}
-
-	//then convert to 0-255 for hsv color to make it purdy
-	//I'm using float bc I don't like integer rounding.. let's just chop it off afterward.
-	float tempHueFloat = ((persistentTemp-minTemp)/((maxTemp-minTemp))*255);
-	int tempHue = (int)tempHueFloat;
-	int tempSat = 255*satLevel/100;
-	HsvColor tempHSV = {tempHue, tempSat, 255};
-
-	//convert back to rgb and set the LED color
-	ledSetAllRgbColor(fb, count, HsvToRgb(tempHSV), shift);
-}
-orchard_effects("temperatureTestEffect", temperatureTestEffect);
-
-extern uint8_t scopemode_g;
-static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  // int loop = config->loop; // variable not referenced, comment out to clean up compile
-  float level;
-
-  scopemode_g = 2; // this selects db mode
-  //let's assume some background and max decibel level 
-  int bkgndDB = 30;
-  int maxDB = 80;
-  //there's no Math.max in C so we have to do something like this to limit the min/max
-  //max:
-  if(cur_db > maxDB) level = maxDB;
-  //min:
-  if(cur_db - bkgndDB < 1) level = (float)1;
-  else level = (float)(cur_db - bkgndDB);
-
-  level = (level/((float)maxDB-(float)bkgndDB));
-
-  //now let's smooth this puppy out
-  //with a very lamely implemented running avg of the last three level readings
-  static float avg1;
-  static float avg2;
-  static float avg3;
-  static float sum;
-  sum = sum - avg1;
-  avg1 = avg2;
-  avg2 = avg3;
-  avg3 = level;
-  sum = sum + avg3;
-  float avgLevel = sum/3;
-  
-  //let's iterate through a rainbow of colors to make it prettier
-  //int currHue = loop%255;
-  //or, we could also make the hue a function of the current level :o
-  //let's do some subtraction to make the top be red
-  int currHue = (int)(255-(255*avgLevel));
-  HsvColor currHSV = {currHue, 255, 255};
-  RgbColor c = HsvToRgb(currHSV);
-  
-  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
-}
-orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
-
-static void accelEffect(struct effects_config *config) {
-  //todo: it does a weird color switch at 0 degrees for some reason, fix this
-
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop; 
-
-  struct accel_data data;
-  //let's get the xyz coordinates every so often..
-  //things seem to get grumpy if you get the values too often :o
-  if(loop % 3 == 0){ 
-   gyro_Get_X_Axes(&data);
-  }
-
-
-  //let's make an angle from the xy coordinates
-  float angle = atan2(data.x, data.y) * (180/3.14159) - 90;
-  angle = angle < 0 ? 360 + angle : angle;  // Ensure positive angle
-  //convert it into the hue 
-	int angleHue = (int)((angle/360)*255);
-  //do some slight smoothing:
-  static int avg1;
-  static int avg2;
-  static int avg3;
-  static int sum;
-  sum = sum - avg1;
-  avg1 = avg2;
-  avg2 = avg3;
-  avg3 = angleHue;
-  sum = sum + avg3;
-  int avgAngle = sum/3;
-
-	//then convert to 0-255 for hsv color to make it purdy
-	HsvColor angleHSV = {avgAngle, 255, 255};
-
-	//convert back to rgb and set the LED color
-	ledSetAllRgbColor(fb, count, HsvToRgb(angleHSV), shift);
-}
-orchard_effects("accel", accelEffect);
-
-static void barometerTestEffect(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-
-  static float press;
-  press = press == 0 ? baro_pressure : press; 
-
-  static int on = 0;
-
-
- if(loop % 10 == 0){
-   if (baro_pressure - press > 100){
-     chprintf(stream, "%s", "PRESSURE INCREASE!!!");
-     on = 1;
-   }
-   if (baro_pressure - press < -100){
-      chprintf(stream, "%s", "PRESSURE DECREASE!!!");
-      on = 0;
-   }
-   //chprintf(stream, "%s", "Current pressure: ");
-	 //chprintf(stream, "%f\n\r", baro_pressure);
-   //chprintf(stream, "%s", "Prev pressure: ");
-	 //chprintf(stream, "%f\n\r", press);
-   press = baro_pressure;
- }
-
-  int currHue = loop%255;
-  HsvColor currHSV = {currHue, 255, 255};
-  RgbColor c = HsvToRgb(currHSV); 
-  ledSetAllRGB(fb, count, (c.r*on), (c.g*on), (int)(c.b*on), shift);
-}
-orchard_effects("barometer", barometerTestEffect);
-
-// Time sync test pattern
-static void timesynctest(struct effects_config *config){
-	uint8_t *fb = config->hwconfig->fb;
-	int count = config->count;
-  int loop = config->loop;
-
-  // Each loop value lasts for 35 ms
-  // 1 s is 1000/35 ~ 30 steps
-  // 6 colors in the rainbow
-  ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
-}
-orchard_effects("timesynctest", timesynctest);
-
-/* end of Jeanie's effects section */
-
-static void testPatternFB(struct effects_config *config) {
+// this is a "hard-coded" effect, as in, we should always have at least
+// one effect and this is referenced by other OS primitives, so make it
+// so we can't accidentally delete this one or else battery safety mode
+// won't work.
+static void safetyPatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
@@ -647,9 +348,7 @@ static void testPatternFB(struct effects_config *config) {
   }
  
 }
-orchard_effects("safetyPattern", testPatternFB);
-
-
+orchard_effects("safetyPattern", safetyPatternFB);
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 #define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
