@@ -642,10 +642,12 @@ static void handle_chargecheck_timeout(eventid_t id) {
     if( !was_charging ) {
       prev_shift = getShift();
       was_charging = 1;
+      chprintf(stream, "BATTERY: dimming for charging, shift was %d now %d\n\r", prev_shift, 6 );
       setShift(6); // dim greatly for faster charging
     }
   } else {
     if( was_charging ) {
+      chprintf(stream, "BATTERY: restoring brightness to shift level %d\n\r", prev_shift );
       setShift(prev_shift);
       was_charging = 0;
     }
@@ -654,21 +656,26 @@ static void handle_chargecheck_timeout(eventid_t id) {
   // check if battery is too low, and shut down if it is
   // but only if we're not plugged in to a charger
   if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
+    chprintf(stream, "BATTERY: Critical threshold hit, shutting down to save the battery from permanent damage!!!\n\r" );
     chargerShipMode();  // requires plugging in to re-active battery
   }
 
   if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
+    chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
     if( getShift() < 1 )
       setShift(1);
   } else if( voltage < BRIGHT_THRESH2 ) {
+    chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
     if( getShift() < 2 )
       setShift(2);
   } else if( voltage < BRIGHT_THRESH3 ) {
+    chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
     if( getShift() < 3 )
       setShift(3);
   }
 
   if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
+    chprintf(stream, "BATTERY: Safety threshold hit, going into safety mode\n\r" );
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
       effectsSetPattern(effectsNameLookup("safetyPattern"), 0);
 
@@ -678,7 +685,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   }
 
   if (timekeeper && (uptime % 60) == 0) { // Run once a minute
-    chprintf(stream, "Broadcasting time: $d", getNetworkTimeMs());
+    chprintf(stream, "TIME: Broadcasting time: $d", getNetworkTimeMs());
     broadcastTime();
   }
 
