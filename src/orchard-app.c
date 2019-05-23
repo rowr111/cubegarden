@@ -85,7 +85,7 @@ static event_source_t chargecheck_timeout;
 #define BRIGHT_THRESH2 3450
 #define BRIGHT_THRESH3 3400
 #define SAFETY_THRESH  3300     // threshold to go into safety mode
-#define SHIPMODE_THRESH  3220   // threshold to go into ship mode
+#define SHIPMODE_THRESH  3150   // threshold to go into ship mode
 
 static virtual_timer_t ping_timer;
 static event_source_t ping_timeout;
