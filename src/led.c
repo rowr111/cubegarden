@@ -28,70 +28,40 @@ orchard_effects_end();
 
 extern void ledUpdate(uint8_t *fb, uint32_t len);
 
-static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
-static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift);
-static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
-static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift);
-static void ledSetColor(void *ptr, int x, Color c, uint8_t shift);
-static void ledSetRGBClipped(void *fb, uint32_t i,
-                      uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
-static Color ledGetColor(void *ptr, int x);
-
-// Colors
-static RgbColor vividViolet = {159, 0, 255};
-static RgbColor vividCerulean = {0, 169, 238};
-static RgbColor electricGreen = {0, 250, 34};
-static RgbColor vividYellow = {255, 227, 2};
-static RgbColor vividOrangePeel = {255, 160, 0};
-static RgbColor vividRed = {248, 13, 27};
-static RgbColor vividRainbow[6];
-
-// hardware configuration information
-// max length is different from actual length because some
-// pattens may want to support the option of user-added LED
-// strips, whereas others will focus only on UI elements in the
-// circle provided on the board itself
-static struct led_config {
-  uint8_t       *fb; // effects frame buffer
-  uint8_t       *final_fb;  // merged ui + effects frame buffer
-  uint32_t      pixel_count;  // generated pixel length
-  uint32_t      max_pixels;   // maximal generation length
-  uint8_t       *ui_fb; // frame buffer for UI effects
-  uint32_t      ui_pixels;  // number of LEDs on the PCB itself for UI use
-} led_config;
+// static (master-local) effects state
+led_config_def  led_config;
+static effects_config fx_config;
+static uint8_t fx_index;  // current effect
+static uint8_t fx_max;    // max # of effects
+static uint8_t fx_previndex; //previous effect
+static uint8_t ledExitRequest = 0;
 
 // global effects state
-static effects_config fx_config;
-static uint8_t fx_index = 0;  // current effect
-static uint8_t fx_max = 0;    // max # of effects
-static uint8_t fx_previndex = 0; //previous effect
-static uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
-static uint32_t fx_starttime = 0; //start time for temporary effect
+uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
+uint32_t fx_starttime = 0; //start time for temporary effect
 
-static uint8_t shift = 2;  // start a little bit dimmer
+uint8_t shift = 2;  // start a little bit dimmer
 
-static uint32_t bump_amount = 0;
-static uint8_t bumped = 0;
-static uint8_t pressure_changed = 0;
-static uint8_t singletapped = 0;
-static unsigned int pressurechangedtime = 0;
-static unsigned int bumptime = 0;
-static unsigned int singletaptime = 0;
-static unsigned long reftime = 0;
-static unsigned long reftime_tau = 0;
-static unsigned long offset = 0;
-static unsigned int waverate = 10;
-static unsigned int waveloop = 0;
-static unsigned int patternChanged = 0;
-static uint32_t reftime_lg = 0;
-static uint8_t sat_offset = 0;
+uint32_t bump_amount = 0;
+uint8_t bumped = 0;
+uint8_t pressure_changed = 0;
+uint8_t singletapped = 0;
+unsigned int pressurechangedtime = 0;
+unsigned int singletaptime = 0;
+unsigned int patternChanged = 0;
 
-static int wavesign = -1;
-
-static uint8_t ledExitRequest = 0;
 uint8_t ledsOff = 1;
 
 genome diploid;   // not static so we can access/debug from other files
+
+// some colors
+const RgbColor vividViolet = {159, 0, 255};
+const RgbColor vividCerulean = {0, 169, 238};
+const RgbColor electricGreen = {0, 250, 34};
+const RgbColor vividYellow = {255, 227, 2};
+const RgbColor vividOrangePeel = {255, 160, 0};
+const RgbColor vividRed = {248, 13, 27};
+RgbColor vividRainbow[6];
 
 uint8_t effectsStop(void) {
   ledExitRequest = 1;
@@ -146,39 +116,39 @@ void uiLedSet(uint8_t index, Color c) {
   led_config.ui_fb[index*3+2] = c.b;
 }
 
-static void ledSetRGBClipped(void *fb, uint32_t i,
+void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
   if (i >= led_config.pixel_count)
     return;
   ledSetRGB(fb, i, r, g, b, shift);
 }
 
-static void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
+void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
   uint8_t *buf = ((uint8_t *)ptr) + (3 * x);
   buf[0] = g >> shift;
   buf[1] = r >> shift;
   buf[2] = b >> shift;
 }
 
-static void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift) {
+void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift) {
   ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
 }
 
-static void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
+void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift) {
   for (int i = 0; i < n; i++) {
     ledSetRGB(ptr, i, r, g, b, shift);
   }
 }
 
-static void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift) {
+void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift) {
   ledSetAllRGB(ptr, n, c.r, c.g, c.b, shift);
 }
 
-static void ledSetColor(void *ptr, int x, Color c, uint8_t shift) {
+void ledSetColor(void *ptr, int x, Color c, uint8_t shift) {
   ledSetRGB(ptr, x, c.r, c.g, c.b, shift);
 }
 
-static Color ledGetColor(void *ptr, int x) {
+Color ledGetColor(void *ptr, int x) {
   Color c;
   uint8_t *buf = ((uint8_t *)ptr) + (3 * x);
 
@@ -220,47 +190,6 @@ Color alphaPix( Color c, uint8_t alpha ) {
   return( rc );  
 }
 
-static Color Wheel(uint8_t wheelPos) {
-  Color c;
-
-  if (wheelPos < 85) {
-    c.r = wheelPos * 3;
-    c.g = 255 - wheelPos * 3;
-    c.b = 0;
-  }
-  else if (wheelPos < 170) {
-    wheelPos -= 85;
-    c.r = 255 - wheelPos * 3;
-    c.g = 0;
-    c.b = wheelPos * 3;
-  }
-  else {
-    wheelPos -= 170;
-    c.r = 0;
-    c.g = wheelPos * 3;
-    c.b = 255 - wheelPos * 3;
-  }
-  return c;
-}
-
-extern uint8_t scopemode_g;
-extern uint8_t fft_bin;
-static void fftEffect(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  int i;
-  
-  int level;
-  scopemode_g = 1; // this selects FFT mode
-  for (i = 0; i < count; i++) {  // this only considers the bottom 32 bins, which is about the right frequency region
-    // skip the 0th sample because it's a DC offset
-    level = mic_processed[i+1] / 256; //  * (NUM_SAMPLES / count) 
-    ledSetRGB(fb, i, level, 0, 0, level);  // no shift applied, so set to 0
-  }
-}
-orchard_effects("FFT", fftEffect);
-
 static void do_lightgene(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   uint32_t count = config->count;
@@ -271,9 +200,6 @@ static void do_lightgene(struct effects_config *config) {
   uint32_t i;
   uint32_t tau;
   uint32_t curtime, indextime;
-  //float time, space;
-  //float twopi;
-  //float spacetime;
   fix16_t time, space;
   fix16_t twopi;
   fix16_t spacetime;
@@ -284,6 +210,9 @@ static void do_lightgene(struct effects_config *config) {
   uint32_t hue_temp;
   // diploid is static to this function and set when the lightgene is selected
 
+  static uint32_t reftime_lg = 0;
+  static uint8_t sat_offset = 0;
+  
   tau = (uint32_t) map(diploid.cd_rate, 0, 255, 700, 8000);
   curtime = chVTGetSystemTime();
   if( (curtime - reftime_lg) > tau )
@@ -330,8 +259,6 @@ static void do_lightgene(struct effects_config *config) {
     hsvC.h = map_16( (int16_t) hsvC.h, 0, 255,
 		     (int16_t) diploid.hue_base, (int16_t) diploid.hue_bound );
     
-    // chprintf( stream, "%d ", hsvC.h );
-
     // saturation chromosome
     hsvC.s = satadd_8(diploid.sat, sat_offset);
 
@@ -343,16 +270,10 @@ static void do_lightgene(struct effects_config *config) {
 
     twopi = fix16_mul( fix16_from_int(2), fix16_pi );
     //twopi = 3.14159265359 * 2.0;
-    // space = 2pi * diploid.cd_period * (i / (count-1))
         space = fix16_mul(twopi, fix16_mul( fix16_from_int(diploid.cd_period),
                 fix16_div(fix16_from_int(i), fix16_from_int(count-1)) ));
-	//space = twopi * diploid.cd_period * ((float)i / ((float)count - 1.0));
 
-    // time = 2pi * (indextime) / tau
     time = fix16_mul(twopi, fix16_div( fix16_from_int(indextime), fix16_from_int(tau) ));
-    //time = twopi * (float) indextime / (float) tau;
-
-    //    time = fix16_from_int(0);
     
     // space +/- time based on direction
     if( diploid.cd_dir > 128 ) {
@@ -367,7 +288,6 @@ static void do_lightgene(struct effects_config *config) {
     hsvC.v = (uint8_t) fix16_to_int( fix16_mul( fix16_from_int(127),
 						fix16_add( fix16_from_int(1),
 							   fix16_cos(spacetime))));
-    //hsvC.v = (uint8_t) 127.0 * (1.0 + cosf(spacetime));
 
     if( diploid.nonlin > 127 )
       // add some nonlinearity to gamma-correct brightness
@@ -424,24 +344,6 @@ static void lg4FB(struct effects_config *config) {
 }
 orchard_effects("Lg4", lg4FB);
 
-#if 0
-static void lameEffect(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  int i;
-  
-  loop = loop % count;
-  for (i = 0; i < count; i++) {
-    if (loop == i)
-      ledSetRGB(fb, i, 255, 255, 255, shift);
-    else
-      ledSetRGB(fb, i, 0, 0, 0, shift);
-  }
-}
-orchard_effects("lame", lameEffect);
-#endif
-
 static void strobePatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
@@ -475,26 +377,6 @@ static void strobePatternFB(struct effects_config *config) {
   shift = oldshift;
 }
 orchard_effects("strobe", strobePatternFB);
-
-#if 0
-static void calmPatternFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  
-  int i;
-  int count_mask;
-  Color c;
-
-  count_mask = count & 0xff;
-  loop = loop % (256 * 5);
-  for (i = 0; i < count; i++) {
-    c = Wheel( (i * (256 / count_mask) + loop) & 0xFF );
-    ledSetRGB(fb, i, c.r, c.g, c.b, shift);
-  }
-}
-orchard_effects("calm", calmPatternFB);
-#endif
 
 /* Jeanie's effects section */
 static void interactivePatternFB(struct effects_config *config) {
@@ -600,10 +482,11 @@ static void temperatureTestEffect(struct effects_config *config){
 }
 orchard_effects("temperatureTestEffect", temperatureTestEffect);
 
+extern uint8_t scopemode_g;
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
-  int loop = config->loop;
+  // int loop = config->loop; // variable not referenced, comment out to clean up compile
   float level;
 
   scopemode_g = 2; // this selects db mode
@@ -731,48 +614,6 @@ static void timesynctest(struct effects_config *config){
 }
 orchard_effects("timesynctest", timesynctest);
 
-/*
-static void basicDrop(struct effects_config *config){
-  int count = config->count;
-  int loop = config->loop;
-  uint8_t *fb = config->hwconfig->fb;
-  int i;
-
-  float Gravity = -15;
-
-  float Height = 1;
-  float ImpactVelocityStart = sqrt( -2 * Gravity );
-  static float ImpactVelocity;
-  static float TimeSinceLastBounce;
-  float Dampening;
-  int ClockTimeSinceLastBounce = chVTGetSystemTime();
-
-  ImpactVelocity = ImpactVelocityStart;
-  TimeSinceLastBounce = 0;
-  Dampening = 0.90;
-
-  if (bumped) {
-    TimeSinceLastBounce = chVTGetSystemTime() - ClockTimeSinceLastBounce;
-    Height = 0.5 * Gravity * pow( TimeSinceLastBounce/28 , 2.0 ) + ImpactVelocity * TimeSinceLastBounce/28;
-	chprintf(stream, "%s", "height: ");
-    chprintf(stream, "%f\n\r", Height);
-	chprintf(stream, "%s", "TimeSinceLastBounce: ");
-    chprintf(stream, "%f\n\r", TimeSinceLastBounce);
-    if ( Height < 0 ) {                      
-      Height = 0;
-      ImpactVelocity = Dampening * ImpactVelocity;
-      if ( ImpactVelocity < 0.01 ){
-    	chprintf(stream, "%s\n\r", "unbumped");
-        bumped = 0;
-      };
-    }
-    for (i = 0; i < count; i++) {
-    ledSetRGB(fb, i, 255*Height, 0, 0, shift);
-  }
- }
-}
-orchard_effects("basicDrop", basicDrop);
-*/
 /* end of Jeanie's effects section */
 
 static void testPatternFB(struct effects_config *config) {
@@ -782,42 +623,6 @@ static void testPatternFB(struct effects_config *config) {
   
   int i = 0;
 
-#if 0
-  while (i < count) {
-    /* Black */
-    ledSetRGB(fb, (i + loop) % count, 0, 0, 0, shift);
-    if (++i >= count) break;
-
-    /* Red */
-    ledSetRGB(fb, (i + loop) % count, 255, 0, 0, shift);
-    if (++i >= count) break;
-
-    /* Yellow */
-    ledSetRGB(fb, (i + loop) % count, 255, 255, 0, shift);
-    if (++i >= count) break;
-
-    /* Green */
-    ledSetRGB(fb, (i + loop) % count, 0, 255, 0, shift);
-    if (++i >= count) break;
-
-    /* Cyan */
-    ledSetRGB(fb, (i + loop) % count, 0, 255, 255, shift);
-    if (++i >= count) break;
-
-    /* Blue */
-    ledSetRGB(fb, (i + loop) % count, 0, 0, 255, shift);
-    if (++i >= count) break;
-
-    /* Purple */
-    ledSetRGB(fb, (i + loop) % count, 255, 0, 255, shift);
-    if (++i >= count) break;
-
-    /* White */
-    ledSetRGB(fb, (i + loop) % count, 255, 255, 255, shift);
-    if (++i >= count) break;
-  }
-#endif
-#if 1
   while (i < count) {
     if (loop & 1) {
       /* Black */
@@ -840,370 +645,19 @@ static void testPatternFB(struct effects_config *config) {
       ledSetRGB(fb, (i++ + loop) % count, 0, 0, 0, shift);
     }
   }
-#endif
-#if 0
-  //  int threshold = (phageAdcGet() * count / 4096);
-  int threshold = (20 * count / 4096);   ////////// NOTE NOTE BODGE
-  for (i = 0; i < count; i++) {
-    if (i > threshold)
-      ledSetRGB(fb, i, 255, 0, 0, shift);
-    else
-      ledSetRGB(fb, i, 0, 0, 0, shift);
-  }
-#endif
  
 }
 orchard_effects("safetyPattern", testPatternFB);
 
-#if 0
-static void shootPatternFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  
-  int i;
 
-  //loop = (loop >> 3) % count;
-  loop = loop % count;
-  for (i = 0; i < count; i++) {
-    if (loop == i)
-      ledSetRGB(fb, i, 255, 255, 255, shift);
-    else
-      ledSetRGB(fb, i, 0, 0, 0, shift);
-  }
-}
-orchard_effects("circlestar", shootPatternFB);
-#endif
-
-#define VU_X_PERIOD 3   // number of waves across the entire band
-#define VU_T_PERIOD 2500  // time to complete 2pi rotation, in integer milliseconds
-#define TAU 1000
-
-#if 0
-static void waveRainbowFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  
-  unsigned long curtime;
-  int i;
-  uint32_t c;
-  uint16_t colorrate = 1;
-  
-  curtime = chVTGetSystemTime() + offset;
-  if ((curtime - reftime) > VU_T_PERIOD)
-    reftime = curtime;
-
-  if ((curtime - reftime_tau) > TAU) {
-    reftime_tau = curtime;
-    waverate -= 4;
-    if (waverate < 10)
-      waverate = 10;
-    
-    if (colorrate > 1)
-      colorrate -= 1;
-  }
-
-  if (bumped) {
-    bumped = 0;
-    waverate += 20;
-    colorrate += 1;
-    if (waverate > 300)
-      waverate = 300;
-    if (colorrate > 10)
-      colorrate = 10;
-  }
-
-  offset += waverate;
-  if (offset > 0x80000000) {
-    offset = 0;
-    curtime = chVTGetSystemTime();
-    reftime = curtime;
-    reftime_tau = curtime;
-  }
-
-  waveloop += colorrate;
-  if (waveloop == (256 * 5)) {
-    waveloop = 0;
-  }
-  for (i = 0; i < count; i++) {
-    fix16_t count_n = fix16_from_int(i * VU_X_PERIOD);
-    fix16_t count_d = fix16_from_int(count - 1);
-    fix16_t time_n = fix16_from_int(curtime - reftime);
-    fix16_t time_d = fix16_from_int(VU_T_PERIOD);
-    fix16_t ratios = fix16_add(
-                fix16_div(count_n, count_d), fix16_div(time_n, time_d));
-
-    /* 'ratios' now goes from 0 to 2, depending on where we are in the cycle */
-
-    ratios = fix16_mul(ratios, fix16_from_int(2));
-    ratios = fix16_mul(ratios, fix16_pi);
-    fix16_t v = fix16_sin(ratios);
-
-    /* Normalize, go from [-1, 1] to [0, 256] */
-    v = fix16_mul(fix16_add(v, fix16_from_int(1)), fix16_from_int(127));
-
-    c = fix16_to_int(v);
-
-    /* Quick and dirty nonlinearity */
-    c = c * c;
-    c = (c >> 8) & 0xFF;
-
-    ledSetColor(fb, i, alphaPix(Wheel(((i * 256 / count) + waveloop) & 255), (uint8_t) c), shift);
-  }  
-}
-orchard_effects("WaveRainbow", waveRainbowFB);
-#endif
-
-#if 0
-static void directedRainbowFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  
-  unsigned long curtime;
-  uint32_t i;
-  uint32_t c;
-  uint32_t colorrate = 1;
-  
-  curtime = chVTGetSystemTime() + offset;
-  if( (curtime - reftime) > VU_T_PERIOD )
-    reftime = curtime;
-
-  waverate = 80;
-  colorrate = 1;
-
-  if( bumped ) {
-    bumped = 0;
-    if( wavesign == 1 )
-      wavesign = -1;
-    else
-      wavesign = 1;
-  }
-
-  offset += waverate;
-  if( offset > 0x80000000) {
-    offset = 0;
-    curtime = chVTGetSystemTime();
-    reftime = curtime;
-    reftime_tau = curtime;
-  }
-
-  waveloop += colorrate;
-  if( waveloop == (256 * 5) ) {
-    waveloop = 0;
-  }
-  for( i = 0; i < (uint32_t) count; i++ ) {
-    fix16_t count_n = fix16_from_int(i * VU_X_PERIOD);
-    fix16_t count_d = fix16_from_int(count - 1);
-    fix16_t time_n = fix16_from_int((curtime - reftime) * wavesign);
-    fix16_t time_d = fix16_from_int(VU_T_PERIOD);
-    fix16_t ratios = fix16_add(
-                fix16_div(count_n, count_d), fix16_div(time_n, time_d));
-
-    /* 'ratios' now goes from 0 to 2, depending on where we are in the cycle */
-
-    ratios = fix16_mul(ratios, fix16_from_int(2));
-    ratios = fix16_mul(ratios, fix16_pi);
-    fix16_t v = fix16_sin(ratios);
-
-    /* Normalize, go from [-1, 1] to [0, 256] */
-    v = fix16_mul(fix16_add(v, fix16_from_int(1)), fix16_from_int(127));
-
-    c = fix16_to_int(v);
-    
-    /* Quick and dirty nonlinearity */
-    c = c * c;
-    c = (c >> 8) & 0xFF;
-    ledSetColor(fb, i, alphaPix(Wheel(((i * 256 / count) + waveloop) & 255), (uint8_t) c), shift);
-  }  
-}
-
-static uint32_t asb_l(int i) {
-  if (i > 0)
-      return i;
-  return -i;
-}
-orchard_effects("directedRainbow", directedRainbowFB);
-#endif
-
-#if 0
-static int testlevel = 0;
-static void fxTest(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int i;
-  Color c;
-  int loop = config->loop;
-
-  if( chVTTimeElapsedSinceX(reftime) > MS2ST(20) ) {
-    chprintf(stream, "%d\n\r", testlevel);
-    reftime = chVTGetSystemTime();
-    testlevel++;
-    testlevel %= 256;
-  }
-  
-  for( i = 0; i < count; i++ ) {
-    c.r = testlevel; c.g = 0; c.b = testlevel;
-    ledSetColor(fb, i, c, 0);
-  }
-
-}
-orchard_effects("_test", fxTest);
-#endif
-
-#define DROP_INT 600
-#define BUMP_TIMEOUT 2300
-#if 0
-static void raindropFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  
-  unsigned long curtime;
-  uint8_t oldshift = shift;
-  uint8_t myshift;
-  Color c;
-  int i;
-  
-  if(patternChanged) {
-    patternChanged = 0;
-    for( i = 0; i < count; i++ ) {
-      c.r = 0; c.g = 0; c.b = 0;
-      ledSetColor(fb, i, c, shift);
-    }
-    bumptime = bumptime - BUMP_TIMEOUT;
-  }
-
-  myshift = shift;
-  if( myshift > 3 )  // limit dimness as this is a sparse pattern
-    myshift = 3;
-
-  shift = 0;
-
-  curtime = chVTGetSystemTime();
-  if( ((curtime - reftime) > DROP_INT) && (curtime - bumptime > BUMP_TIMEOUT) ) {
-    reftime = curtime;
-    c.r = 255 >> myshift; c.g = 255 >> myshift; c.b = 255 >> myshift;
-  } else {
-    c.r = 0; c.g = 0; c.b = 0;
-  }
-
-  if( bumped ) {
-    bumped = 0;
-    c.r = 255 >> myshift; c.g = 255 >> myshift; c.b = 255 >> myshift;
-  }
-
-  ledSetColor(fb, 0, c, shift);
-
-  for( i = count-2; i >= 0; i-- ) {
-    c = ledGetColor(fb, i);
-    ledSetColor(fb, i+1, c, shift);
-  }
-
-  shift = oldshift;
-}
-orchard_effects("raindrop", raindropFB);
-
-
-static void rainbowDropFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  
-  unsigned long curtime;
-  uint8_t oldshift = shift;
-  uint8_t myshift;
-  Color c;
-  Color c2;
-  int i;
-  
-  if(patternChanged) {
-    patternChanged = 0;
-    for( i = 0; i < count; i++ ) {
-      c.r = 0; c.g = 0; c.b = 0;
-      ledSetColor(fb, i, c, shift);
-    }
-    bumptime = bumptime - BUMP_TIMEOUT;
-  }
-  c2.r = 0; c2.g = 0; c2.b = 0;
-
-  myshift = shift;
-  if( myshift > 3 )  // limit dimness as this is a sparse pattern
-    myshift = 3;
-
-  shift = 0;
-
-  loop = loop % (256 * 5);
-
-  curtime = chVTGetSystemTime();
-  if( ((curtime - reftime) > DROP_INT) && (curtime - bumptime > BUMP_TIMEOUT) ) {
-    c = Wheel(loop);
-    c2 = Wheel(loop + 1);
-    reftime = curtime;
-  } else {
-    c.r = 0; c.g = 0; c.b = 0;
-    c2.r = 0; c2.g = 0; c2.b = 0;
-  }
-
-  if( bumped ) {
-    bumped = 0;
-    c = Wheel(loop);
-    c2 = Wheel(loop + 1);
-  }
-
-  ledSetColor(fb, 0, c, shift);
-
-  for( i = count-2; i >= 0; i-- ) {
-    c2 = ledGetColor(fb, i);
-    ledSetColor(fb, i+1, c2, shift);
-  }
-
-  shift = oldshift;
-}
-orchard_effects("rainbowDrop", rainbowDropFB);
-
-
-static void larsonScannerFB(struct effects_config *config) {
-  uint8_t *fb = config->hwconfig->fb;
-  int count = config->count;
-  int loop = config->loop;
-  
-  int i;
-  int dir;
-
-  loop %= (count * 2);
-
-  if (loop >= count)
-    dir = 1;
-  else
-    dir = 0;
-
-  loop %= count;
-
-  for (i = 0; i < count; i++) {
-    uint32_t x = i;
-
-    if (dir)
-      x = count - i - 1;
-
-    /* LED going out */
-    if (asb_l(i - loop) == 2)
-      ledSetRGBClipped(fb, x, 1, 0, 0, shift);
-    else if (asb_l(i - loop) == 1)
-      ledSetRGBClipped(fb, x, 20, 0, 0, shift);
-    else if (asb_l(i - loop) == 0)
-      ledSetRGBClipped(fb, x, 255, 0, 0, shift);
-    else
-      ledSetRGBClipped(fb, x, 0, 0, 0, shift);
-  }
-
-}
-orchard_effects("larsonScanner", larsonScannerFB);
-#endif
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 #define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
 #define SINGLETAP_DEBOUNCE 300 // 300ms debounce to next singletap
 
 void bump(uint32_t amount) {
+  static unsigned int bumptime = 0;
+  
   bump_amount = amount;
   if( chVTGetSystemTime() - bumptime > BUMP_DEBOUNCE ) {
     bumptime = chVTGetSystemTime();
@@ -1385,7 +839,6 @@ static void blendFbs(void) {
 }
 
 int32_t time_slop = 230;
-// static THD_WORKING_AREA(waEffectsThread, 256);
 static THD_FUNCTION(effects_thread, arg) {
 
   (void)arg;

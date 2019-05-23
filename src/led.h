@@ -38,7 +38,7 @@ extern uint8_t ledsOff;;
 uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t, uint16_t);
 void effectsSetTempPattern(uint8_t, uint16_t);
-void effectsCheckExpiredTempPattern();
+void effectsCheckExpiredTempPattern(void);
 uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void pressureChanged(void);
@@ -59,5 +59,43 @@ const char *lightgeneName(void);
 void check_lightgene_hack(void);
 
 #define EFFECTS_REDRAW_MS 35
+
+
+/// these were perviously static, now global to facilitate splitting up the led effects into files
+void ledSetRGB(void *ptr, int x, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+void ledSetRgbColor(void *ptr, int x, RgbColor c, uint8_t shift);
+void ledSetAllRGB(void *ptr, int n, uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+void ledSetAllRgbColor(void *ptr, int n, RgbColor c, uint8_t shift);
+void ledSetColor(void *ptr, int x, Color c, uint8_t shift);
+void ledSetRGBClipped(void *fb, uint32_t i,
+                      uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
+Color ledGetColor(void *ptr, int x);
+
+// Colors
+extern const RgbColor vividViolet;
+extern const RgbColor vividCerulean;
+extern const RgbColor electricGreen;
+extern const RgbColor vividYellow;
+extern const RgbColor vividOrangePeel;
+extern const RgbColor vividRed;
+extern RgbColor vividRainbow[6];
+
+// hardware configuration information
+// max length is different from actual length because some
+// pattens may want to support the option of user-added LED
+// strips, whereas others will focus only on UI elements in the
+// circle provided on the board itself
+extern uint16_t fx_duration; //effect duration in ms. 0 == persistent
+extern uint32_t fx_starttime; //start time for temporary effect
+
+extern uint8_t shift;  // start a little bit dimmer
+
+extern uint32_t bump_amount;
+extern uint8_t bumped;
+extern uint8_t pressure_changed;
+extern uint8_t singletapped;
+extern unsigned int pressurechangedtime;
+extern unsigned int singletaptime;
+extern unsigned int patternChanged;
 
 #endif /* __LED_H__ */
