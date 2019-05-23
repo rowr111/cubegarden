@@ -613,12 +613,12 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
   }
 }
 
+uint8_t stashed_shift = 2;
 static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
   struct accel_data accel; // for entropy call
   int16_t voltage;
-  static prev_shift = 2;
-  static was_charging = 0;
+  static int was_charging = 0;
 
   wdogPing(); // ping the watchdog
   
@@ -640,15 +640,15 @@ static void handle_chargecheck_timeout(eventid_t id) {
   // dim while charging
   if( isCharging() ) {
     if( !was_charging ) {
-      prev_shift = getShift();
+      stashed_shift = getShift();
       was_charging = 1;
-      chprintf(stream, "BATTERY: dimming for charging, shift was %d now %d\n\r", prev_shift, 6 );
+      chprintf(stream, "BATTERY: dimming for charging, shift was %d now %d\n\r", stashed_shift, 6 );
       setShift(6); // dim greatly for faster charging
     }
   } else {
     if( was_charging ) {
-      chprintf(stream, "BATTERY: restoring brightness to shift level %d\n\r", prev_shift );
-      setShift(prev_shift);
+      chprintf(stream, "BATTERY: restoring brightness to shift level %d\n\r", stashed_shift );
+      setShift(stashed_shift);
       was_charging = 0;
     }
   }

@@ -7,6 +7,8 @@
 #include "led.h"
 #include "shellcfg.h"
 
+#include "charger.h"
+
 /* 
    Adding a new command:
 
@@ -14,6 +16,7 @@
    2. the function prototype must be added to the "shell commands" list in shellcfg.c
    3. the command name and function name should be entered into the ShellCommand commands[] structure in shellcfg.c
  */
+extern uint8_t stashed_shift;
 
 void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[])
 {
@@ -38,7 +41,11 @@ void cmd_bright(BaseSequentialStream *chp, int argc, char *argv[])
       s--;
     setShift(s);
   } else if( argv[0][0] >= '0' && argv[0][0] <= '7' ) {
-    setShift( 7 - (argv[0][0] - '0') );
+    if( isCharging() ) {
+      stashed_shift = 7 - (argv[0][0] - '0');
+    } else {
+      setShift( 7 - (argv[0][0] - '0') );
+    }
   } else {
     chprintf(chp, "bright takes argument of either +, -, or a number 0-7\n\r");
   }
