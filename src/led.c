@@ -37,6 +37,15 @@ static void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
 static Color ledGetColor(void *ptr, int x);
 
+// Colors
+static RgbColor vividViolet = {159, 0, 255};
+static RgbColor vividCerulean = {0, 169, 238};
+static RgbColor electricGreen = {0, 250, 34};
+static RgbColor vividYellow = {255, 227, 2};
+static RgbColor vividOrangePeel = {255, 160, 0};
+static RgbColor vividRed = {248, 13, 27};
+static RgbColor vividRainbow[6];
+
 // hardware configuration information
 // max length is different from actual length because some
 // pattens may want to support the option of user-added LED
@@ -537,16 +546,6 @@ static void changeOnDropVividRainbow(struct effects_config *config){
 	uint8_t *fb = config->hwconfig->fb;
 	int count = config->count;
 
-	//I wanted to make all these const but they got grumpy with me and wouldn't compile
-	//when I tried to put them in the array. Something about C is making it grumpy..
-	RgbColor vividViolet = {159, 0, 255};
-	RgbColor vividCerulean = {0, 169, 238};
-	RgbColor electricGreen = {0, 250, 34};
-	RgbColor vividYellow = {255, 227, 2};
-	RgbColor vividOrangePeel = {255, 160, 0};
-	RgbColor vividRed = {248, 13, 27};
-	RgbColor vividRainbow[6] = {vividRed, vividOrangePeel, vividYellow, electricGreen, vividCerulean, vividViolet};
-
 	static int currentColor;
 	//if there isn't a color already we need to run this to set the color
   ledSetAllRgbColor(fb, count, vividRainbow[currentColor], shift/2);
@@ -718,6 +717,19 @@ static void barometerTestEffect(struct effects_config *config) {
   ledSetAllRGB(fb, count, (c.r*on), (c.g*on), (int)(c.b*on), shift);
 }
 orchard_effects("barometer", barometerTestEffect);
+
+// Time sync test pattern
+static void timesynctest(struct effects_config *config){
+	uint8_t *fb = config->hwconfig->fb;
+	int count = config->count;
+  int loop = config->loop;
+
+  // Each loop value lasts for 35 ms
+  // 1 s is 1000/35 ~ 30 steps
+  // 6 colors in the rainbow
+  ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
+}
+orchard_effects("timesynctest", timesynctest);
 
 /*
 static void basicDrop(struct effects_config *config){
@@ -1446,6 +1458,13 @@ void effectsStart(void) {
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
   fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
+
+  vividRainbow[0] = vividRed;
+  vividRainbow[1] = vividOrangePeel;
+  vividRainbow[2] = vividYellow;
+  vividRainbow[3] = electricGreen;
+  vividRainbow[4] = vividCerulean;
+  vividRainbow[5] = vividViolet;
   
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
