@@ -80,8 +80,8 @@ static event_source_t chargecheck_timeout;
 #define CHARGECHECK_INTERVAL 1000 // time between checking state of charger and battery
 // note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
 
-// 3.3V (3300mV) is threshold for OLED failure; 50mV for margin
-#define BRIGHT_THRESH  3500     // threshold to limit brightness
+// 3000mV is the absolute minimum for battery, but reserve some margin for error + storage leakage
+#define BRIGHT_THRESH  3550     // threshold to limit brightness
 #define BRIGHT_THRESH2 3450
 #define BRIGHT_THRESH3 3400
 #define SAFETY_THRESH  3300     // threshold to go into safety mode
@@ -658,23 +658,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
     chprintf(stream, "BATTERY: Critical threshold hit, shutting down to save the battery from permanent damage!!!\n\r" );
     chargerShipMode();  // requires plugging in to re-active battery
-  }
-
-  if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
-    chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
-    if( getShift() < 1 )
-      setShift(1);
-  } else if( voltage < BRIGHT_THRESH2 ) {
-    chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
-    if( getShift() < 2 )
-      setShift(2);
-  } else if( voltage < BRIGHT_THRESH3 ) {
-    chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
-    if( getShift() < 3 )
-      setShift(3);
-  }
-
-  if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
+  } else if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
     chprintf(stream, "BATTERY: Safety threshold hit, going into safety mode\n\r" );
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
       effectsSetPattern(effectsNameLookup("safetyPattern"), 0);
@@ -682,7 +666,19 @@ static void handle_chargecheck_timeout(eventid_t id) {
     // limit brightness to guarantee ~2 hours runtime in safety mode
     if( getShift() < 4 )
       setShift(4);
-  }
+  } else if( voltage < BRIGHT_THRESH3 ) {
+    chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
+    if( getShift() < 3 )
+      setShift(3);
+  } else if( voltage < BRIGHT_THRESH2 ) {
+    chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
+    if( getShift() < 2 )
+      setShift(2);
+  } else if( (voltage < BRIGHT_THRESH) ) { // limit brightness when battery is weak
+    chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
+    if( getShift() < 1 )
+      setShift(1);
+  } 
 
   if (timekeeper && (uptime % 60) == 0) { // Run once a minute
     chprintf(stream, "TIME: Broadcasting time: $d", getNetworkTimeMs());
