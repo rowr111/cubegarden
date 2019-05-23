@@ -81,9 +81,11 @@ static event_source_t chargecheck_timeout;
 // note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
 
 // 3.3V (3300mV) is threshold for OLED failure; 50mV for margin
-#define BRIGHT_THRESH  3550     // threshold to limit brightness
-#define SAFETY_THRESH  3470     // threshold to go into safety mode
-#define SHIPMODE_THRESH  3330   // threshold to go into ship mode
+#define BRIGHT_THRESH  3500     // threshold to limit brightness
+#define BRIGHT_THRESH2 3450
+#define BRIGHT_THRESH3 3400
+#define SAFETY_THRESH  3300     // threshold to go into safety mode
+#define SHIPMODE_THRESH  3220   // threshold to go into ship mode
 
 static virtual_timer_t ping_timer;
 static event_source_t ping_timeout;
@@ -656,8 +658,14 @@ static void handle_chargecheck_timeout(eventid_t id) {
   }
 
   if( voltage < BRIGHT_THRESH ) { // limit brightness when battery is weak
-    if( getShift() < 4 )
-      setShift(4);
+    if( getShift() < 1 )
+      setShift(1);
+  } else if( voltage < BRIGHT_THRESH2 ) {
+    if( getShift() < 2 )
+      setShift(2);
+  } else if( voltage < BRIGHT_THRESH3 ) {
+    if( getShift() < 3 )
+      setShift(3);
   }
 
   if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
