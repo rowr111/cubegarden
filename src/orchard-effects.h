@@ -8,8 +8,18 @@
 
 struct orchard_effects_instance;
 
+typedef struct led_config_def {
+  uint8_t       *fb; // effects frame buffer
+  uint8_t       *final_fb;  // merged ui + effects frame buffer
+  uint32_t      pixel_count;  // generated pixel length
+  uint32_t      max_pixels;   // maximal generation length
+  uint8_t       *ui_fb; // frame buffer for UI effects
+  uint32_t      ui_pixels;  // number of LEDs on the PCB itself for UI use
+} led_config_def;
+extern led_config_def  led_config;
+
 typedef struct effects_config {
-  struct led_config *hwconfig;
+  led_config_def *hwconfig;
   uint32_t count;
   uint32_t loop;
 } effects_config;
