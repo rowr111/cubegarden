@@ -415,6 +415,13 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
 	  effect_cmd);
 	radioRelease(radioDriver);
+
+	// also re-update the brightess level, in case this was missed
+	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
+	radioAcquire(radioDriver);
+	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+	  effect_cmd);
+	radioRelease(radioDriver);
 	
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
