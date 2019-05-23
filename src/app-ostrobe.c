@@ -33,7 +33,7 @@ static void ostrobe_setup(OrchardAppContext *ctx) {
   orchardAppTimer(ctx, 50 * 1000 * 1000, true);
   redraw_ui();
   oldfxname = (char *) effectsCurName();
-  effectsSetPattern(effectsNameLookup("strobe"));
+  effectsSetPattern(effectsNameLookup("strobe"), 0);
 }
 
 static void ostrobe_event(OrchardAppContext *ctx, const OrchardAppEvent *event) {
@@ -50,7 +50,7 @@ static void ostrobe_event(OrchardAppContext *ctx, const OrchardAppEvent *event) 
 static void ostrobe_exit(OrchardAppContext *ctx) {
   (void)ctx;
   
-  effectsSetPattern(effectsNameLookup(oldfxname));
+  effectsSetPattern(effectsNameLookup(oldfxname), 0);
 }
 
 orchard_app("Strobe", ostrobe_init, ostrobe_setup, ostrobe_event, ostrobe_exit);
