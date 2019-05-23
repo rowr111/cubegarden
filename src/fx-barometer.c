@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#ifndef MASTER_BADGE
+
 #include "barometer.h"
 
 static void barometerTestEffect(struct effects_config *config) {
@@ -44,3 +46,18 @@ static void barometerTestEffect(struct effects_config *config) {
 }
 orchard_effects("barometer", barometerTestEffect);
 
+#else
+static void barometerTestEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  static int on = 0;
+  
+  int currHue = loop%255;
+  HsvColor currHSV = {currHue, 255, 255};
+  RgbColor c = HsvToRgb(currHSV); 
+  ledSetAllRGB(fb, count, (c.r*on), (c.g*on), (int)(c.b*on), shift);
+}
+
+orchard_effects("barometer", barometerTestEffect);
+#endif

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#ifndef MASTER_BADGE
+
 #include "mic.h"
 #include "analog.h"
 
@@ -56,3 +58,18 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 
+#else
+static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+
+  int avgLevel = 50;
+  
+  int currHue = (int)(255-(255*avgLevel));
+  HsvColor currHSV = {currHue, 255, 255};
+  RgbColor c = HsvToRgb(currHSV);
+  
+  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
+}
+orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
+#endif

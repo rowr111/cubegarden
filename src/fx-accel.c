@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#ifndef MASTER_BADGE
+
 #include "gyro.h"
 
 static void accelEffect(struct effects_config *config) {
@@ -50,3 +52,22 @@ static void accelEffect(struct effects_config *config) {
 }
 orchard_effects("accel", accelEffect);
 
+#else
+
+static void accelEffect(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  //  int loop = config->loop; 
+
+  int avgAngle = 0;
+
+  //then convert to 0-255 for hsv color to make it purdy
+  HsvColor angleHSV = {avgAngle, 255, 255};
+
+  //convert back to rgb and set the LED color
+  ledSetAllRgbColor(fb, count, HsvToRgb(angleHSV), shift);
+  
+}
+orchard_effects("accel", accelEffect);
+
+#endif
