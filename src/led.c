@@ -32,6 +32,15 @@ static void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
 static Color ledGetColor(void *ptr, int x);
 
+// Colors
+static RgbColor vividViolet = {159, 0, 255};
+static RgbColor vividCerulean = {0, 169, 238};
+static RgbColor electricGreen = {0, 250, 34};
+static RgbColor vividYellow = {255, 227, 2};
+static RgbColor vividOrangePeel = {255, 160, 0};
+static RgbColor vividRed = {248, 13, 27};
+static RgbColor vividRainbow[6];
+
 // hardware configuration information
 // max length is different from actual length because some
 // pattens may want to support the option of user-added LED
@@ -433,6 +442,19 @@ static void boringStrobePatternFB(struct effects_config *config) {
   }
 }
 orchard_effects("boringStrobe", boringStrobePatternFB);
+
+// Time sync test pattern
+static void timesynctest(struct effects_config *config){
+	uint8_t *fb = config->hwconfig->fb;
+	int count = config->count;
+  int loop = config->loop;
+
+  // Each loop value lasts for 35 ms
+  // 1 s is 1000/35 ~ 30 steps
+  // 6 colors in the rainbow
+  ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
+}
+orchard_effects("timesynctest", timesynctest);
 
 #if 0
 static void calmPatternFB(struct effects_config *config) {
@@ -1087,6 +1109,13 @@ void effectsStart(void) {
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
   fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
+
+  vividRainbow[0] = vividRed;
+  vividRainbow[1] = vividOrangePeel;
+  vividRainbow[2] = vividYellow;
+  vividRainbow[3] = electricGreen;
+  vividRainbow[4] = vividCerulean;
+  vividRainbow[5] = vividViolet;
   
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
