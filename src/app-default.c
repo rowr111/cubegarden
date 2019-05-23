@@ -380,12 +380,12 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	setShift(shift);
       }
       else if ( event->key.code == keyRight ) {
-	effectsNextPattern(1);
+	effectsNextPattern(0);
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
       else if ( event->key.code == keyLeft ) {
-	effectsPrevPattern(1);
+	effectsPrevPattern(0);
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
