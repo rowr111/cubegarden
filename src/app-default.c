@@ -358,6 +358,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   char sexpacket[GENE_NAMELENGTH * 2 + 2];
   int i;
   int16_t *sample_in;
+  char effect_cmd[128];
   
   if (event->type == keyEvent) {
     if (event->key.flags == keyDown) {
@@ -366,18 +367,31 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
       } else if( (bump_level < BUMP_LIMIT) && (sex_running) ) {
 	bump_level++;
 	// next is an else-if because we want no buttons to trigger in sex mode
-      } else if ( event->key.code == keyBottomR ) {
+      } else if ( event->key.code == keyBottom ) {
 	shift = getShift();
 	shift++;
 	if (shift > 6)
 	  shift = 6;
 	setShift(shift);
+	
+	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
+	radioAcquire(radioDriver);
+	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+	  effect_cmd);
+	radioRelease(radioDriver);
       }
-      else if( event->key.code == keyTopR ) {
+      else if( event->key.code == keyTop ) {
+	
 	shift = getShift();
 	if( shift > 0 )
 	  shift--;
 	setShift(shift);
+	
+	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
+	radioAcquire(radioDriver);
+	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+	  effect_cmd);
+	radioRelease(radioDriver);
       }
       else if ( event->key.code == keyRight ) {
 	effectsNextPattern(0);
@@ -389,23 +403,19 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       }
-      else if( event->key.code == keyBottom ) {
-	if( friend_total != 0 )
-	  friend_index = (friend_index + 1) % friend_total;
-	else
-	  friend_index = 0;
-	last_ui_time = chVTGetSystemTime();
+      else if( event->key.code == keyBottomR ) {
+	// this is the "B" key
+	
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
-      } else if( event->key.code == keyTop) {
-	if( friend_total != 0 ) {
-	  if( friend_index == 0 )
-	    friend_index = friend_total;
-	  friend_index--;
-	} else {
-	  friend_index = 0;
-	}
-	last_ui_time = chVTGetSystemTime();
+      } else if( event->key.code == keyTopR) {
+	// this is the "A" key
+	chsnprintf(effect_cmd, sizeof(effect_cmd), "fx use %s", effectsCurName());
+	radioAcquire(radioDriver);
+	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+	  effect_cmd);
+	radioRelease(radioDriver);
+	
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
       } else if( event->key.code == keySelect ) {
