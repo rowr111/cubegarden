@@ -7,6 +7,9 @@
 
 #include "barometer.h"
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 const RegBlock_t registerBlocks[2] = {
     {0x00, 3},
     {0x03, 3},
@@ -708,3 +711,40 @@ static int16_t getRawResult(int32_t *raw, RegBlock_t reg)
 	return DPS__SUCCEEDED;
 }
 
+OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  float temperature;
+  float pressure;
+  int16_t ret;
+  int16_t oversampling = 7;
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    if( (baro_getProductId() != 0x0A) && (baro_getRevisionId() != 0x01) )
+      return orchardResultFail;
+    else if( (test_type == orchardTestTrivial) || (test_type == orchardTestPoweron) )
+      return orchardResultPass;
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    ret = baro_measureTempOnce(&temperature, oversampling);
+    if( ret != 0 )
+      return orchardResultFail;
+    if( (temperature < 5.0) ||  (temperature > 45.0) )
+      return orchardResultFail;
+
+    ret = baro_measurePressureOnce(&pressure, oversampling);
+    if( ret != 0 )
+      return orchardResultFail;
+    // pressure at burning man ~ 88,000; sea level 10,1325
+    if( (pressure < 70000.0) ||  (temperature > 115000.0) ) 
+      return orchardResultFail;
+    
+    return orchardResultPass;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("barometer", test_barometer);
