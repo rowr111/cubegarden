@@ -176,7 +176,7 @@ CSRC = \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \
-       $(wildcard fx-*.c) \
+       $(wildcard fx/fx-*.c) \
        $(LIBFIXMATHSRC) \
        $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \
