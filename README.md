@@ -66,7 +66,7 @@ First, we'll get up-to-date code from git and build it:
 
 The -j3 option just multi-threads the build to make it run faster if you have a lot of changes.
 
-The build result will be "build/bm17.[elf](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)", an object file that can be
+The build result will be "build/cube.[elf](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)", an object file that can be
 loaded using [openOCD](http://openocd.org/) into the cube controller.
 
 Errors: If you get an error about the submodules when building, this may because the submodules are not on the right version.
@@ -90,7 +90,7 @@ Next, we'll start the software used to push the code and do debugging later:
 ```
      gdb
      (gdb) target remote localhost:3333
-     (gdb) load build/bm17.elf
+     (gdb) load build/cube.elf
 ```
 
 What these commands do:
