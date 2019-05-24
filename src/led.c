@@ -535,7 +535,7 @@ static void blendFbs(void) {
   }
 }
 
-int32_t time_slop = 230;
+int32_t time_slop = 0;
 static THD_FUNCTION(effects_thread, arg) {
 
   (void)arg;
