@@ -85,7 +85,7 @@ endif
 #
 
 # Define project name here
-PROJECT = bm17
+PROJECT = cube
 
 # Imported source files and paths
 CHIBIOS = ../ChibiOS
