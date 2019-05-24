@@ -369,7 +369,7 @@ static THD_FUNCTION(baro_thread, arg) {
     baro_history[index] = baro_pressure;
 
     if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > BARO_CHANGE_SENSITIVITY){
-      chprintf(stream, "pressure changed suddenly!\r\n");
+      // chprintf(stream, "pressure changed suddenly!\r\n");
       pressureChanged();
     }
 
