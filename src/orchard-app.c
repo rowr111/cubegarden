@@ -619,6 +619,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   struct accel_data accel; // for entropy call
   int16_t voltage;
   static int was_charging = 0;
+  static int last_voltage = 4200;
 
   wdogPing(); // ping the watchdog
   
@@ -639,6 +640,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
 
   // dim while charging
   if( isCharging() ) {
+    last_voltage = voltage;
     if( !was_charging ) {
       stashed_shift = getShift();
       was_charging = 1;
@@ -647,6 +649,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
     }
   } else {
     if( was_charging ) {
+      last_voltage = voltage;
       chprintf(stream, "BATTERY: restoring brightness to shift level %d\n\r", stashed_shift );
       setShift(stashed_shift);
       was_charging = 0;
@@ -655,27 +658,38 @@ static void handle_chargecheck_timeout(eventid_t id) {
   
   // check if battery is too low, and shut down if it is
   // but only if we're not plugged in to a charger
-  if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {  
+  if( (voltage < SHIPMODE_THRESH) && (isCharging() == 0) ) {
     chprintf(stream, "BATTERY: Critical threshold hit, shutting down to save the battery from permanent damage!!!\n\r" );
     chargerShipMode();  // requires plugging in to re-active battery
-  } else if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
-    chprintf(stream, "BATTERY: Safety threshold hit, going into safety mode\n\r" );
+  } else if( (voltage < SAFETY_THRESH) && !isCharging() ) {  // drop to saftey pattern to notify user of battery almost dead
+    if( last_voltage >= SAFETY_THRESH ) {
+      chprintf(stream, "BATTERY: Safety threshold hit, going into safety mode\n\r" );
+      last_voltage = voltage;
+    }
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
       effectsSetPattern(effectsNameLookup("safetyPattern"), 0);
-
     // limit brightness to guarantee ~2 hours runtime in safety mode
     if( getShift() < 4 )
       setShift(4);
-  } else if( voltage < BRIGHT_THRESH3 ) {
-    chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
+  } else if( (voltage < BRIGHT_THRESH3) && !isCharging() ) {
+    if( last_voltage >= BRIGHT_THRESH3 ) {
+      chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
+      last_voltage = voltage;
+    }
     if( getShift() < 3 )
       setShift(3);
-  } else if( voltage < BRIGHT_THRESH2 ) {
-    chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
+  } else if( (voltage < BRIGHT_THRESH2) && !isCharging() ) {
+    if( last_voltage >= BRIGHT_THRESH2 ) {
+      chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
+      last_voltage = voltage;
+    }
     if( getShift() < 2 )
       setShift(2);
-  } else if( (voltage < BRIGHT_THRESH) ) { // limit brightness when battery is weak
-    chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
+  } else if( (voltage < BRIGHT_THRESH) && !isCharging() ) { // limit brightness when battery is weak
+    if( last_voltage >= BRIGHT_THRESH ) {
+      chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
+      last_voltage = voltage;
+    }
     if( getShift() < 1 )
       setShift(1);
   } 
