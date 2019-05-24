@@ -170,7 +170,6 @@ CSRC = \
        oscope-routines.c \
        pir.c \
        barometer.c \
-       si1153.c \
        gyro.c \
        time.c \
        $(wildcard cmd-*.c) \
