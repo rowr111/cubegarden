@@ -1,0 +1,18 @@
+// 010_1000
+#define CAP1208_ADDR  0x28
+// 111_1000
+#define RH6010_ADDR  0xf0
+
+#define STC3115_ADDR 0x70
+#define FAN5421_ADDR 0x6A
+#define LC709203_ADDR 0x0B
+
+#define FAN5421_CTL0_ADR 0
+#define FAN5421_CTL1_ADR 1
+#define FAN5421_OREG_ADR 2
+#define FAN5421_INFO_ADR 3
+#define FAN5421_IBAT_ADR 4
+#define FAN5421_SPCHG_ADR 5
+#define FAN5421_SAFE_ADR 6
+
+#undef HAS_STC3115  // for units with the STC3115 unpopulated
