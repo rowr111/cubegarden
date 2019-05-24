@@ -20,8 +20,6 @@
 
 orchard_effects_end();
 
-extern void ledUpdate(uint8_t *fb, uint32_t len);
-
 // static (master-local) effects state
 led_config_def  led_config;
 static effects_config fx_config;
@@ -644,6 +642,7 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   OrchardTestResult result = orchardResultPass;
   uint16_t i;
   uint8_t interactive = 0;
+  uint8_t leds_was_off = 0;
   
   switch(test_type) {
   case orchardTestPoweron:
@@ -653,7 +652,10 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
     interactive = 20;  // 20 seconds to evaluate LED state...should be plenty
   case orchardTestTrivial:
   case orchardTestComprehensive:
-    orchardTestPrompt("Preparing", "LED test", 0);
+    orchardTestPrompt("Preparing", "LED test", 0); 
+    if( ledsOff ) // stash LED state
+      leds_was_off = 1;
+    
     while(ledsOff == 0) {
       effectsStop();
       chThdYield();
@@ -669,9 +671,9 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
     chSysLock();
     ledUpdate(led_config.final_fb, led_config.pixel_count);
     chSysUnlock();
+    chThdSleepMilliseconds(2000);
     orchardTestPrompt("green LED test", "", 0);
     orchardTestPrompt("press button", "to advance", interactive);
-    chThdSleepMilliseconds(200);
 
     // red pattern
     for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
@@ -682,10 +684,9 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
     chSysLock();
     ledUpdate(led_config.final_fb, led_config.pixel_count);
     chSysUnlock();
-    chThdSleepMilliseconds(200);
+    chThdSleepMilliseconds(2000);
     orchardTestPrompt("red LED test", "", 0);
     orchardTestPrompt("press button", "to advance", interactive);
-    chThdSleepMilliseconds(200);
 
     // blue pattern
     for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
@@ -697,13 +698,15 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
     chSysLock();
     ledUpdate(led_config.final_fb, led_config.pixel_count);
     chSysUnlock();
-    chThdSleepMilliseconds(200);
+    chThdSleepMilliseconds(2000);
     orchardTestPrompt("press button", "to advance", interactive);
-    chThdSleepMilliseconds(200);
 
     orchardTestPrompt("LED test", "finished", 0);
-    // resume effects
-    effectsStart();
+
+    if( leds_was_off == 0 ) {
+      // resume effects only if the LEDs was on in the first place
+      effectsStart();
+    }
     return result;
   default:
     return orchardResultNoTest;

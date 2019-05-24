@@ -7,6 +7,8 @@
 #include "orchard.h"
 
 /////////// STRUCTURE
+#define LED_COUNT 32
+#define UI_LED_COUNT 32
 
 struct orchard_effects_instance;
 
@@ -53,6 +55,7 @@ typedef struct _OrchardEffects {
 
 
 /////////////////// EFFECTS
+extern void ledUpdate(uint8_t *fb, uint32_t len);
 
 #define sign(x) (( x > 0 ) - ( x < 0 ))
 

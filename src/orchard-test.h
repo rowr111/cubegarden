@@ -27,6 +27,7 @@ typedef enum _OrchardTestResult {
   orchardResultFail = 1,
   orchardResultUnsure = 2,
   orchardResultNoTest = 3,  // for cases where there is no test for a function
+  orchardResultTBD = 4,
 } OrchardTestResult;
 
 /*

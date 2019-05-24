@@ -45,8 +45,6 @@
 
 #define SPI_TIMEOUT MS2ST(3000)
 
-#define LED_COUNT 32
-#define UI_LED_COUNT 32
 static uint8_t fb[LED_COUNT * 3];
 static uint8_t ui_fb[LED_COUNT * 3];
 
@@ -99,9 +97,11 @@ void swStart(void) {
   sw_debounce = chVTGetSystemTime();
 }
 
+uint8_t test_switch = 0;
 void sw_proc(eventid_t id) {
 
   (void)id;
+  test_switch = 1; // trigger just for test functions *DO NOT USE FOR REGULAR CODE* it is not thread-safe
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
     chprintf(stream, "switch change effect\n\r");
     effectsNextPattern(0);
