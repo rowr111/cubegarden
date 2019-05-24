@@ -69,7 +69,7 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV);
   
-  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
+  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 #endif
