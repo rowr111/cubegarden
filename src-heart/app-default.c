@@ -386,7 +386,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	if( shift > 0 )
 	  shift--;
 	setShift(shift);
-	
+
 	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
 	radioAcquire(radioDriver);
 	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
@@ -417,6 +417,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	radioRelease(radioDriver);
 
 	// also re-update the brightess level, in case this was missed
+	shift = getShift();
 	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
 	radioAcquire(radioDriver);
 	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
