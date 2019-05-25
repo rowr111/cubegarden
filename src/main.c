@@ -48,6 +48,9 @@
 static uint8_t fb[LED_COUNT * 3];
 static uint8_t ui_fb[LED_COUNT * 3];
 
+static uint8_t baro_ready = 0;
+static uint8_t event_ready = 0;
+
 struct evt_table orchard_events;
 
 extern const char *gitversion;
@@ -135,35 +138,8 @@ static const SPIConfig spi_config = {
 };
 
 
-static const SPIConfig spi_config_mmc = {
-  NULL,
-  GPIOD,
-  0, 
-  KINETIS_SPI_TAR_8BIT_SD
-  //KINETIS_SPI_TAR_8BIT_MED
-};
-
-static const SPIConfig spi_config_mmc_ls = {
-  NULL,
-  GPIOD,
-  0, 
-  KINETIS_SPI_TAR_8BIT_SLOW
-};
-
-static const MMCConfig mmc_config = { 
-  &SPID1,
-  &spi_config_mmc_ls, // low speed config for init
-  &spi_config_mmc // high speed config for run
-};
-
-MMCDriver MMCD1;
-
-
 static const I2CConfig i2c_config = {
   100000
-};
-static const I2CConfig i2c2_config = {
-  400000
 };
 
 extern void programDumbRleFile(void);
@@ -261,7 +237,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   uiStart();
 
   spiObjectInit(&SPID1);
-  mmcObjectInit(&MMCD1);
 
   // setup drive strengths on SPI1
   PORTD_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
@@ -282,7 +257,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   micStart(); 
   //i2sStartRx(&I2SD1); // start the audio sampling buffer
 
-  orchardTestRunAll(stream, orchardTestPoweron);
+  event_ready = 1; // inform that the event thread is initialized
   /*
    * Activates the EXT driver 1.
    */
@@ -290,6 +265,16 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
 
+  // wait for barometer to become ready before starting apps
+  uint32_t init_delay = chVTGetSystemTime();
+  while( baro_ready == 0 ) {
+    chThdYield();
+    chThdSleepMilliseconds(10);
+    if( chVTTimeElapsedSinceX(init_delay) > 4000 ) {
+      chprintf(stream, "Subsystem initialization timeout! baro: %d\n\r", baro_ready);
+      break;
+    }
+  }
   
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
@@ -329,8 +314,6 @@ static THD_FUNCTION(baro_thread, arg) {
 
   (void)arg;
   int16_t oversampling = 7;
-  int16_t ret;
-  float last_pressure;
   float baro_history[BARO_HISTORY];
   float acc;
   int index = 0;
@@ -345,27 +328,21 @@ static THD_FUNCTION(baro_thread, arg) {
   }
   
   // init the barometer
-  chprintf(stream, "Initializing barometer.");
   baro_init();
   float temperature;
   float pressure;
   // do a dummy read to setup barometer internal state
   baro_measureTempOnce(&temperature, 7);
-  chprintf(stream, ".");
   baro_measurePressureOnce(&pressure, 7);
-  chprintf(stream, ".");
-  chprintf(stream, "done.\n\r");
   
-  ret = baro_measureTempOnce(&baro_temp, oversampling);
-  ret = baro_measurePressureOnce(&baro_pressure, oversampling);
-  last_pressure = baro_pressure;
-
+  baro_ready = 1; // signal to the test subsystem that the barometer init is done
+  
   while (!chThdShouldTerminateX()) {
     if( (loops % 30) == 0 ) { // temperature doesn't need to update as fast as barometer
-      ret = baro_measureTempOnce(&baro_temp, oversampling);
+      baro_measureTempOnce(&baro_temp, oversampling);
     }
     loops++;
-    ret = baro_measurePressureOnce(&baro_pressure, oversampling);
+    baro_measurePressureOnce(&baro_pressure, oversampling);
     baro_history[index] = baro_pressure;
 
     if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > BARO_CHANGE_SENSITIVITY){
@@ -382,8 +359,6 @@ static THD_FUNCTION(baro_thread, arg) {
     }
     baro_avg = acc / (float) BARO_HISTORY;
     
-    last_pressure = baro_pressure;
-  
     chThdSleepMilliseconds(10); // give some time for other threads
   }
 
@@ -466,20 +441,34 @@ int main(void) {
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
   ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
-  effectsStart();
 
-  chThdSleepMilliseconds(200);
   palSetPad(IOPORT5, 0); // turn off red LED
   
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
 
   // start the barometer monitoring thread
-  eventThr = chThdCreateStatic(waBaroThread,
-			       sizeof(waBaroThread),
-			       (NORMALPRIO - 6),
-			       baro_thread,
-			       NULL);
+  baroThr = chThdCreateStatic(waBaroThread,
+			      sizeof(waBaroThread),
+			      (NORMALPRIO - 6),
+			      baro_thread,
+			      NULL);
+
+  
+  uint32_t init_delay = chVTGetSystemTime();
+  while( !event_ready && !baro_ready ) {
+    chThdYield();
+    chThdSleepMilliseconds(10);
+    if( chVTTimeElapsedSinceX(init_delay) > 4000 ) {
+      chprintf(stream, "Subsystem initialization timeout! event: %d baro: %d\n\r",
+	       event_ready, baro_ready);
+      break;
+    }
+  }
+  orchardTestRunAll(stream, orchardTestPoweron);
+
+  // start effects only after tests have been run
+  effectsStart();
 
   /*
    * Normal main() thread activity, spawning shells.
