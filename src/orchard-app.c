@@ -910,6 +910,22 @@ void orchardAppTimer(const OrchardAppContext *context,
   chVTSet(&context->instance->timer, US2ST(usecs), timer_do_send_message, NULL);
 }
 
+void update_sd(int16_t *samples);
+static void i2s_full_handler(eventid_t id) {
+  (void)id;
+  OrchardAppEvent evt;
+
+  if( gen_mic_event ) {
+    gen_mic_event = 0;
+    
+    evt.type = adcEvent;
+    evt.adc.code = adcCodeMic;
+    if( !ui_override )
+      instance.app->event(instance.context, &evt);
+  }
+  
+}
+
 static void accel_bump_event(eventid_t id) {
   (void) id;
   OrchardAppEvent evt;
@@ -951,7 +967,9 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableHook(orchard_app_events, timer_expired, timer_event);
   evtTableHook(orchard_app_events, celcius_rdy, adc_temp_event);
+  evtTableHook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableHook(orchard_app_events, accel_bump, accel_bump_event);
+  //  evtTableHook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
 
   if (instance->app->init)
     app_context.priv_size = instance->app->init(&app_context);
@@ -995,7 +1013,9 @@ static THD_FUNCTION(orchard_app_thread, arg) {
     instance->app = orchard_app_list;
   instance->next_app = NULL;
 
+  //  evtTableUnhook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
   evtTableUnhook(orchard_app_events, accel_bump, accel_bump_event);
+  evtTableUnhook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableUnhook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);

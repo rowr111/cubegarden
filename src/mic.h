@@ -21,6 +21,8 @@ void analogUpdateMic(void);
 int16_t *analogReadMic(void);
 void micStart(void);
 
+#define NOFFT // gets rid of FFT code path
+
 #define DBLOGLEN 2
 extern uint8_t dblog[];
 extern uint8_t dblogptr;

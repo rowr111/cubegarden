@@ -22,6 +22,7 @@ uint16_t raw_samples[NUM_SAMPLES];
 
 float cur_db;
 
+#ifdef NOFFT
 void agc(uint16_t  *sample, uint16_t *output) {
   uint16_t min, max;
   uint16_t i;
@@ -162,6 +163,7 @@ void precompute(uint16_t *samples) {
 #endif
 
 }
+#endif
 
 void dbcompute(uint16_t *sample) {
   int db = 0;

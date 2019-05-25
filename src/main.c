@@ -275,7 +275,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
       break;
     }
   }
-  
+
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableHook(orchard_events, gyro_freefall, freefall);

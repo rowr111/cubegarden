@@ -19,28 +19,19 @@ void cmd_sound(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  uint8_t i;
-  
   if (argc <= 0) {
     chprintf(chp, "Usage: sound [verb]:"SHELL_NEWLINE_STR);
     chprintf(chp, "  where verb is one of:\n\r" );
-    chprintf(chp, "    fft -- monitor sound FFT\n\r" );
+    chprintf(chp, "    db -- monitor sound db\n\r" );
     return;
   }
 
-  if(!strcasecmp(argv[0], "fft")) {
+  if(!strcasecmp(argv[0], "db")) {
     while( !should_stop() ) {
-      for( i = 0; i < 32; i++ ) {
-	chprintf(chp, "%02d ", mic_processed[i] / 1024);
-      }
-      chprintf(chp, "\n\r" );
+      chprintf( chp, "%3.0f dB\r", cur_db );
+      chThdYield();
+      chThdSleepMilliseconds(10);
     }
-  } else if( argv[0][0] == '+' ) {
-    if( fft_bin < NUM_SAMPLES / 2 )
-      fft_bin++;
-  } else if( argv[0][0] == '-' ) {
-    if( fft_bin > 0 )
-      fft_bin--;
   } else {
     chprintf(chp, "unknown verb %s\n\r", argv[0]);
   }

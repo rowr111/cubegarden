@@ -44,14 +44,18 @@ static void do_oscope(void) {
 
   if( oscope_trigger ) {
     oscope_trigger = 0;
-  
+
+#ifdef NOFFT
+    dbcompute(raw_samples);
+#else
     if( scopemode_g == 0 || scopemode_g == 1 ) {
       // call compute before flush, so stack isn't shared between two memory intensive functions
       precompute(raw_samples);
     } else {
       dbcompute(raw_samples);
     }
-
+#endif
+    
   } 
 }
 
@@ -66,7 +70,7 @@ static void led_start(OrchardAppContext *context) {
   
   (void)context;
 
-  scopemode_g = 1; // 0 picks time domain, 1 picks FFT, 2 picks dB
+  scopemode_g = 2; // 0 picks time domain, 1 picks FFT, 2 picks dB
   
   bump_level = 0;
   orchardAppTimer(context, RETIRE_RATE * 1000 * 1000, true);  // fire every 500ms to retire bumps
@@ -81,7 +85,7 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   int i;
   int16_t *sample_in;
   uint16_t samples[NUM_RX_SAMPLES * NUM_RX_BLOCKS];
-  
+
   if(event->type == radioEvent) {
     // placeholder
   } else if( event->type == adcEvent) {
