@@ -42,6 +42,9 @@ unsigned int pressurechangedtime = 0;
 unsigned int singletaptime = 0;
 unsigned int patternChanged = 0;
 
+uint8_t dBbkgd = 50;
+uint8_t dBMax = 90;
+
 uint8_t ledsOff = 1;
 
 genome diploid;   // not static so we can access/debug from other files
@@ -181,6 +184,22 @@ void setShift(uint8_t s) {
 
 uint8_t getShift(void) {
     return shift;
+}
+
+void setdBMax(uint8_t m) {
+  dBMax = m;
+}
+
+uint8_t getdBMax(void){
+  return dBMax;
+}
+
+void setdBbkgd(uint8_t b) {
+  dBbkgd = b;
+}
+
+uint8_t getdBbkgd(void) {
+  return dBbkgd;
 }
 
 // alpha blend, scale the input color based on a value from 0-255. 255 is full-scale, 0 is black-out.
