@@ -110,7 +110,7 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
                  cur_test->test_name );
         break;
       case orchardResultUnsure:
-        chprintf(stream, "TEST: %s subystem not testable with test type %d\n\r",
+        chprintf(stream, "TEST: %s subystem requires operator judgement to evaluate test type %d\n\r",
                  cur_test->test_name, test_result, test_type);
         break;
       default:

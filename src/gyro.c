@@ -6642,6 +6642,7 @@ mems_status_t LSM6DS3_ACC_GYRO_SH0_WriteByte(void *handle, u8_t SlvAddr, u8_t Re
 /* Class Implementation ------------------------------------------------------*/
 int mems_event = 0;
 void gyro1_proc(eventid_t id) {
+  (void) id;
   mems_event = 1;
   LSM6DS3_Event_Status_t status;
 	gyro_Get_Event_Status(&status);
@@ -6653,6 +6654,7 @@ void gyro1_proc(eventid_t id) {
 	}
 }
 void gyro2_proc(eventid_t id) {
+  (void) id;
 }
 
 /** Constructor

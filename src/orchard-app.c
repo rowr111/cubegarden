@@ -59,9 +59,6 @@ orchard_app_end();
 uint8_t anonymous = 1; // set this to make cubes not broadcast their presence, not detect others
 
 static const OrchardApp *orchard_app_list;
-static virtual_timer_t run_launcher_timer;
-static bool run_launcher_timer_engaged;
-#define RUN_LAUNCHER_TIMEOUT MS2ST(500)
 
 orchard_app_instance instance;  // the one and in fact only instance of any orchard app
 
@@ -730,49 +727,6 @@ static int captouch_to_key(uint8_t code) {
   return code;
 }
 
-static void run_launcher(void *arg) {
-
-  (void)arg;
-
-  chSysLockFromISR();
-  /* Launcher is the first app in the list */
-  instance.next_app = orchard_app_list;
-  instance.thr->flags |= CH_FLAG_TERMINATE;
-  chEvtBroadcastI(&orchard_app_terminate);
-  run_launcher_timer_engaged = false;
-  chSysUnlockFromISR();
-}
-
-extern int start_test;
-static void poke_run_launcher_timer(eventid_t id) {
-
-  (void)id;
-
-  uint8_t val = 0; // no captouch
-  if (run_launcher_timer_engaged) {
-    /* Timer is engaged, but both buttons are still held.  Do nothing.*/
-    if ((val & MAIN_MENU_MASK) == MAIN_MENU_VALUE)
-      return;
-
-    /* One or more buttons was released.  Cancel the timer.*/
-    chVTReset(&run_launcher_timer);
-    run_launcher_timer_engaged = false;
-  }
-  else {
-    /* Timer not engaged, and the magic sequene isn't held.  Do nothing.*/
-    if ((val & MAIN_MENU_MASK) != MAIN_MENU_VALUE)
-      return;
-
-    /* Start the sequence to go to the main menu when we're done.*/
-    run_launcher_timer_engaged = true;
-    if( start_test == 0 ) { // fast timeout if we're not in test mode
-      chVTSet(&run_launcher_timer, RUN_LAUNCHER_TIMEOUT, run_launcher, NULL);
-    } else {
-      chVTSet(&run_launcher_timer, 3000, run_launcher, NULL); // hold for three seconds in this case
-    }
-  }
-}
-
 static void ui_complete_cleanup(eventid_t id) {
   (void)id;
   OrchardAppEvent evt;
@@ -956,28 +910,6 @@ void orchardAppTimer(const OrchardAppContext *context,
   chVTSet(&context->instance->timer, US2ST(usecs), timer_do_send_message, NULL);
 }
 
-void update_sd(int16_t *samples);
-static void i2s_full_handler(eventid_t id) {
-  (void)id;
-  OrchardAppEvent evt;
-
-  if( gen_mic_event ) {
-    gen_mic_event = 0;
-    
-    evt.type = adcEvent;
-    evt.adc.code = adcCodeMic;
-    if( !ui_override )
-      instance.app->event(instance.context, &evt);
-  }
-  
-}
-
-static void i2s_reset_handler(eventid_t id) {
-  (void)id;
- 
-  // sd_offset = DATA_OFFSET_START;   // not yet implemented
-}
-
 static void accel_bump_event(eventid_t id) {
   (void) id;
   OrchardAppEvent evt;
@@ -1019,9 +951,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
   evtTableHook(orchard_app_events, orchard_app_terminate, terminate);
   evtTableHook(orchard_app_events, timer_expired, timer_event);
   evtTableHook(orchard_app_events, celcius_rdy, adc_temp_event);
-  evtTableHook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableHook(orchard_app_events, accel_bump, accel_bump_event);
-  //  evtTableHook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
 
   if (instance->app->init)
     app_context.priv_size = instance->app->init(&app_context);
@@ -1065,12 +995,7 @@ static THD_FUNCTION(orchard_app_thread, arg) {
     instance->app = orchard_app_list;
   instance->next_app = NULL;
 
-  chVTReset(&run_launcher_timer);
-  run_launcher_timer_engaged = false;
-
-  //  evtTableUnhook(orchard_app_events, i2s_reset_event, i2s_reset_handler);
   evtTableUnhook(orchard_app_events, accel_bump, accel_bump_event);
-  evtTableUnhook(orchard_app_events, i2s_full_event, i2s_full_handler);
   evtTableUnhook(orchard_app_events, celcius_rdy, adc_temp_event);
   evtTableUnhook(orchard_app_events, timer_expired, timer_event);
   evtTableUnhook(orchard_app_events, orchard_app_terminate, terminate);
@@ -1099,7 +1024,6 @@ void orchardAppInit(void) {
 
   /* Hook this outside of the app-specific runloop, so it runs even if
      the app isn't listening for events.*/
-  //  evtTableHook(orchard_events, touch_event, poke_run_launcher_timer);
   
   // usb detection and charge state management is also meta to the apps
   // sequence of events:

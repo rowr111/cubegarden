@@ -9,6 +9,10 @@
 #include "paging.h"
 #include "radio.h"
 
+static char *parse_arguments(char *str, char **saveptr);
+static bool cmdexec(const ShellCommand *scp, BaseSequentialStream *chp,
+	     char *name, int argc, char *argv[]);
+
 void cmd_forward(BaseSequentialStream *chp, int argc, char *argv[]) {
 
   (void)argc;

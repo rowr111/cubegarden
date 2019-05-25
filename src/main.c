@@ -404,9 +404,7 @@ int main(void) {
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);
 
-  chprintf(stream, "i2c check\n\r" );
   chgAutoParams();
-  chprintf(stream, "done\n\r" );
 
   shellInit();
 
@@ -435,6 +433,9 @@ int main(void) {
   } else {
     chprintf(stream, "FOPT check OK.\n\r");
   }
+
+  if(  WDOG->STCTRLH != 0x101 )
+    chprintf(stream, "*** WARNING: watchdog disabled. No hard fault recovery. ***\n\r" );
   
   PORTA->PCR[4] |= 0x10; // turn on passive filter for the switch pin
   
@@ -488,11 +489,14 @@ OrchardTestResult test_cpu(const char *my_name, OrchardTestType test_type) {
   switch(test_type) {
   case orchardTestPoweron:
   case orchardTestTrivial:
+  case orchardTestInteractive:
     if( SIM->SDID != 0x22000695 ) // just check the CPUID is correct
       return orchardResultFail;
     else
       return orchardResultPass;
     break;
+  case orchardTestComprehensive:
+    // no test for this yet
   default:
     return orchardResultNoTest;
   }
