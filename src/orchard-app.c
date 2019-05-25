@@ -936,7 +936,11 @@ static void accel_bump_event(eventid_t id) {
     instance.app->event(instance.context, &evt);
 }
 
+#ifdef NOFFT 
+static THD_WORKING_AREA(waOrchardAppThread, 0x900);
+#else
 static THD_WORKING_AREA(waOrchardAppThread, 0xD80);
+#endif
 // was 0x980 with 256 length samples 0xD80 with 512 length samples
 // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
 static THD_FUNCTION(orchard_app_thread, arg) {
