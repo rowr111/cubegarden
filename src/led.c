@@ -429,11 +429,6 @@ static void draw_pattern(void) {
 
   fx_config.loop++;
   
-  if( bump_amount != 0 ) {
-    fx_config.loop += bump_amount;
-    bump_amount = 0;
-  }
-
   if(fx_duration != 0) {   //if we have a temporary pattern, check expiration
     effectsCheckExpiredTempPattern();
   }
