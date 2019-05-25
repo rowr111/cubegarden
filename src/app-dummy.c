@@ -12,6 +12,7 @@
 #include "charger.h"
 
 #include "mic.h"
+#include "analog.h"
 
 #include "orchard-ui.h"
 #include <string.h>
@@ -64,14 +65,9 @@ static uint32_t led_init(OrchardAppContext *context) {
 static void led_start(OrchardAppContext *context) {
   
   (void)context;
-  font_t font;
-  coord_t height;
-  coord_t fontheight;
 
   scopemode_g = 1; // 0 picks time domain, 1 picks FFT, 2 picks dB
   
-  listEffects();
-
   bump_level = 0;
   orchardAppTimer(context, RETIRE_RATE * 1000 * 1000, true);  // fire every 500ms to retire bumps
   do_oscope();
@@ -82,7 +78,6 @@ static void led_start(OrchardAppContext *context) {
 void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
-  char sexpacket[GENE_NAMELENGTH * 2 + 2];
   int i;
   int16_t *sample_in;
   uint16_t samples[NUM_RX_SAMPLES * NUM_RX_BLOCKS];
@@ -111,8 +106,8 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if( bump_level > 0 )
       bump_level--;
 
-      //update temperature regularly for use by effects
-      analogUpdateTemperature();
+    //update temperature regularly for use by effects
+    analogUpdateTemperature();
       
   } else if( event->type == accelEvent ) {
     if( (bump_level < BUMP_LIMIT) )
