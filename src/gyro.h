@@ -43,6 +43,8 @@ extern int mems_event;
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 
+void test_singletap(eventid_t id); // for the self-test routine
+
 #ifdef __cplusplus
 extern "C" {
 #endif

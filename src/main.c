@@ -178,14 +178,14 @@ static void orchard_app_restart(eventid_t id) {
 static void freefall(eventid_t id) {
 
   (void)id;
-  chprintf(stream, "freefall\r\n");
+  // chprintf(stream, "freefall\r\n");
   bump(5);
   chEvtBroadcast(&accel_bump);
 }
 
 static void singletapchanged(eventid_t id) {
   (void)id;
-  chprintf(stream, "singletap\r\n");
+  // chprintf(stream, "singletap\r\n");
   singletap();
 }
 
@@ -244,7 +244,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   PORTD_PCR6 = 0x700; // fast slew (mosi)
   PORTD_PCR7 = 0x707; // slow slew, pull-up (miso)
   
-  evtTableInit(orchard_events, 12);
+  evtTableInit(orchard_events, 16);
   orchardEventsStart();
   orchardAppInit();
 
@@ -280,6 +280,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableHook(orchard_events, gyro_freefall, freefall);
   evtTableHook(orchard_events, gyro_singletap, singletapchanged);
+  evtTableHook(orchard_events, gyro_singletap, test_singletap);
   evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
@@ -294,6 +295,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
+  evtTableUnhook(orchard_events, gyro_singletap, test_singletap);
   evtTableUnhook(orchard_events, gyro_singletap, singletapchanged);
   evtTableUnhook(orchard_events, gyro_freefall, freefall);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);

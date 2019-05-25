@@ -60,6 +60,20 @@ OrchardTestResult orchardTestRunByName(const char *name, uint32_t test_type) {
   return orchardTestRun(test, test_type);
 }
 
+// helper routine for the test function to set LEDs all to one color and force the update
+void test_led_setall(uint8_t r, uint8_t g, uint8_t b) {
+  unsigned int i;
+  
+  for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
+    led_config.final_fb[i] = g;
+    led_config.final_fb[i+1] = r;
+    led_config.final_fb[i+2] = b;
+  }
+  chSysLock();
+  ledUpdate(led_config.final_fb, led_config.pixel_count);
+  chSysUnlock();
+}
+
 void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
   const TestRoutine *cur_test;
   OrchardTestResult test_result;

@@ -8,6 +8,9 @@
 #include "gyro.h"
 #include <string.h>
 
+#include "orchard-test.h"
+#include "test-audit.h"
+
 event_source_t gyro1_process;
 event_source_t gyro2_process;
 event_source_t gyro_freefall;
@@ -8698,3 +8701,53 @@ uint8_t LSM6DS3_IO_Read( void *handle, uint8_t ReadAddr, uint8_t *pBuffer, uint1
   (void)handle;
   return IO_Read(pBuffer, ReadAddr, nBytesToRead);
 }
+
+static uint8_t tapped = 0;
+void test_singletap(eventid_t id) {
+  (void)id;
+  
+  tapped = 1;
+}
+
+static OrchardTestResult test_gyro(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+
+  u8_t value;
+  uint32_t init_delay = chVTGetSystemTime();
+  tapped = 0;
+  
+  switch(test_type) {
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    while( !tapped ) {
+      chprintf(stream, "TEST GYRO INFO: tap board to test gyro\n\r" );
+      test_led_setall( 255, 255, 255 );
+      chThdSleepMilliseconds(50);
+      test_led_setall( 0, 0, 0 );
+      chThdSleepMilliseconds(500);
+      if( chVTTimeElapsedSinceX(init_delay) > 10000 ) {  // you have 10 seconds to tap the board
+	chprintf(stream, "TEST GYRO FAIL: single tap not detected\n\r" );
+	return orchardResultFail;
+      }
+    }
+
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+    if( MEMS_SUCCESS != LSM6DS3_ACC_GYRO_R_WHO_AM_I(NULL, &value) ) {
+      chprintf(stream, "TEST GYRO FAIL: failure while reading ID code\n\r" );
+      return orchardResultFail;
+    }
+    if( value != LSM6DS3_ACC_GYRO_WHO_AM_I ) {
+      chprintf(stream, "TEST GYRO FAIL: wrong ID code %02x\n\r", value );
+      return orchardResultFail;
+    }
+    
+    return orchardResultPass;
+    
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("gyro", test_gyro);

@@ -77,4 +77,6 @@ OrchardTestResult orchardTestPrompt(char *line1, char *line2, int8_t interaction
 #define RADIO_TYPE_DUT_TO_PEER  6
 #define RADIO_TYPE_PEER_TO_DUT  7
 
+void test_led_setall(uint8_t r, uint8_t g, uint8_t b);
+
 #endif /* __ORCHARD_TEST_H__ */

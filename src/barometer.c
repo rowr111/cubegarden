@@ -714,7 +714,7 @@ static int16_t getRawResult(int32_t *raw, RegBlock_t reg)
 	return DPS__SUCCEEDED;
 }
 
-OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type) {
+static OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
   float temperature;
   float pressure;
@@ -734,6 +734,10 @@ OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type)
       return orchardResultPass;
   case orchardTestInteractive:
   case orchardTestComprehensive:
+    if( (productID != 0x0A) || (revisionID != 0x01) ) {
+      chprintf(stream, "TEST BARO FAIL: prod id 0x%02x, rev id 0x%02x\n\r", productID, revisionID );
+      return orchardResultFail;
+    }
     ret = baro_measureTempOnce(&temperature, oversampling);
     if( ret != 0 )
       return orchardResultFail;

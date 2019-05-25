@@ -664,20 +664,6 @@ void effectsStart(void) {
   chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), "effects", NORMALPRIO - 6, effects_thread, &led_config);
 }
 
-// helper routine for the test function to set LEDs all to one color and force the update
-static void test_led_setall(uint8_t r, uint8_t g, uint8_t b) {
-  unsigned int i;
-  
-  for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
-    led_config.final_fb[i] = g;
-    led_config.final_fb[i+1] = r;
-    led_config.final_fb[i+2] = b;
-  }
-  chSysLock();
-  ledUpdate(led_config.final_fb, led_config.pixel_count);
-  chSysUnlock();
-}
-
 OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
   
