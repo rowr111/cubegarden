@@ -168,3 +168,26 @@ int16_t *analogReadMic(void) {
     return rx_savebuf;
 }
 
+static OrchardTestResult test_mic(const char *my_name, OrchardTestType test_type) {
+  (void) my_name;
+  
+  switch(test_type) {
+  case orchardTestPoweron:
+  case orchardTestTrivial:
+  case orchardTestInteractive:
+  case orchardTestComprehensive:
+    chThdSleepMilliseconds(1500); // give some time for the dB effect to accumulate samples
+    // chprintf( stream, "%3.0f dB\r\n", cur_db );
+    if( cur_db == 0.0 )
+      return orchardResultFail;
+    if( cur_db > 30.0 )
+      return orchardResultPass;
+
+    return orchardResultUnsure;
+  default:
+    return orchardResultNoTest;
+  }
+  
+  return orchardResultNoTest;
+}
+orchard_test("mic", test_mic);
