@@ -5,6 +5,8 @@
 #include "chprintf.h"
 #include "stdlib.h"
 
+#include "analog.h"
+
 #include <string.h>
 #include <math.h>
 

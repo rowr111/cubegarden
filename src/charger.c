@@ -16,13 +16,10 @@
 virtual_timer_t chg_vt;
 event_source_t chg_keepalive_event;
 
-static int keepalive_mod = 0;
-
 int16_t ggStateofCharge(void) {
   uint8_t tx[4], rx[3];
   msg_t retval;
   uint16_t soc;
-  uint16_t voltage;
 
   tx[0] = 0x0f; // ITE register
   i2cAcquireBus(&I2CD1);
@@ -34,16 +31,6 @@ int16_t ggStateofCharge(void) {
   //chprintf(stream, "State of charge: %.1f%%"NL, (rx[0] | (rx[1] << 8)) / 10.0);
   soc = (int16_t) (rx[0] | (rx[1] << 8)) / 10;
 
-#if 0 // no longer needed with correct battery profile selected! woooooo....
-  // hack to push SOC to 100% for UI reporting reasons
-  voltage = ggVoltage();
-  if( voltage > 4000 ) { // because the GG measurement is a bit noisy..may need to revisit once R20P is removed
-    soc = soc + ((voltage - 4000) / 10);
-    if( soc > 100 )
-      soc = 100;
-  }
-#endif
-  
   return soc;
 }
 
@@ -137,10 +124,6 @@ void chgKeepaliveHandler(eventid_t id) {
   i2cReleaseBus(&I2CD1);
   
   uibat.batt_mv = rx[0] | (rx[1] << 8);
-#if 0   // for debug only
-  if( (keepalive_mod++ % 10) == 0 )
-    chprintf(stream, " %dmV"NL, uibat.batt_mv);
-#endif
 
   tx[0] = 0x0f; // ITE register
   i2cAcquireBus(&I2CD1);

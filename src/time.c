@@ -1,6 +1,8 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "chprintf.h"
+
 #include "orchard.h"
 #include "radio.h"
 
@@ -37,6 +39,11 @@ void broadcastTime(void) {
  * The payload is an uint32_t containing the current network time.
  */
 void handleRadioTime(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, const void *data) {
+  (void) prot;
+  (void) src;
+  (void) dst;
+  (void) length;
+    
   uint32_t systemTimeMs = ST2MS(chVTGetSystemTime());
   uint32_t networkTimeMs = *((uint32_t *) data);
 

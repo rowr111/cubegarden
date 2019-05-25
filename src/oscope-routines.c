@@ -121,10 +121,7 @@ void agc_fft_u16(uint16_t  *sample) {
 void precompute(uint16_t *samples) {
   fix16_t real[NUM_SAMPLES];
   fix16_t imag[NUM_SAMPLES];
-  coord_t height;
-  coord_t width;
   uint16_t i;
-  uint16_t scale;
 
 #if USE_AGC  
   agc( samples, mic_processed );
@@ -167,7 +164,6 @@ void precompute(uint16_t *samples) {
 }
 
 void dbcompute(uint16_t *sample) {
-  char uiStr[32];
   int db = 0;
   
   // now compute dbs...
