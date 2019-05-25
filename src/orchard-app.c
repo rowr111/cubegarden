@@ -937,7 +937,8 @@ static void accel_bump_event(eventid_t id) {
 }
 
 #ifdef NOFFT 
-static THD_WORKING_AREA(waOrchardAppThread, 0x900);
+// provisioning checked on May 28 2019 via GDB, this leaves ~450 extra bytes on stack
+static THD_WORKING_AREA(waOrchardAppThread, 0x500);
 #else
 static THD_WORKING_AREA(waOrchardAppThread, 0xD80);
 #endif

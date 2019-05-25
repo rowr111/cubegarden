@@ -194,7 +194,8 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x800);
+static THD_WORKING_AREA(waOrchardEventThread, 0x400);
+// audit May 26, 2019 -- this should leave about 700 bytes margin
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;

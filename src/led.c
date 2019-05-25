@@ -661,7 +661,7 @@ void effectsStart(void) {
 
   //  chThdCreateStatic(waEffectsThread, sizeof(waEffectsThread),
   //      NORMALPRIO - 6, effects_thread, &led_config);
-  chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), "effects", NORMALPRIO - 6, effects_thread, &led_config);
+  chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(0x600), "effects", NORMALPRIO - 6, effects_thread, &led_config);
 }
 
 OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
