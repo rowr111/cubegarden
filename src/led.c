@@ -696,21 +696,18 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   case orchardTestComprehensive:
     orchardTestPrompt("Preparing", "LED test", 0); 
 
+    // blue pattern
+    test_led_setall( 0, 0, 255 );
+    orchardTestPrompt("press button", "to advance", interactive);
+
     // green pattern
     test_led_setall( 0, 255, 0 );
-    chThdSleepMilliseconds(2000);
     orchardTestPrompt("green LED test", "", 0);
     orchardTestPrompt("press button", "to advance", interactive);
 
     // red pattern
     test_led_setall( 255, 0, 0 );
-    chThdSleepMilliseconds(2000);
     orchardTestPrompt("red LED test", "", 0);
-    orchardTestPrompt("press button", "to advance", interactive);
-
-    // blue pattern
-    test_led_setall( 0, 0, 255 );
-    chThdSleepMilliseconds(2000);
     orchardTestPrompt("press button", "to advance", interactive);
 
     orchardTestPrompt("LED test", "finished", 0);

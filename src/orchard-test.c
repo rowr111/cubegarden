@@ -203,42 +203,45 @@ extern uint8_t test_switch;
 OrchardTestResult orchardTestPrompt(char *line1, char *line2,
                                     int8_t interaction_delay) {
   (void) line2; // in this LED version we ignore line 2 of the output
-  unsigned int i, j;
-  
-  if( ledsOff != 0 ) {
-    chprintf(stream, "orchardTestPrompt() called, but LED effects are still running!\n\r" );
-    chprintf(stream, "orchardTestPrompt() can't render output to LEDs, aborting.\n\r" );
-    return orchardResultFail;
-  }
+  unsigned int i;
 
+  uint8_t save[3];
+  save[0] = led_config.final_fb[orchard_test_index*3];
+  save[1] = led_config.final_fb[orchard_test_index*3+1];
+  save[2] = led_config.final_fb[orchard_test_index*3+2];
   // flash the LED that is being tested
-  for( i = 0; i < 2; i ++ ) {
-    led_config.final_fb[orchard_test_index*3] = 255;
-    led_config.final_fb[orchard_test_index*3+1] = 255;
-    led_config.final_fb[orchard_test_index*3+2] = 255;
-    chSysLock();
-    ledUpdate(led_config.final_fb, led_config.pixel_count);
-    chSysUnlock();
-    chThdSleepMilliseconds(250);
-    led_config.final_fb[orchard_test_index*3] = 0;
-    led_config.final_fb[orchard_test_index*3+1] = 0;
-    led_config.final_fb[orchard_test_index*3+2] = 0;
-    chThdSleepMilliseconds(250);
-  }
-
-  if( interaction_delay > 0 ) {
-    test_switch = 0;
-    while( !test_switch ) {
-      led_config.final_fb[orchard_test_index*3] = 159;  // violet color to indicate switch hit needed
-      led_config.final_fb[orchard_test_index*3+1] = 5;
+  if( interaction_delay == 0 ) {
+    for( i = 0; i < 2; i ++ ) {
+      led_config.final_fb[orchard_test_index*3] = 255;
+      led_config.final_fb[orchard_test_index*3+1] = 255;
       led_config.final_fb[orchard_test_index*3+2] = 255;
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       chSysUnlock();
       chThdSleepMilliseconds(250);
-      led_config.final_fb[orchard_test_index*3] = 0;
-      led_config.final_fb[orchard_test_index*3+1] = 0;
-      led_config.final_fb[orchard_test_index*3+2] = 0;
+      led_config.final_fb[orchard_test_index*3] = save[0];
+      led_config.final_fb[orchard_test_index*3+1] = save[1];
+      led_config.final_fb[orchard_test_index*3+2] = save[2];
+      chSysLock();
+      ledUpdate(led_config.final_fb, led_config.pixel_count);
+      chSysUnlock();
+      chThdSleepMilliseconds(250);
+    }
+  }
+
+  if( interaction_delay > 0 ) {
+    test_switch = 0;
+    while( !test_switch ) {
+      led_config.final_fb[orchard_test_index*3] = save[0];
+      led_config.final_fb[orchard_test_index*3+1] = save[1];
+      led_config.final_fb[orchard_test_index*3+2] = save[2];
+      chSysLock();
+      ledUpdate(led_config.final_fb, led_config.pixel_count);
+      chSysUnlock();
+      chThdSleepMilliseconds(250);
+      led_config.final_fb[orchard_test_index*3] = 255;
+      led_config.final_fb[orchard_test_index*3+1] = 255;
+      led_config.final_fb[orchard_test_index*3+2] = 255;
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       chSysUnlock();
@@ -254,26 +257,12 @@ OrchardTestResult orchardTestPrompt(char *line1, char *line2,
       red = 255;
     }
 
-    // flash result code for 15 seconds
-    for( i = 0; i < 30; i ++ ) {
-      for( j = 0; j < led_config.pixel_count; j++ ) {
-	led_config.final_fb[j*3] = red;
-	led_config.final_fb[j*3+1] = green;
-	led_config.final_fb[j*3+2] = 0;
-      }
-      chSysLock();
-      ledUpdate(led_config.final_fb, led_config.pixel_count);
-      chSysUnlock();
-      chThdSleepMilliseconds(250);
-      for( j = 0; j < led_config.pixel_count; j++ ) {
-	led_config.final_fb[orchard_test_index*3] = 0;
-	led_config.final_fb[orchard_test_index*3+1] = 0;
-	led_config.final_fb[orchard_test_index*3+2] = 0;
-      }
-      chSysLock();
-      ledUpdate(led_config.final_fb, led_config.pixel_count);
-      chSysUnlock();
-      chThdSleepMilliseconds(250);
+    // flash result code 15 times
+    for( i = 0; i < 15; i ++ ) {
+      test_led_setall( red, green, 0 );
+      chThdSleepMilliseconds(500);
+      test_led_setall( 0, 0, 0 );
+      chThdSleepMilliseconds(500);
     }
   }
   return 0;

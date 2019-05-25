@@ -716,10 +716,6 @@ static int16_t getRawResult(int32_t *raw, RegBlock_t reg)
 
 static OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
-  float temperature;
-  float pressure;
-  int16_t ret;
-  int16_t oversampling = 7;
 
   uint8_t productID = 0x0F & readByte(0x1d);
   uint8_t revisionID = 0x0F & (readByte(0x1d) >> 4);
@@ -738,18 +734,18 @@ static OrchardTestResult test_barometer(const char *my_name, OrchardTestType tes
       chprintf(stream, "TEST BARO FAIL: prod id 0x%02x, rev id 0x%02x\n\r", productID, revisionID );
       return orchardResultFail;
     }
-    ret = baro_measureTempOnce(&temperature, oversampling);
-    if( ret != 0 )
-      return orchardResultFail;
-    if( (temperature < 5.0) ||  (temperature > 45.0) )
-      return orchardResultFail;
 
-    ret = baro_measurePressureOnce(&pressure, oversampling);
-    if( ret != 0 )
+    // read this from the barometer thread
+    if( (baro_temp < 5.0) ||  (baro_temp > 45.0) ) {
+      chprintf(stream, "TEST BARO FAIL: temperature %f out of range\n\r", baro_temp );
       return orchardResultFail;
+    }
+
     // pressure at burning man ~ 88,000; sea level 10,1325
-    if( (pressure < 70000.0) ||  (temperature > 115000.0) ) 
+    if( (baro_pressure < 70000.0) ||  (baro_pressure > 115000.0) )  {
+      chprintf(stream, "TEST BARO FAIL: pressure %f out of range\n\r", baro_pressure );
       return orchardResultFail;
+    }
     
     return orchardResultPass;
   default:
