@@ -17,44 +17,42 @@ extern uint8_t scopemode_g;
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
-  // int loop = config->loop; // variable not referenced, comment out to clean up compile
+  int loop = config->loop; 
   float level;
 
   scopemode_g = 2; // this selects db mode
-  //let's assume some background and max decibel level 
-  int bkgndDB = 30;
-  int maxDB = 80;
+
   //there's no Math.max in C so we have to do something like this to limit the min/max
   //max:
-  if(cur_db > maxDB) level = maxDB;
+  if(cur_db > dBbkgd) level = dBMax;
   //min:
-  if(cur_db - bkgndDB < 1) level = (float)1;
-  else level = (float)(cur_db - bkgndDB);
+  if(cur_db - dBbkgd < 1) level = (float)1;
+  else level = (float)(cur_db - dBbkgd);
 
-  level = (level/((float)maxDB-(float)bkgndDB));
+  level = (level/((float)dBMax-(float)dBbkgd));
+  //level = level < 0.1 ? 0.1 : level; //some minimum value for safety
 
   //now let's smooth this puppy out
-  //with a very lamely implemented running avg of the last three level readings
-  static float avg1;
-  static float avg2;
-  static float avg3;
-  static float sum;
-  sum = sum - avg1;
-  avg1 = avg2;
-  avg2 = avg3;
-  avg3 = level;
-  sum = sum + avg3;
-  float avgLevel = sum/3;
+  static float avgs[2];
+  avgs[loop%2] = level;
+  float sum = 0;
+  for(int i = 0; i<2; i++){
+    sum +=avgs[i];
+  }
+  float avgLevel = sum/2;
   
   //let's iterate through a rainbow of colors to make it prettier
-  //int currHue = loop%255;
+  int currHue = loop%255;
   //or, we could also make the hue a function of the current level :o
   //let's do some subtraction to make the top be red
-  int currHue = (int)(255-(255*avgLevel));
+  //int currHue = (int)(255-(255*avgLevel));
+  //currHue = currHue + loop%255 > 255 ? currHue + loop%255 - 255 : currHue + loop%255;
   HsvColor currHSV = {currHue, 255, 255};
   RgbColor c = HsvToRgb(currHSV);
-  
-  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), (int)(shift*avgLevel));
+  //calculate final colors
+  avgLevel = pow(avgLevel, 2);
+  avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel;
+  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 

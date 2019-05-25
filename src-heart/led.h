@@ -94,6 +94,10 @@ uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
 uint8_t getShift(void);
+void setdBMax(uint8_t m);
+uint8_t getdBMax(void);
+void setdBbkgd(uint8_t b);
+uint8_t getdBbkgd(void);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
 
@@ -146,6 +150,9 @@ extern uint8_t singletapped;
 extern unsigned int pressurechangedtime;
 extern unsigned int singletaptime;
 extern unsigned int patternChanged;
+
+extern uint8_t dBbkgd;
+extern uint8_t dBMax;
 
 void do_lightgene(effects_config *config);
 
