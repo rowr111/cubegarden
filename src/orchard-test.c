@@ -67,6 +67,8 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
   uint32_t auditval;
   unsigned int i;
   int test_index;
+  uint8_t leds_was_off = 0;
+  uint32_t delay_time = 1000;
   
   cur_test = orchard_test_start();
   orchard_test_index = 0;
@@ -74,15 +76,24 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
     orchard_test_results[i] = orchardResultTBD;
   }
 
-  // stop LED effects so we can use the LEDs as feedback for the test
-  while(ledsOff == 0) {
-    effectsStop();
-    chThdYield();
-    chThdSleepMilliseconds(100);
+  if( ledsOff ) { // stash LED state
+    leds_was_off = 1;
+  } else {
+    // stop LED effects so we can use the LEDs as feedback for the test
+    while(ledsOff == 0) {
+      effectsStop();
+      chThdYield();
+      chThdSleepMilliseconds(100);
+    }
   }
   
   while(cur_test->test_function) {
     test_result = cur_test->test_function(cur_test->test_name, test_type);
+
+    if( test_type == orchardTestPoweron )
+      delay_time = 350;  // a little faster for the quick poweron test
+    else
+      delay_time = 1000;
     
     if( test_type != orchardTestPoweron ) {
       auditUpdate(cur_test->test_name, test_type, test_result);
@@ -139,7 +150,7 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
     chSysLock();
     ledUpdate(led_config.final_fb, led_config.pixel_count);
     chSysUnlock();
-    chThdSleepMilliseconds(1000);
+    chThdSleepMilliseconds(delay_time);
     
     orchard_test_index++;
   }
@@ -161,9 +172,11 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
       orchardTestPrompt( "NO ERRORS", prompt, -30 );
     }
   }
-  
-  // resume effects
-  effectsStart();
+
+  if( !leds_was_off ) {
+    // resume effects
+    effectsStart();
+  }
 }
 
 // used to draw UI prompts for tests to the screen

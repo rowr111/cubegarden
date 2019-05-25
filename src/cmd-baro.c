@@ -42,6 +42,8 @@ void baroCmd(BaseSequentialStream *chp, int argc, char *argv[]) {
   // barometer measurements are automatically sampled by a background thread
   // to avoid too much additional latency during effects processing
 
+
+  chprintf(chp, "ID: 0x%02x, Rev: 0x%02x\n\r", baro_getProductId(), baro_getRevisionId() );
   chprintf(chp, "Temperature: %0.2f C\n\r", baro_temp);
   chprintf(chp, "Pressure: %0.2f Pascal\n\r", baro_pressure);
   chprintf(chp, "Avg pressure: %0.2f Pascal over %d samples; valid: %d\n\r", baro_avg, BARO_HISTORY, baro_avg_valid);

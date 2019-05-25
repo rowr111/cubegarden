@@ -71,6 +71,8 @@ uint8_t effectsStop(void) {
 void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 {
   unsigned int j;
+
+  // low-level init, and ensure all LEDs are off
   led_config.max_pixels = leds;
   led_config.pixel_count = leds;
   led_config.ui_pixels = ui_leds;
@@ -88,6 +90,22 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
   chSysLock();
   ledUpdate(led_config.fb, led_config.max_pixels);
   chSysUnlock();
+
+  // now setup some basic effects bookkeeping state
+  const OrchardEffects *curfx;
+  
+  fx_config.hwconfig = &led_config;
+  fx_config.count = led_config.pixel_count;
+  fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
+
+  curfx = orchard_effects_start();
+  fx_max = 0;
+  fx_index = 0;
+  while( curfx->name ) {
+    fx_max++;
+    curfx++;
+  }
+  
 }
 
 void uiLedGet(uint8_t index, Color *c) {
@@ -603,12 +621,6 @@ void listEffects(void) {
 }
 
 void effectsStart(void) {
-  const OrchardEffects *curfx;
-  
-  fx_config.hwconfig = &led_config;
-  fx_config.count = led_config.pixel_count;
-  fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
-
   vividRainbow[0] = vividRed;
   vividRainbow[1] = vividOrangePeel;
   vividRainbow[2] = vividYellow;
@@ -618,13 +630,6 @@ void effectsStart(void) {
   
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
-  curfx = orchard_effects_start();
-  fx_max = 0;
-  fx_index = 0;
-  while( curfx->name ) {
-    fx_max++;
-    curfx++;
-  }
   check_lightgene_hack();
 
   draw_pattern();
@@ -636,82 +641,78 @@ void effectsStart(void) {
   chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), "effects", NORMALPRIO - 6, effects_thread, &led_config);
 }
 
+// helper routine for the test function to set LEDs all to one color and force the update
+static void test_led_setall(uint8_t r, uint8_t g, uint8_t b) {
+  unsigned int i;
+  
+  for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
+    led_config.final_fb[i] = g;
+    led_config.final_fb[i+1] = r;
+    led_config.final_fb[i+2] = b;
+  }
+  chSysLock();
+  ledUpdate(led_config.final_fb, led_config.pixel_count);
+  chSysUnlock();
+}
+
 OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
   
-  OrchardTestResult result = orchardResultPass;
-  uint16_t i;
+  OrchardTestResult result = orchardResultUnsure;
   uint8_t interactive = 0;
   uint8_t leds_was_off = 0;
   
+  if( ledsOff ) // stash LED state
+    leds_was_off = 1;
+    
+  while(ledsOff == 0) {
+    effectsStop();
+    chThdYield();
+    chThdSleepMilliseconds(100);
+  }
+  
   switch(test_type) {
   case orchardTestPoweron:
+    test_led_setall( 255, 0, 0 );
+    chThdSleepMilliseconds(400);
+    test_led_setall( 0, 255, 0 );
+    chThdSleepMilliseconds(400);
+    test_led_setall( 0, 0, 255 );
+    chThdSleepMilliseconds(400);
     // the LED is not easily testable as it's "write-only"
-    return orchardResultUnsure;
+    break;
   case orchardTestInteractive:
     interactive = 20;  // 20 seconds to evaluate LED state...should be plenty
   case orchardTestTrivial:
   case orchardTestComprehensive:
     orchardTestPrompt("Preparing", "LED test", 0); 
-    if( ledsOff ) // stash LED state
-      leds_was_off = 1;
-    
-    while(ledsOff == 0) {
-      effectsStop();
-      chThdYield();
-      chThdSleepMilliseconds(100);
-    }
 
     // green pattern
-    for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
-      led_config.final_fb[i] = 255;
-      led_config.final_fb[i+1] = 0;
-      led_config.final_fb[i+2] = 0;
-    }
-    chSysLock();
-    ledUpdate(led_config.final_fb, led_config.pixel_count);
-    chSysUnlock();
+    test_led_setall( 0, 255, 0 );
     chThdSleepMilliseconds(2000);
     orchardTestPrompt("green LED test", "", 0);
     orchardTestPrompt("press button", "to advance", interactive);
 
     // red pattern
-    for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
-      led_config.final_fb[i] = 0;
-      led_config.final_fb[i+1] = 255;
-      led_config.final_fb[i+2] = 0;
-    }
-    chSysLock();
-    ledUpdate(led_config.final_fb, led_config.pixel_count);
-    chSysUnlock();
+    test_led_setall( 255, 0, 0 );
     chThdSleepMilliseconds(2000);
     orchardTestPrompt("red LED test", "", 0);
     orchardTestPrompt("press button", "to advance", interactive);
 
     // blue pattern
-    for( i = 0; i < led_config.pixel_count * 3; i += 3 ) {
-      led_config.final_fb[i] = 0;
-      led_config.final_fb[i+1] = 0;
-      led_config.final_fb[i+2] = 255;
-    }
-    orchardTestPrompt("blue LED test", "", 0);
-    chSysLock();
-    ledUpdate(led_config.final_fb, led_config.pixel_count);
-    chSysUnlock();
+    test_led_setall( 0, 0, 255 );
     chThdSleepMilliseconds(2000);
     orchardTestPrompt("press button", "to advance", interactive);
 
     orchardTestPrompt("LED test", "finished", 0);
 
-    if( leds_was_off == 0 ) {
-      // resume effects only if the LEDs was on in the first place
-      effectsStart();
-    }
-    return result;
+    break;
   default:
-    return orchardResultNoTest;
+    break;
   }
   
-  return orchardResultNoTest;
+  if( leds_was_off == 0 )
+    effectsStart();
+  return result;
 }
 orchard_test("ws2812b", test_led);

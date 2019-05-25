@@ -251,6 +251,9 @@ void baro_init(void)
 	baro_measureTempOnce(&trash, 7);
 	baro_standby();
 	correctTemp();
+
+	m_productID = 0x0F & readByte(0x1d);
+	m_revisionID = 0x0F & (readByte(0x1d) >> 4);
 }
 
 static int16_t readcoeffs(void)
@@ -717,13 +720,17 @@ OrchardTestResult test_barometer(const char *my_name, OrchardTestType test_type)
   float pressure;
   int16_t ret;
   int16_t oversampling = 7;
+
+  uint8_t productID = 0x0F & readByte(0x1d);
+  uint8_t revisionID = 0x0F & (readByte(0x1d) >> 4);
   
   switch(test_type) {
   case orchardTestPoweron:
   case orchardTestTrivial:
-    if( (baro_getProductId() != 0x0A) && (baro_getRevisionId() != 0x01) )
+    if( (productID != 0x0A) || (revisionID != 0x01) ) {
+      chprintf(stream, "TEST BARO FAIL: prod id 0x%02x, rev id 0x%02x\n\r", productID, revisionID );
       return orchardResultFail;
-    else if( (test_type == orchardTestTrivial) || (test_type == orchardTestPoweron) )
+    } else if( (test_type == orchardTestTrivial) || (test_type == orchardTestPoweron) )
       return orchardResultPass;
   case orchardTestInteractive:
   case orchardTestComprehensive:
