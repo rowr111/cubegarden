@@ -345,7 +345,7 @@ static THD_FUNCTION(baro_thread, arg) {
     baro_measurePressureOnce(&baro_pressure, oversampling);
     baro_history[index] = baro_pressure;
 
-    if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > BARO_CHANGE_SENSITIVITY){
+    if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > pressure_trigger_amnt){
       // chprintf(stream, "pressure changed suddenly!\r\n");
       pressureChanged();
     }

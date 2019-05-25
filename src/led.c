@@ -44,6 +44,7 @@ unsigned int patternChanged = 0;
 
 uint8_t dBbkgd = 50;
 uint8_t dBMax = 90;
+uint8_t pressure_trigger_amnt = 40;
 
 uint8_t ledsOff = 1;
 
@@ -201,6 +202,14 @@ void setdBbkgd(uint8_t b) {
 uint8_t getdBbkgd(void) {
   return dBbkgd;
 }
+
+void setPressTriggerAmnt(uint8_t t) {
+  pressure_trigger_amnt = t;
+};
+
+uint8_t getPressTriggerAmnt(void) {
+  return pressure_trigger_amnt;
+};
 
 // alpha blend, scale the input color based on a value from 0-255. 255 is full-scale, 0 is black-out.
 // uses fixed-point math.
