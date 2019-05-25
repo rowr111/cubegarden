@@ -98,6 +98,8 @@ void setdBMax(uint8_t m);
 uint8_t getdBMax(void);
 void setdBbkgd(uint8_t b);
 uint8_t getdBbkgd(void);
+void setPressTriggerAmnt(uint8_t t);
+uint8_t getPressTriggerAmnt(void);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
 
@@ -153,6 +155,7 @@ extern unsigned int patternChanged;
 
 extern uint8_t dBbkgd;
 extern uint8_t dBMax;
+extern uint8_t pressure_trigger_amnt;
 
 void do_lightgene(effects_config *config);
 
