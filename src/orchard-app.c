@@ -81,11 +81,11 @@ static event_source_t chargecheck_timeout;
 // note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
 
 // 3000mV is the absolute minimum for battery, but reserve some margin for error + storage leakage
-#define BRIGHT_THRESH  3550     // threshold to limit brightness
-#define BRIGHT_THRESH2 3450
-#define BRIGHT_THRESH3 3400
-#define SAFETY_THRESH  3300     // threshold to go into safety mode
-#define SHIPMODE_THRESH  3150   // threshold to go into ship mode
+#define BRIGHT_THRESH  3750     // threshold to limit brightness
+#define BRIGHT_THRESH2 3650
+#define BRIGHT_THRESH3 3550
+#define SAFETY_THRESH  3450     // threshold to go into safety mode
+#define SHIPMODE_THRESH  3200   // threshold to go into ship mode
 
 static virtual_timer_t ping_timer;
 static event_source_t ping_timeout;
