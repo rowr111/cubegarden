@@ -19,6 +19,7 @@
 #include "chprintf.h"
 #include "shellcfg.h"
 #include "shell.h"
+#include <math.h>
 
 #include "radio.h"
 #include "oled.h"
@@ -369,6 +370,35 @@ static THD_FUNCTION(baro_thread, arg) {
   chThdExitS(MSG_OK);
 }
 
+static thread_t *gyroThr = NULL;
+static THD_WORKING_AREA(waGyroThread, 0x400);
+static THD_FUNCTION(gyro_thread, arg) {
+
+  (void)arg;
+  int loops = 0;
+  
+  chRegSetThreadName("Gyro");
+  chThdSleepMilliseconds(250); // wait for other subsystems to finish booting
+  
+  // init the gyro
+  gyro_init();
+  
+  while (!chThdShouldTerminateX()) {
+    if( (loops % 10) == 0 ) { // gyro doesn't have to update super often
+      // check z axis
+      struct accel_data data;
+      gyro_Get_X_Axes(&data);
+      double norm_Of_g = sqrt(data.x * data.x + data.y * data.y + data.z * data.z);
+      z_inclination = (int) (acos(data.z / norm_Of_g)*(180/3.14159));
+    }
+    loops++;
+    chThdSleepMilliseconds(10); // give some time for other threads
+  }
+  chSysLock();
+  chThdExitS(MSG_OK);
+}
+
+
 void spiRuntSetup(SPIDriver *spip);
 
 /*
@@ -456,6 +486,13 @@ int main(void) {
 			      sizeof(waBaroThread),
 			      (NORMALPRIO - 6),
 			      baro_thread,
+			      NULL);
+
+  // start the gyro monitoring thread
+  gyroThr = chThdCreateStatic(waGyroThread,
+			      sizeof(waGyroThread),
+			      (NORMALPRIO - 6),
+			      gyro_thread,
 			      NULL);
 
   

@@ -30,6 +30,7 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "    freefall  freefall demo"SHELL_NEWLINE_STR);
     chprintf(chp, "    xyz"SHELL_NEWLINE_STR);
     chprintf(chp, "    stepdir   stepdirection demo"SHELL_NEWLINE_STR);
+    chprintf(chp, "    zincl     current z inclination degree"SHELL_NEWLINE_STR);
     return;
   }
 
@@ -55,6 +56,10 @@ void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {
           chprintf(chp, "Single Tap Detected!\n\r");
 	      }
       }
+    }
+   } else if(!strcasecmp(argv[0], "zincl")) {
+    while( !should_stop() ) {
+      chprintf(chp, "z inclination (deg): %d\n\r", z_inclination);
     }
   } else if(!strcasecmp(argv[0], "pedo")) {
     uint32_t previous_tick = 0;

@@ -22,9 +22,9 @@ static void confettipulse(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int pulselength = 100; //length of pulse in loops
-  static int pulsenum; //number of times to pulse at this color
-  int tapadvance = 25; //how far to advance the color upon singletap
+  static int pulsenum = 200; //number of times to pulse at this color
+  int pulselength = 100; //length of pulse 
+  int tapadvance = 30; //how far to advance the color upon singletap
   static int hue; 
   static bool started = false;
 
@@ -34,23 +34,8 @@ static void confettipulse(struct effects_config *config) {
       started = true;
   }
 
-  static float hueoffset;
-
-  //let's get the xyz coordinates every so often..
-  //things seem to get grumpy if you get the values too often :o
-  if(loop % 3 == 0){ 
-   struct accel_data data;
-   gyro_Get_X_Axes(&data);
-   double norm_Of_g = sqrt(data.x * data.x + data.y * data.y + data.z * data.z);
-   int inclination = (int) (acos(data.z / norm_Of_g)*(180/3.14159));
-   //calculate hue offset due to tilting - I only care about turning it on its side
-   inclination = inclination%90;
-   hueoffset = (float)hue * ((float)inclination/90); 
-  }
-
   if(loop % (pulselength*pulsenum) == 0 ) {
       hue = rand() % 255; //change color randomly every pulsenum pulses
-      pulsenum = (rand() % 10) + 10; //update how many pulses to do for next time
   }
 
   //tap will advance the color by tapadvance amount
@@ -60,10 +45,13 @@ static void confettipulse(struct effects_config *config) {
     hue = hue % 255;
   }
 
+  float hueoffset = (float)(hue * (z_inclination%90)/90); //change hue on tilt
+
   //gentle pulse - setting brightness
   int brightness = loop%pulselength;
   brightness = brightness > pulselength/2 ? pulselength - brightness : brightness;
   float brightperc = (float)brightness/(pulselength/2);
+  brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
 
   HsvColor currHSV = {hue-(int)hueoffset, 255, (int)255*brightperc};
   RgbColor c = HsvToRgb(currHSV); 

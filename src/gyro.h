@@ -3114,6 +3114,8 @@ typedef struct
     extern event_source_t gyro_freefall;
     extern event_source_t gyro_singletap;
 
+    extern int z_inclination;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
