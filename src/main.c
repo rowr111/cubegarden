@@ -389,7 +389,19 @@ static THD_FUNCTION(gyro_thread, arg) {
       struct accel_data data;
       gyro_Get_X_Axes(&data);
       double norm_Of_g = sqrt(data.x * data.x + data.y * data.y + data.z * data.z);
-      z_inclination = (int) (acos(data.z / norm_Of_g)*(180/3.14159));
+      float znorm = data.z/norm_Of_g;
+      z_inclination = (int) (acos(znorm)*(180/3.14159));
+      //measure pitch to determine which side is facing
+      pitch_angle = (int) (atan(data.y/(sqrt(data.x*data.x + data.z*data.z))) * (180/3.14159));   
+      if(pitch_angle > -45 && pitch_angle < 45 && data.x > 0){
+        current_side = 0;
+      } else if (pitch_angle > -45 && pitch_angle < 45 && data.x < 0){
+        current_side = 180;
+      } else if (pitch_angle >= 45){
+        current_side = 90;
+      } else if (pitch_angle <= -45){
+        current_side = 270; 
+      }
     }
     loops++;
     chThdSleepMilliseconds(10); // give some time for other threads

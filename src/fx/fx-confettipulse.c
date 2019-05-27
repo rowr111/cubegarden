@@ -15,6 +15,7 @@
   a. tapping will change the color
   b. tilting will change hue
   c. sitting or lifting will induce a temporary color  //todo
+  d. tilting all the way to 90 deg will cause the cube to be fixed on a particular color, depending on the side. 
 3. each cube will change its base color every so often, also a bit random but will do color for a 
     min amount of time.
 */
@@ -53,8 +54,32 @@ static void confettipulse(struct effects_config *config) {
   float brightperc = (float)brightness/(pulselength/2);
   brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
 
-  HsvColor currHSV = {hue-(int)hueoffset, 255, (int)255*brightperc};
-  RgbColor c = HsvToRgb(currHSV); 
-  ledSetAllRGB(fb, count, (c.r), (c.g), (int)(c.b), shift);
+  //if cube is tilted on its side, it will be fixed at a base color and not pulse
+  if(z_inclination > 75 && z_inclination < 105){
+    RgbColor c;
+    if (current_side == 0) { //white
+      c.r = 255;
+      c.g = 255;
+      c.b = 255;
+    } else if (current_side == 90) { //cyan
+      c.r = 0;
+      c.g = 255;
+      c.b = 255;
+    } else if (current_side == 180) { //magenta
+      c.r = 255;
+      c.g = 0;
+      c.b = 255;
+    } else { //yellow
+      c.r = 255;
+      c.g = 255;
+      c.b = 0;
+    }
+    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
+  }
+  else {
+    HsvColor currHSV = {hue-(int)hueoffset, 255, (int)255*brightperc};
+    RgbColor c = HsvToRgb(currHSV); 
+    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
+  }
 }
 orchard_effects("confettipulse", confettipulse);

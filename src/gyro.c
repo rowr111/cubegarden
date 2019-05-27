@@ -16,6 +16,8 @@ event_source_t gyro2_process;
 event_source_t gyro_freefall;
 event_source_t gyro_singletap;
 int z_inclination;
+int current_side;
+int pitch_angle;
 
 static LSM6DS3StatusTypeDef Set_X_ODR_When_Enabled(float odr);
 static LSM6DS3StatusTypeDef Set_G_ODR_When_Enabled(float odr);
