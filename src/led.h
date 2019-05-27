@@ -139,6 +139,10 @@ extern const RgbColor vividYellow;
 extern const RgbColor vividOrangePeel;
 extern const RgbColor vividRed;
 extern RgbColor vividRainbow[6];
+HsvColor getBaseHsvColor(uint8_t index);
+extern uint8_t numOfBaseHsvColors;
+extern uint8_t baseHsvSaturation;
+extern uint8_t baseHsvValue;
 
 // hardware configuration information
 // max length is different from actual length because some

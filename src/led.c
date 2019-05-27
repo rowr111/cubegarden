@@ -59,6 +59,10 @@ const RgbColor vividOrangePeel = {255, 160, 0};
 const RgbColor vividRed = {248, 13, 27};
 RgbColor vividRainbow[6];
 
+uint8_t numOfBaseHsvColors = 8;
+uint8_t baseHsvSaturation = 255;
+uint8_t baseHsvValue = 255;
+
 uint8_t effectsStop(void) {
   ledExitRequest = 1;
   return ledsOff;
@@ -210,6 +214,15 @@ void setPressTriggerAmnt(uint8_t t) {
 uint8_t getPressTriggerAmnt(void) {
   return pressure_trigger_amnt;
 };
+
+HsvColor getBaseHsvColor(uint8_t index){
+  uint8_t factor = (uint8_t)floor(256/numOfBaseHsvColors); //if doesn't divide into 256 evenly round down
+  HsvColor c;
+  c.h = (factor * index) - 1;
+  c.s = baseHsvSaturation;
+  c.v = baseHsvValue;
+  return c;
+}
 
 // alpha blend, scale the input color based on a value from 0-255. 255 is full-scale, 0 is black-out.
 // uses fixed-point math.

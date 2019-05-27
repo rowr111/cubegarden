@@ -25,28 +25,27 @@ static void confettipulse(struct effects_config *config) {
   int loop = config->loop;
   static int pulsenum = 200; //number of times to pulse at this color
   int pulselength = 100; //length of pulse 
-  int tapadvance = 30; //how far to advance the color upon singletap
-  static int hue; 
+  static int colorindex;
+  static HsvColor h;  
   static bool started = false;
 
   if (!started){
-      hue = rand() % 255; //get an initial color
-      pulsenum = (rand() % 10) + 10; //pulse at least 10 times, but up to 20
+      colorindex = rand() % numOfBaseHsvColors; //get an initial color
       started = true;
   }
 
   if(loop % (pulselength*pulsenum) == 0 ) {
-      hue = rand() % 255; //change color randomly every pulsenum pulses
+      colorindex = rand() % numOfBaseHsvColors; //change color randomly every pulsenum pulses
   }
 
   //tap will advance the color by tapadvance amount
   if(singletapped){
     singletapped = 0;
-    hue = hue + tapadvance;
-    hue = hue % 255;
+    colorindex++;
   }
 
-  float hueoffset = (float)(hue * (z_inclination%90)/90); //change hue on tilt
+  h = getBaseHsvColor(colorindex);
+  float hueoffset = (float)(h.h * (z_inclination%90)/90); //change hue on tilt
 
   //gentle pulse - setting brightness
   int brightness = loop%pulselength;
@@ -77,7 +76,7 @@ static void confettipulse(struct effects_config *config) {
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   }
   else {
-    HsvColor currHSV = {hue-(int)hueoffset, 255, (int)255*brightperc};
+    HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};
     RgbColor c = HsvToRgb(currHSV); 
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   }
