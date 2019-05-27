@@ -371,7 +371,8 @@ static THD_FUNCTION(baro_thread, arg) {
 }
 
 static thread_t *gyroThr = NULL;
-static THD_WORKING_AREA(waGyroThread, 0x400);
+static THD_WORKING_AREA(waGyroThread, 0x200);
+// gyro thread size audit May 28, 2019; about 300 extra bytes available
 static THD_FUNCTION(gyro_thread, arg) {
 
   (void)arg;
