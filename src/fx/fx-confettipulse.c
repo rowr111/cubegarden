@@ -11,15 +11,14 @@
 
 #include "gyro.h"
 
-/*general plan:
+/*effect description:
 1. each cube picks a random color
 2. each cube will pulse light and dark on that color while offering interactivity
   a. tapping will change the color
   b. tilting will change hue
-  c. sitting or lifting will induce a temporary color  //todo
+  c. sitting or lifting will induce a temporary color 
   d. tilting all the way to 90 deg will cause the cube to be fixed on a particular color, depending on the side. 
-3. each cube will change its base color every so often, also a bit random but will do color for a 
-    min amount of time.
+3. each cube will change its base color every so often (not very often)
 */
 static void confettipulse(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
@@ -46,6 +45,14 @@ static void confettipulse(struct effects_config *config) {
     colorindex++;
   }
 
+  //barometer - pressure change will trigger temporary strobe
+  if(loop % 10 == 0){
+      if(pressure_changed){
+        pressure_changed = 0;
+        effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
+    }
+  }
+
   h = getBaseHsvColor(colorindex);
   float hueoffset = (float)(h.h * (z_inclination%90)/90); //change hue on tilt
 
@@ -55,7 +62,7 @@ static void confettipulse(struct effects_config *config) {
   float brightperc = (float)brightness/(pulselength/2);
   brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
 
-  //if cube is tilted on its side, it will be fixed at a base color and not pulse
+  //if cube is tilted all the way on its side, it will be fixed at a base color and not pulse
   if(z_inclination > 75 && z_inclination < 105){
     HsvColor c;
     if (current_side == 0) { //white
@@ -70,7 +77,7 @@ static void confettipulse(struct effects_config *config) {
     RgbColor cc = HsvToRgb(c); 
     ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
   }
-  else {
+  else { //otherwise, pulse at the expected color
     HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};
     RgbColor c = HsvToRgb(currHSV); 
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
