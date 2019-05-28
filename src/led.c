@@ -63,6 +63,12 @@ uint8_t numOfBaseHsvColors = 8;
 uint8_t baseHsvSaturation = 255;
 uint8_t baseHsvValue = 255;
 
+// all have max saturation/brightness
+HsvColor color0 = {0, 0, 255}; //white
+HsvColor color90 = {127, 255, 255}; //cyan
+HsvColor color180 = {212, 255, 255}; //magenta
+HsvColor color270 = {42, 255, 255}; //yellow;
+
 uint8_t effectsStop(void) {
   ledExitRequest = 1;
   return ledsOff;
@@ -215,9 +221,11 @@ uint8_t getPressTriggerAmnt(void) {
   return pressure_trigger_amnt;
 };
 
+// parameter 'index' should be from 1 to numOfBaseHsvColors
 HsvColor getBaseHsvColor(uint8_t index){
   uint8_t factor = (uint8_t)floor(256/numOfBaseHsvColors); //if doesn't divide into 256 evenly round down
   HsvColor c;
+  index = index % numOfBaseHsvColors; // just in case someone tries to submit a number too large
   c.h = (factor * index) - 1;
   c.s = baseHsvSaturation;
   c.v = baseHsvValue;

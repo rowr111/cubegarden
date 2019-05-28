@@ -143,6 +143,10 @@ HsvColor getBaseHsvColor(uint8_t index);
 extern uint8_t numOfBaseHsvColors;
 extern uint8_t baseHsvSaturation;
 extern uint8_t baseHsvValue;
+extern HsvColor color0;
+extern HsvColor color90;
+extern HsvColor color180;
+extern HsvColor color270;
 
 // hardware configuration information
 // max length is different from actual length because some

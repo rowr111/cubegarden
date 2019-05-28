@@ -55,25 +55,18 @@ static void confettipulse(struct effects_config *config) {
 
   //if cube is tilted on its side, it will be fixed at a base color and not pulse
   if(z_inclination > 75 && z_inclination < 105){
-    RgbColor c;
+    HsvColor c;
     if (current_side == 0) { //white
-      c.r = 255;
-      c.g = 255;
-      c.b = 255;
+      c = color0;
     } else if (current_side == 90) { //cyan
-      c.r = 0;
-      c.g = 255;
-      c.b = 255;
+      c = color90;
     } else if (current_side == 180) { //magenta
-      c.r = 255;
-      c.g = 0;
-      c.b = 255;
+      c = color180;
     } else { //yellow
-      c.r = 255;
-      c.g = 255;
-      c.b = 0;
+      c = color270;
     }
-    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
+    RgbColor cc = HsvToRgb(c); 
+    ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
   }
   else {
     HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};

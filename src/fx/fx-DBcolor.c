@@ -4,6 +4,7 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
+#include "gyro.h"
 
 #include <string.h>
 #include <math.h>
@@ -40,19 +41,32 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
     sum +=avgs[i];
   }
   float avgLevel = sum/2;
-  
-  //let's iterate through a rainbow of colors to make it prettier
-  int currHue = loop%255;
-  //or, we could also make the hue a function of the current level :o
-  //let's do some subtraction to make the top be red
-  //int currHue = (int)(255-(255*avgLevel));
-  //currHue = currHue + loop%255 > 255 ? currHue + loop%255 - 255 : currHue + loop%255;
-  HsvColor currHSV = {currHue, 255, 255};
-  RgbColor c = HsvToRgb(currHSV);
-  //calculate final colors
-  avgLevel = pow(avgLevel, 2);
-  avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel;
-  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
+
+  //if cube is tilted on its side, it will be fixed at a base color and not pulse
+  if(z_inclination > 75 && z_inclination < 105){
+    HsvColor c;
+    if (current_side == 0) { //white
+      c = color0;
+    } else if (current_side == 90) { //cyan
+      c = color90;
+    } else if (current_side == 180) { //magenta
+      c = color180;
+    } else { //yellow
+      c = color270;
+    }
+    RgbColor cc = HsvToRgb(c); 
+    ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
+  }
+  else { //otherwise do the db effect!
+    //let's iterate through a rainbow of colors to make it prettier
+    int currHue = loop%255;
+    HsvColor currHSV = {currHue, 255, 255};
+    RgbColor c = HsvToRgb(currHSV);
+    //calculate final colors
+    avgLevel = pow(avgLevel, 2);
+    avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel;
+    ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
+  }
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 
