@@ -4,7 +4,6 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "gyro.h"
 
 #include <string.h>
 #include <math.h>
@@ -13,6 +12,7 @@
 
 #include "mic.h"
 #include "analog.h"
+#include "gyro.h"
 
 extern uint8_t scopemode_g;
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {

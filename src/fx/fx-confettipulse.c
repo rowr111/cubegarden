@@ -4,10 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "gyro.h"
-
 #include <string.h>
 #include <math.h>
+
+#ifndef MASTER_BADGE
+
+#include "gyro.h"
 
 /*general plan:
 1. each cube picks a random color
@@ -75,3 +77,41 @@ static void confettipulse(struct effects_config *config) {
   }
 }
 orchard_effects("confettipulse", confettipulse);
+
+#else
+static void confettipulse(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+  static int pulsenum = 200; //number of times to pulse at this color
+  int pulselength = 100; //length of pulse 
+  static int colorindex;
+  static HsvColor h;  
+  static bool started = false;
+
+  if (!started){
+      colorindex = rand() % 255; //get an initial color
+      started = true;
+  }
+
+  if(loop % (pulselength*pulsenum) == 0 ) {
+      colorindex = rand() % 255; //change color randomly every pulsenum pulses
+  }
+  h.h = colorindex;
+  h.s = 255;
+  h.v = 255;
+  
+  //gentle pulse - setting brightness
+  int brightness = loop%pulselength;
+  brightness = brightness > pulselength/2 ? pulselength - brightness : brightness;
+  float brightperc = (float)brightness/(pulselength/2);
+  brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
+
+  HsvColor currHSV = {h.h, h.s, (int)h.v*brightperc};
+  RgbColor c = HsvToRgb(currHSV); 
+  ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);  
+}
+orchard_effects("confettipulse", confettipulse);
+#endif
+
+
