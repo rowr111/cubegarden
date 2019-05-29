@@ -217,8 +217,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   flash_init = 1;
 
-  chgSetSafety(); // has to be first thing written to the battery controller
-  
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
   chgAutoParams(); // set auto charge parameters
 
@@ -450,8 +448,8 @@ int main(void) {
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);
 
-  chgAutoParams();
-
+  chgSetSafety(); // has to be first thing written to the battery controller
+  
   shellInit();
 
   chprintf(stream, SHELL_NEWLINE_STR SHELL_NEWLINE_STR);
@@ -461,6 +459,8 @@ int main(void) {
 	   chCoreGetStatusX());
 
   flash_init = 0;
+
+  chgAutoParams();
   
   // this hooks all the events, so start it only after all events are initialized
   eventThr = chThdCreateStatic(waOrchardEventThread,

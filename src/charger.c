@@ -138,7 +138,7 @@ void chgSetSafety(void) {
   // 56 mOhm resistor
   // (37.4mV + 54.4mV * Vmchrg[3] + 27.2mV * Vmchrg[2] + 13.6mV * Vmchrg[1] + 6.8mV * Vmchrg[0]) / 0.056ohm = I charge
   tx[0] = BQ24157_SAFE_ADR;
-  tx[1] = 0x81;  // 1639mA *max* current (limited by chip), 4.22V *maximum* regulation voltage
+  tx[1] = 0xB0;  // 1639mA *max* current (limited by chip), 4.22V *maximum* regulation voltage
   i2cAcquireBus(&I2CD1);
   i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, NULL, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
@@ -260,7 +260,7 @@ void chgAutoParams(void) {
   // 56 mOhm resistor
   // (37.4mV + 27.2mV * Vichrg[3] + 13.6mV * Vichrg[2] + 6.8mV * Vichrg[1]) / 0.056ohm = I charge
   // termination current offset is 3.4mV, +3.4mV/LSB
-  tx[1] = (0x7 << 4) | 0x3; // 1.51A charge rate, (1*6.8mV + 1*3.4mV + 3.4mV)/0.056 = 242mA termination
+  tx[1] = (0x6 << 4) | 0x3; // 1.51A charge rate, (1*6.8mV + 1*3.4mV + 3.4mV)/0.056 = 242mA termination
   i2cAcquireBus(&I2CD1);
   retval = i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
