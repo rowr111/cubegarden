@@ -25,7 +25,7 @@ static void rainbowblast(struct effects_config *config) {
   static int offset;
   static int started; //only bother with calculating offset logic once
   static int lasttimerun;
-  int coolingperiod = 4000; //only let it run every 10 seconds
+  int coolingperiod = 4000; //only let it run every 4 seconds
   static RgbColor c;
   RgbColor black = {0,0,0};
  

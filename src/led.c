@@ -241,10 +241,10 @@ uint8_t getCubeLayoutOffset(uint8_t layout, uint8_t id){
   // fixed number of offset layers of 6.
   if(layout == 1){
     int zero = (int)(round(cube_count*0.08));
-    int one = (int)(round(cube_count*0.12));
-    int two = (int)(round(cube_count*0.14));
-    int three = (int)(round(cube_count*0.18));
-    int four = (int)(round(cube_count*0.22));
+    int one = (int)(round(cube_count*0.20));
+    int two = (int)(round(cube_count*0.34));
+    int three = (int)(round(cube_count*0.52));
+    int four = (int)(round(cube_count*0.74));
 
     if(id > zero && id <= one) offset = 1;
     else if(id > one && id <= two) offset = 2;
