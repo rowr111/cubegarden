@@ -105,6 +105,7 @@ void setdBbkgd(uint8_t b);
 uint8_t getdBbkgd(void);
 void setPressTriggerAmnt(uint8_t t);
 uint8_t getPressTriggerAmnt(void);
+uint8_t getCubeLayoutOffset(uint8_t, uint8_t);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
 
@@ -157,6 +158,8 @@ extern uint16_t fx_duration; //effect duration in ms. 0 == persistent
 extern uint32_t fx_starttime; //start time for temporary effect
 
 extern uint8_t shift;  // start a little bit dimmer
+extern uint8_t cube_layout;
+extern uint8_t cube_count;
 
 extern uint32_t bump_amount;
 extern uint8_t bumped;

@@ -28,11 +28,11 @@ static void confettipulse(struct effects_config *config) {
   int pulselength = 100; //length of pulse 
   static int colorindex;
   static HsvColor h;  
-  static bool started = false;
+  static int started;
 
-  if (!started){
+  if (started == 0){
       colorindex = rand() % numOfBaseHsvColors; //get an initial color
-      started = true;
+      started = 1;
   }
 
   if(loop % (pulselength*pulsenum) == 0 ) {

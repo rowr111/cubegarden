@@ -33,6 +33,8 @@ uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
 uint32_t fx_starttime = 0; //start time for temporary effect
 
 uint8_t shift = 2;  // start a little bit dimmer
+uint8_t cube_layout = 1; //basic assumption is donut shaped layout
+uint8_t cube_count = 50; //basic assumption - 50 cubes
 
 uint32_t bump_amount = 0;
 uint8_t bumped = 0;
@@ -44,7 +46,7 @@ unsigned int patternChanged = 0;
 
 uint8_t dBbkgd = 50;
 uint8_t dBMax = 90;
-uint8_t pressure_trigger_amnt = 40;
+uint8_t pressure_trigger_amnt = 60;
 
 uint8_t ledsOff = 1;
 
@@ -230,6 +232,35 @@ HsvColor getBaseHsvColor(uint8_t index){
   c.s = baseHsvSaturation;
   c.v = baseHsvValue;
   return c;
+}
+
+//this expects an id of 1-50
+uint8_t getCubeLayoutOffset(uint8_t layout, uint8_t id){
+  uint8_t offset = 0;
+  // 1 == donut shape configuration of the cubes with central empty (of cubes) area
+  // fixed number of offset layers of 6.
+  if(layout == 1){
+    int zero = (int)(round(cube_count*0.08));
+    int one = (int)(round(cube_count*0.12));
+    int two = (int)(round(cube_count*0.14));
+    int three = (int)(round(cube_count*0.18));
+    int four = (int)(round(cube_count*0.22));
+
+    if(id > zero && id <= one) offset = 1;
+    else if(id > one && id <= two) offset = 2;
+    else if(id > two && id <= three) offset = 3;
+    else if(id > three && id <= four) offset = 4;
+    else if(id > four) offset = 5;
+  }
+  // 2 == rows of 10 cubes
+  else if(layout == 2){
+    offset = id%10;
+  }
+  // 3 == rows of 5 cubes
+  else if(layout == 3) {
+    offset = id%5;
+  }
+  return offset;
 }
 
 // alpha blend, scale the input color based on a value from 0-255. 255 is full-scale, 0 is black-out.
