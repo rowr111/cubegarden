@@ -105,11 +105,15 @@ void ggOn(void) {
   i2cReleaseBus(&I2CD1);
 }
 
+static uint8_t shutdown_initiated = 0;
 void chgKeepaliveHandler(eventid_t id) {
   (void) id;
   uint8_t tx[2];
   uint8_t rx[2];
 
+  if( shutdown_initiated )
+    return;  // don't ping the charger watchdog while shutdown is initiated
+  
   tx[0] = BQ24157_STAT_ADR;
   tx[1] = 0xC0; // 32sec timer reset, enable stat pin
 
@@ -232,7 +236,7 @@ void chgAutoParams(void) {
   uint8_t tx[2];
   uint8_t rx[1];
   msg_t retval;
-  
+
   // set battery volage
   tx[0] = BQ24157_BATV_ADR;
   // 4.2V target regulation. 3.5V offset = 0.7V coded. 0.64 + 0.04 + 0.02 = 10_0011 = 0x23
@@ -312,12 +316,10 @@ void chgStart(int force) {
 }
 
 void chargerShipMode(void) {
-  uint8_t tx[2], rx[1];
-  
-  while( !(GPIOA->PDIR & 0x10) ) // wait until button-up before shutting down
-    ;
-  chThdSleepMilliseconds(50); // debounce switch
+  uint8_t tx[3], rx[1];
 
+  shutdown_initiated = 1;
+  
   // set control register
   tx[0] = BQ24157_CTRL_ADR;
   tx[1] = 0x3 << 6 | 0x3 << 4 | 0x8 | 0x4 | 0x2;
@@ -328,18 +330,44 @@ void chargerShipMode(void) {
   i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
   i2cReleaseBus(&I2CD1);
 
-  // palSetPad(IOPORT3, 8);  // disable charging pin, set battery to HiZ mode
+  // set stat register
+  tx[0] = BQ24157_STAT_ADR;
+  tx[1] = 0x00; // disable stat & auto timer
+  
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 2, rx, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+
+  // set GG to sleep mode
+  tx[0] = 0x15; // power mode
+  i2cAcquireBus(&I2CD1);
+  tx[1] = 0x2;  // 0x2 = sleep, 0x1 = wake
+  tx[2] = 0x0;
+  comp_crc8(tx);
+  i2cMasterTransmitTimeout(&I2CD1, LC709203_ADDR, tx, 4, NULL, 0, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  
+  
+  palSetPad(IOPORT3, 8);  // disable charging pin, set battery to HiZ mode
+
+  while( !(GPIOA->PDIR & 0x10) ) // wait until button-up before shutting down
+      chThdSleepMilliseconds(10); // let other threads run
+
+  tx[0] = BQ24157_CTRL_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  chprintf(stream, "Debug: ctrl register %02x\n\r", rx[0]);
+    
+  tx[0] = BQ24157_STAT_ADR;
+  i2cAcquireBus(&I2CD1);
+  i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
+  i2cReleaseBus(&I2CD1);
+  chprintf(stream, "Debug: stat register %02x\n\r", rx[0]);
+    
+  chThdSleepMilliseconds(50); // debounce switch, so we don't get re-activated
 
   while(1) {
-    tx[0] = BQ24157_STAT_ADR;
-    i2cAcquireBus(&I2CD1);
-    i2cMasterTransmitTimeout(&I2CD1, BQ24157_ADDR, tx, 1, rx, 1, TIME_INFINITE);
-    i2cReleaseBus(&I2CD1);
-
-    if( rx[0] & 0x08 ) {
-      chprintf(stream, "Warning: BOOST mode detected, shutdown will fail\n\r");
-    }
-
     // force switch pin high, so it can't trigger ship mode
     GPIOA->PDDR |= 0x10;
     GPIOA->PSOR = 0x10;

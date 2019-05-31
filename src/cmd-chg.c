@@ -85,6 +85,24 @@ void chgCommand(BaseSequentialStream *chp, int argc, char *argv[])
       chprintf(chp, " I2C transaction error: %d"NL, i2cGetErrors(&I2CD1));
     }
 
+    temp = ((rx[0] >> 6) & 0x3);
+    chprintf(chp, "USB current limit: " );
+    switch(temp) {
+    case 0:
+      chprintf(chp, "100mA" );
+      break;
+    case 1:
+      chprintf(chp, "500mA" );
+      break;
+    case 2:
+      chprintf(chp, "800mA" );
+      break;
+    case 3:
+      chprintf(chp, "no limit" );
+      break;
+    }
+    chprintf(chp, "\n\r" );
+    
     temp = ((rx[0] >> 4) & 0x3) + 4;
     chprintf(chp, "Weak battery threshold: 3.%dV"NL, temp);
 

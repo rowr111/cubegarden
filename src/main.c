@@ -122,6 +122,7 @@ void sw_proc(eventid_t id) {
       sw_debounce = chVTGetSystemTime();
     }
     chThdYield();
+    chThdSleepMilliseconds(10); // let other threads run
   }
   sw_debounce = chVTGetSystemTime();
 }
@@ -217,12 +218,15 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   flash_init = 1;
 
+  chThdSleepMilliseconds(5);
   ggOn(); // turn on the gas guage, do last to give time for supplies to stabilize
+  chThdSleepMilliseconds(5);
   chgAutoParams(); // set auto charge parameters
 
-  chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
   chEvtObjectInit(&chg_keepalive_event);
+  chVTObjectInit(&chg_vt); // initialize the charger keep-alive virtual timer
 
+  chThdSleepMilliseconds(5);
   chgStart(1);
 
   adcStart(&ADCD1, &adccfg1);
