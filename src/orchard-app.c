@@ -128,8 +128,7 @@ uint8_t getMutationRate(void) {
 
 static void handle_radio_page(eventid_t id) {
   (void) id;
-
-  effectsSetTempPattern(effectsNameLookup("strobe"), PAGE_DISPLAY_MS);
+  effectsSetPattern(effectsNameLookup("strobe"));
   analogUpdateMic();
 }
 
@@ -664,7 +663,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
       last_voltage = voltage;
     }
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
-      effectsSetPattern(effectsNameLookup("safetyPattern"), 0);
+      effectsSetPattern(effectsNameLookup("safetyPattern"));
     // limit brightness to guarantee ~2 hours runtime in safety mode
     if( getShift() < 4 )
       setShift(4);

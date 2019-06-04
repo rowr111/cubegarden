@@ -29,7 +29,6 @@ static uint8_t fx_previndex; //previous effect
 static uint8_t ledExitRequest = 0;
 
 // global effects state
-uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
 uint32_t fx_starttime = 0; //start time for temporary effect
 
 uint8_t shift = 2;  // start a little bit dimmer
@@ -237,6 +236,7 @@ HsvColor getBaseHsvColor(uint8_t index){
 //this expects an id of 1-50
 uint8_t getCubeLayoutOffset(uint8_t layout, uint8_t id){
   uint8_t offset = 0;
+  
   // 1 == donut shape configuration of the cubes with central empty (of cubes) area
   // fixed number of offset layers of 6.
   if(layout == 1){
@@ -444,7 +444,7 @@ static void safetyPatternFB(struct effects_config *config) {
   }
  
 }
-orchard_effects("safetyPattern", safetyPatternFB);
+orchard_effects("safetyPattern", safetyPatternFB, 0);
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 #define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
@@ -480,12 +480,12 @@ static void draw_pattern(void) {
   curfx = orchard_effects_start();
 
   fx_config.loop++;
-  
-  if(fx_duration != 0) {   //if we have a temporary pattern, check expiration
-    effectsCheckExpiredTempPattern();
-  }
 
   curfx += fx_index;
+
+  if(curfx->duration > 0) {   //if we have a temporary pattern, check expiration
+    effectsCheckExpiredTempPattern();
+  }
 
 
   curfx->computeEffect(&fx_config);
@@ -537,36 +537,46 @@ const char *lightgeneName(void) {
   return diploid.name;
 }
 
-void effectsSetTempPattern(uint8_t index, uint16_t duration){
-  if(fx_duration == 0) { //if our existing effect is persistent, save it.
+void effectsSetTempPattern(uint8_t index){
+  const OrchardEffects *curfx;
+  curfx = orchard_effects_start();
+  curfx += fx_index;
+
+  if(curfx->duration == 0) { //if our existing effect is persistent, save it.
       fx_previndex = fx_index;
     }
-    fx_duration = duration;
-    fx_index = index;
-    fx_starttime = chVTGetSystemTime();
-    patternChanged = 1;
-    check_lightgene_hack();
+  //chprintf(stream, "Setting temp pattern: %d\n\r", index);
+  fx_index = index;
+  fx_starttime = chVTGetSystemTime();
+  patternChanged = 1;
+  check_lightgene_hack();
 }
 
 void effectsCheckExpiredTempPattern(){
   //after pattern time has expired, set back to previous pattern.
-  if(fx_starttime + fx_duration < chVTGetSystemTime()){
+  const OrchardEffects *curfx;
+  curfx = orchard_effects_start();
+  curfx += fx_index;
+
+  if(fx_starttime + curfx->duration < chVTGetSystemTime()){
     fx_index = fx_previndex; 
-    fx_duration = 0;
   }
 }
 
-void effectsSetPattern(uint8_t index, uint16_t duration) {
+void effectsSetPattern(uint8_t index) {
   if(index > fx_max) {
-    fx_index = 0;
-    return;
+    index = 0;
   }
-  if(duration > 0) { //temporary effect
-    effectsSetTempPattern(index, duration);
+  const OrchardEffects *curfx;
+  curfx = orchard_effects_start();
+  curfx += index;
+
+  if(curfx->duration > 0) { //temporary effect
+    effectsSetTempPattern(index);
   }
   else {
+    //chprintf(stream, "Setting persistent pattern: %d\n\r", index);
     fx_index = index;
-    fx_duration = 0;
     patternChanged = 1;
     check_lightgene_hack();
   }
@@ -577,37 +587,37 @@ uint8_t effectsGetPattern(void) {
 }
 
 void effectsNextPattern(int skipstrobe) {
-  fx_index = (fx_index + 1) % fx_max;
+  uint8_t index = (fx_index + 1) % fx_max;
 
   if(skipstrobe) {
-    if(strncmp(effectsCurName(), "strobe", 6) == 0) {
-      fx_index = (fx_index + 1) % fx_max;
+    if(effectsNameLookup("strobe") == index) {
+      index = (fx_index + 1) % fx_max;
     }
   }
 
-  patternChanged = 1;
-  check_lightgene_hack();
+  effectsSetPattern(index);
 }
 
 void effectsPrevPattern(int skipstrobe) {
+  uint8_t index = fx_index;
+
   if( fx_index == 0 ) {
-    fx_index = fx_max - 1;
+    index = fx_max - 1;
   } else {
-    fx_index--;
+    index = fx_index - 1;
   }
 
   if(skipstrobe) {
-    if(strncmp(effectsCurName(), "strobe", 6) == 0) {
-      if( fx_index == 0 ) {
-	fx_index = fx_max - 1;
+    if(effectsNameLookup("strobe") == index) {
+      if( index == 0 ) {
+	      index = fx_max - 1;
       } else {
-	fx_index--;
+	      index--;
       }
     }
   }
-  
-  patternChanged = 1;
-  check_lightgene_hack();
+
+  effectsSetPattern(index);
 }
 
 static void blendFbs(void) {
@@ -706,6 +716,17 @@ void effectsStart(void) {
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
   check_lightgene_hack();
+
+  const OrchardEffects *curfx;
+  curfx = orchard_effects_start();
+  curfx += fx_index;
+
+  while(curfx->duration > 0) { //we should not start on a temporary pattern
+    //chprintf(stream, "%s is temporary, advancing to next pattern\n\r", curfx->name );
+    fx_index = (fx_index + 1) % fx_max;
+    curfx += fx_index;
+    //chprintf(stream, "new pattern: %s\n\r", curfx->name );
+  }
 
   draw_pattern();
   ledExitRequest = 0;

@@ -68,7 +68,7 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
     ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
   }
 }
-orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
+orchard_effects("DBcolor", dbColorChangeAndIntensityEffect, 0);
 
 #else
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {

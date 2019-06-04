@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "led.h"
 #include "orchard-effects.h"
+#include "paging.h"
 #include "chprintf.h"
 #include "stdlib.h"
 
@@ -42,7 +43,7 @@ static void strobePatternFB(struct effects_config *config) {
 
   shift = oldshift;
 }
-orchard_effects("strobe", strobePatternFB);
+orchard_effects("strobe", strobePatternFB, PAGE_DISPLAY_MS);
 
 #else
 

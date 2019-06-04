@@ -22,7 +22,7 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    prev         previous effect"NL);
     chprintf(chp, "    list         list effects"NL);
     chprintf(chp, "    get          return name of current effect"NL);
-    chprintf(chp, "    use <effect> [duration] switch to given effect for duration ms, 0 = indefinite"NL);
+    chprintf(chp, "    use <effect> switch to given effect"NL);
     chprintf(chp, "    numcolors [uint8_t]  set number of HSV color options in base color palette"NL);
     chprintf(chp, "    hsvsat [uint8_t]  set saturation of base HSV colors"NL);
     chprintf(chp, "    hsvvalue [uint8_t]  set brightness (value) of base HSV colors"NL);
@@ -46,9 +46,8 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "%s"SHELL_NEWLINE_STR, effectsCurName());
   }
 
-  else if (!strcasecmp(argv[0], "use") && argc >= 2) {
-    int duration = argc == 3 ? atoi(argv[2]) : 0;
-    effectsSetPattern(effectsNameLookup(argv[1]), duration);
+  else if (!strcasecmp(argv[0], "use") && argc == 2) {
+    effectsSetPattern(effectsNameLookup(argv[1]));
   }
   else if (!strcasecmp(argv[0], "numcolors") && argc == 2) {
      numOfBaseHsvColors =  atoi(argv[1]);

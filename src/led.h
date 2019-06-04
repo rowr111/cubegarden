@@ -34,6 +34,7 @@ void orchardEffectsRestart(void);
 typedef struct _OrchardEffects {
   char *name;
   void (*computeEffect)(struct effects_config *context);
+  int duration;
 } OrchardEffects;
 
 #define orchard_effects_start() \
@@ -43,15 +44,15 @@ typedef struct _OrchardEffects {
   (const OrchardEffects *)&start;            \
 })
 
-#define orchard_effects(_name, _func) \
+#define orchard_effects(_name, _func, _duration) \
   const OrchardEffects _orchard_fx_list_##_func \
   __attribute__((unused, aligned(4), section(".chibi_list_effects_2_" _name))) = \
-     { _name, _func }
+     { _name, _func, _duration }
 
 #define orchard_effects_end() \
   const OrchardEffects _orchard_fx_list_##_func \
   __attribute__((unused, aligned(4), section(".chibi_list_effects_3_end"))) = \
-     { NULL, NULL }
+     { NULL, NULL, 0 }
 
 
 /////////////////// EFFECTS
@@ -90,8 +91,8 @@ uint8_t effectsStop(void);
 extern uint8_t ledsOff;;
 
 uint8_t effectsNameLookup(const char *name);
-void effectsSetPattern(uint8_t, uint16_t);
-void effectsSetTempPattern(uint8_t, uint16_t);
+void effectsSetPattern(uint8_t);
+void effectsSetTempPattern(uint8_t);
 void effectsCheckExpiredTempPattern(void);
 uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
@@ -154,7 +155,6 @@ extern HsvColor color270;
 // pattens may want to support the option of user-added LED
 // strips, whereas others will focus only on UI elements in the
 // circle provided on the board itself
-extern uint16_t fx_duration; //effect duration in ms. 0 == persistent
 extern uint32_t fx_starttime; //start time for temporary effect
 
 extern uint8_t shift;  // start a little bit dimmer

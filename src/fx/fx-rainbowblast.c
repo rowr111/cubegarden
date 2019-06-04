@@ -33,7 +33,7 @@ static void rainbowblast(struct effects_config *config) {
 
   if(started == 0 || (getNetworkTimeMs() - lasttimerun) > coolingperiod) {
       started = 1;
-      id = (rand() % 50) + 1; // this is just for now until we get a getId() function
+      id = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
       offset = getCubeLayoutOffset(cube_layout, id);
       rainbowcount = 0;
       rainbowcolor = 0;
@@ -60,7 +60,7 @@ static void rainbowblast(struct effects_config *config) {
    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   
 }
-orchard_effects("rainbowblast", rainbowblast);
+orchard_effects("rainbowblast", rainbowblast, 4000);
 
 #else
 static void rainbowblast(struct effects_config *config) {

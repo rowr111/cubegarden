@@ -19,7 +19,6 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "Usage: tune [constant] [value]:"SHELL_NEWLINE_STR);
     chprintf(chp, "    dBbkgd       dB background threshold (total range: 0-120)"NL);
     chprintf(chp, "    dBMax        dB maximum (total range: 0-120)"NL);
-    chprintf(chp, "    dBMax        dB maximum (total range: 0-120)"NL);
     chprintf(chp, "    pressure     amount to trigger change notification in mPa"NL);
     return;
   }

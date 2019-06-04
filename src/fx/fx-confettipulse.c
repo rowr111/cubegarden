@@ -31,25 +31,28 @@ static void confettipulse(struct effects_config *config) {
   static int started;
 
   if (started == 0){
-      colorindex = rand() % numOfBaseHsvColors; //get an initial color
-      started = 1;
+    colorindex = (uint32_t)rand() % numOfBaseHsvColors; //get an initial color
+    colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
+    started = 1;
   }
 
   if(loop % (pulselength*pulsenum) == 0 ) {
-      colorindex = rand() % numOfBaseHsvColors; //change color randomly every pulsenum pulses
+    colorindex = (uint32_t)rand() % numOfBaseHsvColors; //change color randomly every pulsenum pulses
+    colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
   }
 
   //tap will advance the color by tapadvance amount
   if(singletapped){
     singletapped = 0;
     colorindex++;
+    if (colorindex > numOfBaseHsvColors) colorindex = colorindex % numOfBaseHsvColors; //wrap around
   }
 
   //barometer - pressure change will trigger temporary strobe
   if(loop % 10 == 0){
       if(pressure_changed){
         pressure_changed = 0;
-        effectsSetTempPattern(effectsNameLookup("strobe"), 1000);
+        effectsSetTempPattern(effectsNameLookup("strobe"));
     }
   }
 
@@ -83,7 +86,7 @@ static void confettipulse(struct effects_config *config) {
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   }
 }
-orchard_effects("confettipulse", confettipulse);
+orchard_effects("confettipulse", confettipulse, 0);
 
 #else
 static void confettipulse(struct effects_config *config) {
