@@ -23,21 +23,15 @@ static void rainbowblast(struct effects_config *config) {
   //int id = getId(); //TODO - getID function
   static int id; // there will be 50 cubes.. for now we only have one so just pick a random number
   static int offset;
-  static int started; //only bother with calculating offset logic once
-  static int lasttimerun;
-  int coolingperiod = 4000; //only let it run every 4 seconds
   static RgbColor c;
   RgbColor black = {0,0,0};
  
-
-
-  if(started == 0 || (getNetworkTimeMs() - lasttimerun) > coolingperiod) {
-      started = 1;
+  if(patternChanged) {
+      patternChanged = 0;
       id = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
       offset = getCubeLayoutOffset(cube_layout, id);
       rainbowcount = 0;
       rainbowcolor = 0;
-      lasttimerun = getNetworkTimeMs();
   }
   //waiting to start
   if(offset > 0){
