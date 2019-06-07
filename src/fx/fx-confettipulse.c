@@ -6,10 +6,15 @@
 #include "stdlib.h"
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 
 #ifndef MASTER_BADGE
 
 #include "gyro.h"
+#include "radio.h"
+#include "gfx.h"
+
+#define DOUBLETAP_HISTORY 10
 
 /*effect description:
 1. each cube picks a random color
@@ -26,6 +31,11 @@ static void confettipulse(struct effects_config *config) {
   int loop = config->loop;
   static int pulsenum = 200; //number of times to pulse at this color
   int pulselength = 100; //length of pulse 
+  static uint32_t doubletap_history[DOUBLETAP_HISTORY];
+  static uint8_t doubletapindex; 
+  int keepdoubletap = 10000; //ms to keep doubletaps in history
+  static int id; // there will be 50 cubes.. for now we only have one so just pick a random number
+  
   static int colorindex;
   static HsvColor h;  
 
@@ -33,6 +43,8 @@ static void confettipulse(struct effects_config *config) {
     patternChanged = 0;
     colorindex = (uint32_t)rand() % numOfBaseHsvColors; //get an initial color
     colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
+    //int id = getId(); //TODO - getID function
+    id = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
   }
 
   if(loop % (pulselength*pulsenum) == 0 ) {
@@ -45,6 +57,31 @@ static void confettipulse(struct effects_config *config) {
     singletapped = 0;
     colorindex++;
     if (colorindex > numOfBaseHsvColors) colorindex = colorindex % numOfBaseHsvColors; //wrap around
+  }
+
+  //check doubletap_history and cleanup if in history longer than keepdoubletap
+  for(int i=0; i<DOUBLETAP_HISTORY; i++){
+    if(doubletap_history[i] + keepdoubletap < chVTGetSystemTime()){
+      doubletap_history[i] = 0;
+    }
+  }
+  //add doubletap to history if it exists
+  if(doubletapped){
+    doubletapped = 0;
+    doubletap_history[doubletapindex] = chVTGetSystemTime();
+    doubletapindex = (doubletapindex + 1) % DOUBLETAP_HISTORY;
+  }
+  //check and see how many doubletaps are in history and send notification if it's equal to DOUBLETAP_HISTORY
+  int doubletapcount = 0;
+    for(int i=0; i<DOUBLETAP_HISTORY; i++){
+    if(doubletap_history[i] > 0) doubletapcount++;
+  }
+  if(doubletapcount == DOUBLETAP_HISTORY){
+    char idString[32];
+    chsnprintf(idString, sizeof(idString), "fx trigger rainbowblast %d", id);
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+    radioRelease(radioDriver);
   }
 
   //barometer - pressure change will trigger temporary strobe
