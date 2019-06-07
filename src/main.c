@@ -191,6 +191,12 @@ static void singletapchanged(eventid_t id) {
   singletap();
 }
 
+static void doubletapchanged(eventid_t id) {
+  (void)id;
+ // chprintf(stream, "doubletap\r\n");
+  doubletap();
+}
+
 void spiRuntSetup(SPIDriver *spip);
 unsigned int flash_init = 0;
 
@@ -285,6 +291,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, gyro_freefall, freefall);
   evtTableHook(orchard_events, gyro_singletap, singletapchanged);
   evtTableHook(orchard_events, gyro_singletap, test_singletap);
+  evtTableHook(orchard_events, gyro_doubletap, doubletapchanged); 
   evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
@@ -299,6 +306,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
   evtTableUnhook(orchard_events, pir_process, pir_proc);
+  evtTableUnhook(orchard_events, gyro_doubletap, doubletapchanged); 
   evtTableUnhook(orchard_events, gyro_singletap, test_singletap);
   evtTableUnhook(orchard_events, gyro_singletap, singletapchanged);
   evtTableUnhook(orchard_events, gyro_freefall, freefall);

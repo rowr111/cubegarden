@@ -3113,6 +3113,7 @@ typedef struct
     extern event_source_t gyro2_process;
     extern event_source_t gyro_freefall;
     extern event_source_t gyro_singletap;
+    extern event_source_t gyro_doubletap;
 
     extern int z_inclination;
     extern int current_side;

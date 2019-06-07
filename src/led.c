@@ -39,8 +39,10 @@ uint32_t bump_amount = 0;
 uint8_t bumped = 0;
 uint8_t pressure_changed = 0;
 uint8_t singletapped = 0;
+uint8_t doubletapped = 0;
 unsigned int pressurechangedtime = 0;
 unsigned int singletaptime = 0;
+unsigned int doubletaptime = 0;
 unsigned int patternChanged = 0;
 
 uint8_t dBbkgd = 50;
@@ -449,6 +451,7 @@ orchard_effects("safetyPattern", safetyPatternFB, 0);
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 #define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
 #define SINGLETAP_DEBOUNCE 300 // 300ms debounce to next singletap
+#define DOUBLETAP_DEBOUNCE 300 // 300ms debounce to next doubletap
 
 void bump(uint32_t amount) {
   static unsigned int bumptime = 0;
@@ -471,6 +474,13 @@ void singletap(void) {
   if( chVTGetSystemTime() - singletaptime > SINGLETAP_DEBOUNCE ) {
     singletaptime = chVTGetSystemTime();
     singletapped = 1;
+  }
+}
+
+void doubletap(void) {
+  if( chVTGetSystemTime() - doubletaptime > DOUBLETAP_DEBOUNCE ) {
+    doubletaptime = chVTGetSystemTime();
+    doubletapped = 1;
   }
 }
 

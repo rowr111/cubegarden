@@ -98,6 +98,7 @@ uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void pressureChanged(void);
 void singletap(void);
+void doubletap(void);
 void setShift(uint8_t s);
 uint8_t getShift(void);
 void setdBMax(uint8_t m);
@@ -165,8 +166,10 @@ extern uint32_t bump_amount;
 extern uint8_t bumped;
 extern uint8_t pressure_changed;
 extern uint8_t singletapped;
+extern uint8_t doubletapped;
 extern unsigned int pressurechangedtime;
 extern unsigned int singletaptime;
+extern unsigned int doubletaptime;
 extern unsigned int patternChanged;
 
 extern uint8_t dBbkgd;

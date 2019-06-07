@@ -15,6 +15,7 @@ event_source_t gyro1_process;
 event_source_t gyro2_process;
 event_source_t gyro_freefall;
 event_source_t gyro_singletap;
+event_source_t gyro_doubletap;
 int z_inclination;
 int current_side;
 int pitch_angle;
@@ -6658,6 +6659,9 @@ void gyro1_proc(eventid_t id) {
   if (status.TapStatus) {
 	  chEvtBroadcast(&gyro_singletap);
 	}
+  if (status.DoubleTapStatus) {
+    chEvtBroadcast(&gyro_doubletap);
+  }
 }
 void gyro2_proc(eventid_t id) {
   (void) id;
@@ -6672,6 +6676,7 @@ void gyro_init                                     (void) {
   chEvtObjectInit(&gyro2_process);
   chEvtObjectInit(&gyro_freefall);
   chEvtObjectInit(&gyro_singletap);
+  chEvtObjectInit(&gyro_doubletap);
 
   /* Enable register address automatically incremented during a multiple byte
      access with a serial interface. */
