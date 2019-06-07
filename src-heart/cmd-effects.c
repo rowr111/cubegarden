@@ -3,6 +3,7 @@
 #include "chprintf.h"
 #include "orchard-effects.h"
 #include "shellcfg.h"
+#include "led.h"
 
 #define NL SHELL_NEWLINE_STR
 
@@ -18,15 +19,16 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    list         list effects"NL);
     chprintf(chp, "    get          return name of current effect"NL);
     chprintf(chp, "    use <effect> switch to given effect"NL);
+    chprintf(chp, "    trigger <effect> <cubeid> trigger request for a particular effect from cube");
     return;
   }
 
   if (!strcasecmp(argv[0], "next")) {
-    effectsNextPattern();
+    effectsNextPattern(0);
   }
 
   else if (!strcasecmp(argv[0], "prev")) {
-    effectsPrevPattern();
+    effectsPrevPattern(0);
   }
 
   else if (!strcasecmp(argv[0], "list")) {
@@ -38,7 +40,13 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
   }
 
   else if (!strcasecmp(argv[0], "use") && argc == 2) {
-    effectsSetPattern(effectsNameLookup(argv[1]));
+    effectsSetPattern(effectsNameLookup(argv[1]), 0);
+  }
+
+  else if (!strcasecmp(argv[0], "trigger") && argc == 3) {
+    if(!strcasecmp(argv[1], "rainbowblast")){
+      trigger_rb((uint8_t)atoi(argv[2]));
+    }
   }
   
   return;

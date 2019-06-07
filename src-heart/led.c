@@ -11,12 +11,14 @@
 #include "genes.h"
 #include "storage.h"
 #include "time.h"
+#include "radio.h"
 
 #include "orchard-test.h"
 #include "test-audit.h"
 
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
 
 orchard_effects_end();
 
@@ -389,6 +391,60 @@ void bump(uint32_t amount) {
     bumped = 1;
   }
 }
+
+#define REQUIRED_CUBE_PARTICIPATION 1 //number of cubes required to participate to trigger an effect
+#define CUBE_PARTICPATION_EXPIRATION 10000 //number of ms to keep cube participation in history
+static uint32_t effect_trigger_rb[REQUIRED_CUBE_PARTICIPATION][2]; //trigger for rainbowblast
+
+void trigger_rb(uint8_t id){
+  uint32_t currenttime = chVTGetSystemTime();
+  //clear out expired history
+  for(int i=0; i<REQUIRED_CUBE_PARTICIPATION; i++){
+    if(effect_trigger_rb[i][1] + CUBE_PARTICPATION_EXPIRATION < currenttime){
+      effect_trigger_rb[i][0] = 0;
+      effect_trigger_rb[i][1] = 0;
+    }
+  }
+  uint32_t zeroid = UINT32_MAX;
+  uint32_t oldesttime = UINT32_MAX;
+  uint32_t oldesttimeid = UINT32_MAX;
+  bool found = false;
+  for(int i=0; i<REQUIRED_CUBE_PARTICIPATION; i++){ //update cube's time if it already has an entry
+    if(effect_trigger_rb[i][0] == id){
+      effect_trigger_rb[i][1] = currenttime;
+      found = true;
+    }
+    else if(effect_trigger_rb[i][0] == 0) zeroid = i; //otherwise look for a zeroid
+    else if(effect_trigger_rb[i][1] < oldesttime){ //otherwise look for the oldest time to replace
+      oldesttime = effect_trigger_rb[i][1];
+      oldesttimeid = i;
+    }
+  }
+  //if we haven't already replaced an entry and there is an entry with 0, add there
+  if(found == false && zeroid < UINT32_MAX){
+    effect_trigger_rb[zeroid][0] = id;
+    effect_trigger_rb[zeroid][1] = currenttime;
+  } 
+  //otherwise if no zeros, replace the oldest entry
+  else if(found == false && oldesttimeid < UINT32_MAX){
+    effect_trigger_rb[oldesttimeid][0] = id;
+    effect_trigger_rb[oldesttimeid][1] = currenttime;
+  }
+  //finally, check and see if if you should trigger rainbow blast, and if so, trigger it
+  int trigger_count = 0;
+    for(int i=0; i<REQUIRED_CUBE_PARTICIPATION; i++){
+      if(effect_trigger_rb[i][0] > 0) trigger_count++;
+  }
+  if(trigger_count == REQUIRED_CUBE_PARTICIPATION){
+    char idString[32];
+    chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+    radioRelease(radioDriver);
+  }
+}
+
+
 
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
