@@ -13,24 +13,32 @@
 #include "mic.h"
 #include "analog.h"
 #include "gyro.h"
+#include "userconfig.h"
 
 extern uint8_t scopemode_g;
+const struct userconfig *uconfig;
+
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop; 
   float level;
+  
+  uconfig = getConfig();
+  uint8_t dBbkgd = uconfig->cfg_dBbkgd;
+  uint8_t dBmax = uconfig->cfg_dBmax;
+
 
   scopemode_g = 2; // this selects db mode
 
   //there's no Math.max in C so we have to do something like this to limit the min/max
   //max:
-  if(cur_db > dBbkgd) level = dBMax;
+  if(cur_db > dBbkgd) level = dBmax;
   //min:
   if(cur_db - dBbkgd < 1) level = (float)1;
   else level = (float)(cur_db - dBbkgd);
 
-  level = (level/((float)dBMax-(float)dBbkgd));
+  level = (level/((float)dBmax-(float)dBbkgd));
   //level = level < 0.1 ? 0.1 : level; //some minimum value for safety
 
   //now let's smooth this puppy out

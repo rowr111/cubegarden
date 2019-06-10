@@ -47,6 +47,30 @@ void configToggleBoost(void) {
   config_cache.cfg_txboost = !config_cache.cfg_txboost;
 }
 
+void configSetdBbkgd(uint8_t dBbkgd){
+  config_cache.cfg_dBbkgd = dBbkgd;
+}
+
+void configSetdBmax(uint8_t dBmax){
+  config_cache.cfg_dBmax = dBmax;
+}
+
+void configSetpressuretrig(uint8_t pressuretrig){
+  config_cache.cfg_pressuretrig = pressuretrig;
+}
+
+void configSetBrightThresh(uint32_t bright_thresh){
+  config_cache.cfg_bright_thresh = bright_thresh;
+}
+
+void configSetBrightThresh2(uint32_t bright_thresh2){
+  config_cache.cfg_bright_thresh2 = bright_thresh2;
+}
+
+void configSetBrightThresh3(uint32_t bright_thresh3){
+  config_cache.cfg_bright_thresh3 = bright_thresh3;
+}
+
 void configSetChannel(uint32_t channel) {
   if( channel >= RADIO_MAXCHANNELS )
     channel = 0;  // force to default if bogus stuff is sent to us
@@ -94,6 +118,12 @@ static void init_config(uint32_t block) {
   config.cfg_autosex = 0;   // deny rapid breeding by default
   config.cfg_channel = 0;
   config.cfg_txboost = 0;   // range seems good enough without the boost
+  config.cfg_dBbkgd = 50;        // bkg dB threshhold
+  config.cfg_dBmax = 90;         // max dB threshhold
+  config.cfg_pressuretrig = 60;  // mPa
+  config.cfg_bright_thresh = 3750;
+  config.cfg_bright_thresh2 = 3650;
+  config.cfg_bright_thresh3 = 3550;
 
   for( i = 0; i < MAX_CLIPS; i++ ) {
     config.cfg_clip_used[i] = 0;

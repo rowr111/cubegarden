@@ -359,6 +359,10 @@ static THD_FUNCTION(baro_thread, arg) {
     baro_measurePressureOnce(&baro_pressure, oversampling);
     baro_history[index] = baro_pressure;
 
+    const struct userconfig *uconfig;
+    uconfig = getConfig();
+    uint8_t pressure_trigger_amnt = uconfig->cfg_pressuretrig;
+
     if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > pressure_trigger_amnt){
       // chprintf(stream, "pressure changed suddenly!\r\n");
       pressureChanged();

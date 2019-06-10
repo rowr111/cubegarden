@@ -45,10 +45,6 @@ unsigned int singletaptime = 0;
 unsigned int doubletaptime = 0;
 unsigned int patternChanged = 0;
 
-uint8_t dBbkgd = 50;
-uint8_t dBMax = 90;
-uint8_t pressure_trigger_amnt = 60;
-
 uint8_t ledsOff = 1;
 
 genome diploid;   // not static so we can access/debug from other files
@@ -199,30 +195,6 @@ void setShift(uint8_t s) {
 uint8_t getShift(void) {
     return shift;
 }
-
-void setdBMax(uint8_t m) {
-  dBMax = m;
-}
-
-uint8_t getdBMax(void){
-  return dBMax;
-}
-
-void setdBbkgd(uint8_t b) {
-  dBbkgd = b;
-}
-
-uint8_t getdBbkgd(void) {
-  return dBbkgd;
-}
-
-void setPressTriggerAmnt(uint8_t t) {
-  pressure_trigger_amnt = t;
-};
-
-uint8_t getPressTriggerAmnt(void) {
-  return pressure_trigger_amnt;
-};
 
 // parameter 'index' should be from 1 to numOfBaseHsvColors
 HsvColor getBaseHsvColor(uint8_t index){

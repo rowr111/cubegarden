@@ -78,9 +78,6 @@ static event_source_t chargecheck_timeout;
 // note if this goes below 1s, we'll have to change the uptime counter which currently does whole seconds only
 
 // 3000mV is the absolute minimum for battery, but reserve some margin for error + storage leakage
-#define BRIGHT_THRESH  3750     // threshold to limit brightness
-#define BRIGHT_THRESH2 3650
-#define BRIGHT_THRESH3 3550
 #define SAFETY_THRESH  3450     // threshold to go into safety mode
 #define SHIPMODE_THRESH  3200   // threshold to go into ship mode
 
@@ -616,6 +613,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   int16_t voltage;
   static int was_charging = 0;
   static int last_voltage = 4200;
+  const struct userconfig *config;
+  config = getConfig();
 
   wdogPing(); // ping the watchdog
   
@@ -667,22 +666,22 @@ static void handle_chargecheck_timeout(eventid_t id) {
     // limit brightness to guarantee ~2 hours runtime in safety mode
     if( getShift() < 4 )
       setShift(4);
-  } else if( (voltage < BRIGHT_THRESH3) && !isCharging() ) {
-    if( last_voltage >= BRIGHT_THRESH3 ) {
+  } else if( (voltage < config->cfg_bright_thresh3) && !isCharging() ) {
+    if( last_voltage >= config->cfg_bright_thresh3 ) {
       chprintf(stream, "BATTERY: Threshold #3 hit, dimming by 3\n\r" );
       last_voltage = voltage;
     }
     if( getShift() < 3 )
       setShift(3);
-  } else if( (voltage < BRIGHT_THRESH2) && !isCharging() ) {
-    if( last_voltage >= BRIGHT_THRESH2 ) {
+  } else if( (voltage < config->cfg_bright_thresh2) && !isCharging() ) {
+    if( last_voltage >= config->cfg_bright_thresh2 ) {
       chprintf(stream, "BATTERY: Threshold #2 hit, dimming by 2\n\r" );
       last_voltage = voltage;
     }
     if( getShift() < 2 )
       setShift(2);
-  } else if( (voltage < BRIGHT_THRESH) && !isCharging() ) { // limit brightness when battery is weak
-    if( last_voltage >= BRIGHT_THRESH ) {
+  } else if( (voltage < config->cfg_bright_thresh) && !isCharging() ) { // limit brightness when battery is weak
+    if( last_voltage >= config->cfg_bright_thresh ) {
       chprintf(stream, "BATTERY: Threshold #1 hit, dimming by 1\n\r" );
       last_voltage = voltage;
     }
