@@ -182,7 +182,7 @@ void launcher_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     setShift(5);  // dim it out
     led_app = orchardAppByName("~testpeer");
 #else
-    led_app = orchardAppByName("Blinkies and Sex!");
+    led_app = orchardAppByName("Phasians and Sex!");
 #endif
     if( led_app != NULL )
       orchardAppRun(led_app);
