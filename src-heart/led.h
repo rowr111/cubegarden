@@ -87,9 +87,7 @@ uint8_t effectsStop(void);
 extern uint8_t ledsOff;;
 
 uint8_t effectsNameLookup(const char *name);
-void effectsSetPattern(uint8_t, uint16_t);
-void effectsSetTempPattern(uint8_t, uint16_t);
-void effectsCheckExpiredTempPattern(void);
+void effectsSetPattern(uint8_t);
 uint8_t effectsGetPattern(void);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
@@ -141,9 +139,6 @@ extern RgbColor vividRainbow[6];
 // pattens may want to support the option of user-added LED
 // strips, whereas others will focus only on UI elements in the
 // circle provided on the board itself
-extern uint16_t fx_duration; //effect duration in ms. 0 == persistent
-extern uint32_t fx_starttime; //start time for temporary effect
-
 extern uint8_t shift;  // start a little bit dimmer
 
 extern uint32_t bump_amount;
@@ -153,10 +148,6 @@ extern uint8_t singletapped;
 extern unsigned int pressurechangedtime;
 extern unsigned int singletaptime;
 extern unsigned int patternChanged;
-
-extern uint8_t dBbkgd;
-extern uint8_t dBMax;
-extern uint8_t pressure_trigger_amnt;
 
 void do_lightgene(effects_config *config);
 

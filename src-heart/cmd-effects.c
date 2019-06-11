@@ -4,6 +4,8 @@
 #include "orchard-effects.h"
 #include "shellcfg.h"
 #include "led.h"
+#include <string.h>
+#include <stdlib.h>
 
 #define NL SHELL_NEWLINE_STR
 
@@ -40,7 +42,7 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
   }
 
   else if (!strcasecmp(argv[0], "use") && argc == 2) {
-    effectsSetPattern(effectsNameLookup(argv[1]), 0);
+    effectsSetPattern(effectsNameLookup(argv[1]));
   }
 
   else if (!strcasecmp(argv[0], "trigger") && argc == 3) {

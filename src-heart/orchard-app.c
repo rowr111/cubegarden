@@ -124,9 +124,9 @@ static void handle_radio_page(eventid_t id) {
 
   ui_override = 1;
   oldfx = effectsGetPattern();
-  effectsSetPattern(effectsNameLookup("strobe"), 0);
+  effectsSetPattern(effectsNameLookup("strobe"));
   radioPagePopup();
-  effectsSetPattern(oldfx, 0);
+  effectsSetPattern(oldfx);
   ui_override = 0;
   analogUpdateMic();
 }
@@ -647,7 +647,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
 
   if( voltage < SAFETY_THRESH ) {  // drop to saftey pattern to notify user of battery almost dead
     if( effectsGetPattern() != effectsNameLookup("safetyPattern") )
-      effectsSetPattern(effectsNameLookup("safetyPattern"), 0);
+      effectsSetPattern(effectsNameLookup("safetyPattern"));
 
     // limit brightness to guarantee ~2 hours runtime in safety mode
     if( getShift() < 4 )

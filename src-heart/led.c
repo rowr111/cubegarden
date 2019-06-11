@@ -29,13 +29,9 @@ led_config_def  led_config;
 static effects_config fx_config;
 static uint8_t fx_index;  // current effect
 static uint8_t fx_max;    // max # of effects
-static uint8_t fx_previndex; //previous effect
 static uint8_t ledExitRequest = 0;
 
 // global effects state
-uint16_t fx_duration = 0; //effect duration in ms. 0 == persistent
-uint32_t fx_starttime = 0; //start time for temporary effect
-
 uint8_t shift = 2;  // start a little bit dimmer
 
 uint32_t bump_amount = 0;
@@ -45,10 +41,6 @@ uint8_t singletapped = 0;
 unsigned int pressurechangedtime = 0;
 unsigned int singletaptime = 0;
 unsigned int patternChanged = 0;
-
-uint8_t dBbkgd = 50;
-uint8_t dBMax = 90;
-uint8_t pressure_trigger_amnt = 40;
 
 uint8_t ledsOff = 1;
 
@@ -172,30 +164,6 @@ void setShift(uint8_t s) {
 uint8_t getShift(void) {
     return shift;
 }
-
-void setdBMax(uint8_t m) {
-  dBMax = m;
-}
-
-uint8_t getdBMax(void){
-  return dBMax;
-}
-
-void setdBbkgd(uint8_t b) {
-  dBbkgd = b;
-}
-
-uint8_t getdBbkgd(void) {
-  return dBbkgd;
-}
-
-void setPressTriggerAmnt(uint8_t t) {
-  pressure_trigger_amnt = t;
-};
-
-uint8_t getPressTriggerAmnt(void) {
-  return pressure_trigger_amnt;
-};
 
 // alpha blend, scale the input color based on a value from 0-255. 255 is full-scale, 0 is black-out.
 // uses fixed-point math.
@@ -509,39 +477,14 @@ const char *lightgeneName(void) {
   return diploid.name;
 }
 
-void effectsSetTempPattern(uint8_t index, uint16_t duration){
-  if(fx_duration == 0) { //if our existing effect is persistent, save it.
-    fx_previndex = fx_index;
-  }
-  fx_duration = duration;
-  fx_index = index;
-  fx_starttime = chVTGetSystemTime();
-  patternChanged = 1;
-  check_lightgene_hack();
-}
-
-void effectsCheckExpiredTempPattern(){
-  //after pattern time has expired, set back to previous pattern.
-  if(fx_starttime + fx_duration < chVTGetSystemTime()){
-    fx_index = fx_previndex;
-    fx_duration = 0;
-  }
-}
-
-void effectsSetPattern(uint8_t index, uint16_t duration) {
+void effectsSetPattern(uint8_t index) {
   if(index > fx_max) {
     fx_index = 0;
     return;
-  }
-  if(duration > 0) { //temporary effect
-    effectsSetTempPattern(index, duration);
-  }
-  else {
+  } 
     fx_index = index;
-    fx_duration = 0;
     patternChanged = 1;
     check_lightgene_hack();
-  }
 }
 
 uint8_t effectsGetPattern(void) {
