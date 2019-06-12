@@ -41,6 +41,7 @@
 #include "pir.h"
 #include "barometer.h"
 #include "gyro.h"
+#include "trigger.h"
 
 #include "orchard-test.h"
 

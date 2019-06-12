@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "orchard-effects.h"
 #include "led.h"
+#include "trigger.h"
 
 #include "chprintf.h"
 #include "stdlib.h"
@@ -35,14 +36,7 @@ uint8_t shift = 2;  // start a little bit dimmer
 uint8_t cube_layout = 1; //basic assumption is donut shaped layout
 uint8_t cube_count = 50; //basic assumption - 50 cubes
 
-uint32_t bump_amount = 0;
-uint8_t bumped = 0;
-uint8_t pressure_changed = 0;
-uint8_t singletapped = 0;
-uint8_t doubletapped = 0;
-unsigned int pressurechangedtime = 0;
-unsigned int singletaptime = 0;
-unsigned int doubletaptime = 0;
+
 unsigned int patternChanged = 0;
 
 uint8_t ledsOff = 1;
@@ -420,42 +414,6 @@ static void safetyPatternFB(struct effects_config *config) {
 }
 orchard_effects("safetyPattern", safetyPatternFB, 0);
 
-#define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
-#define PRESSURE_DEBOUNCE 300 // 300ms debounce to next pressure change event
-#define SINGLETAP_DEBOUNCE 300 // 300ms debounce to next singletap
-#define DOUBLETAP_DEBOUNCE 300 // 300ms debounce to next doubletap
-
-void bump(uint32_t amount) {
-  static unsigned int bumptime = 0;
-  
-  bump_amount = amount;
-  if( chVTGetSystemTime() - bumptime > BUMP_DEBOUNCE ) {
-    bumptime = chVTGetSystemTime();
-    bumped = 1;
-  }
-}
-
-void pressureChanged(void){
-  if( chVTGetSystemTime() - pressurechangedtime > PRESSURE_DEBOUNCE ) {
-    pressurechangedtime = chVTGetSystemTime();
-    pressure_changed = 1;
-  }
-}
-
-void singletap(void) {
-  if( chVTGetSystemTime() - singletaptime > SINGLETAP_DEBOUNCE ) {
-    singletaptime = chVTGetSystemTime();
-    singletapped = 1;
-  }
-}
-
-void doubletap(void) {
-  if( chVTGetSystemTime() - doubletaptime > DOUBLETAP_DEBOUNCE ) {
-    doubletaptime = chVTGetSystemTime();
-    doubletapped = 1;
-  }
-}
-
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
   
@@ -469,6 +427,7 @@ static void draw_pattern(void) {
     effectsCheckExpiredTempPattern();
   }
 
+  checkdoubletapTrigger(); //check to see if we need to send a trigger temp pattern reqest
 
   curfx->computeEffect(&fx_config);
 }
@@ -546,22 +505,25 @@ void effectsCheckExpiredTempPattern(){
 }
 
 void effectsSetPattern(uint8_t index) {
-  if(index > fx_max) {
-    index = 0;
-  }
-  const OrchardEffects *curfx;
-  curfx = orchard_effects_start();
-  curfx += index;
+  if(index != fx_index){ //don't bother resetting the pattern if it hasn't changed
+    if(index > fx_max) {
+      index = 0;
+    }
+    const OrchardEffects *curfx;
+    curfx = orchard_effects_start();
+    curfx += index;
 
-  if(curfx->duration > 0) { //temporary effect
-    effectsSetTempPattern(index);
+    if(curfx->duration > 0) { //temporary effect
+      effectsSetTempPattern(index);
+    }
+    else {
+      //chprintf(stream, "Setting persistent pattern: %d\n\r", index);
+      fx_index = index;
+      patternChanged = 1;
+      check_lightgene_hack();
+    }
   }
-  else {
-    //chprintf(stream, "Setting persistent pattern: %d\n\r", index);
-    fx_index = index;
-    patternChanged = 1;
-    check_lightgene_hack();
-  }
+  
 }
 
 uint8_t effectsGetPattern(void) {

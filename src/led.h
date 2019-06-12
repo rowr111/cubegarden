@@ -95,10 +95,6 @@ void effectsSetPattern(uint8_t);
 void effectsSetTempPattern(uint8_t);
 void effectsCheckExpiredTempPattern(void);
 uint8_t effectsGetPattern(void);
-void bump(uint32_t amount);
-void pressureChanged(void);
-void singletap(void);
-void doubletap(void);
 void setShift(uint8_t s);
 uint8_t getShift(void);
 uint8_t getCubeLayoutOffset(uint8_t, uint8_t);
@@ -156,14 +152,6 @@ extern uint8_t shift;  // start a little bit dimmer
 extern uint8_t cube_layout;
 extern uint8_t cube_count;
 
-extern uint32_t bump_amount;
-extern uint8_t bumped;
-extern uint8_t pressure_changed;
-extern uint8_t singletapped;
-extern uint8_t doubletapped;
-extern unsigned int pressurechangedtime;
-extern unsigned int singletaptime;
-extern unsigned int doubletaptime;
 extern unsigned int patternChanged;
 
 void do_lightgene(effects_config *config);
