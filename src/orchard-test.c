@@ -232,16 +232,26 @@ OrchardTestResult orchardTestPrompt(char *line1, char *line2,
   if( interaction_delay > 0 ) {
     test_switch = 0;
     while( !test_switch ) {
-      led_config.final_fb[orchard_test_index*3] = save[0];
-      led_config.final_fb[orchard_test_index*3+1] = save[1];
-      led_config.final_fb[orchard_test_index*3+2] = save[2];
+      for( i = 0; i < 32; i++ ) {
+	led_config.final_fb[i*3] = save[0];
+	led_config.final_fb[i*3+1] = save[1];
+	led_config.final_fb[i*3+2] = save[2];
+      }
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       chSysUnlock();
       chThdSleepMilliseconds(250);
-      led_config.final_fb[orchard_test_index*3] = 255;
-      led_config.final_fb[orchard_test_index*3+1] = 255;
-      led_config.final_fb[orchard_test_index*3+2] = 255;
+      for( i = 0; i < 32; i++ ) {
+	if( i == orchard_test_index ) {
+	  led_config.final_fb[i*3] = 255;
+	  led_config.final_fb[i*3+1] = 0;
+	  led_config.final_fb[i*3+2] = 255;
+	} else {
+	  led_config.final_fb[i*3] = 32;
+	  led_config.final_fb[i*3+1] = 32;
+	  led_config.final_fb[i*3+2] = 0;
+	}
+      }
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       chSysUnlock();
@@ -257,8 +267,8 @@ OrchardTestResult orchardTestPrompt(char *line1, char *line2,
       red = 255;
     }
 
-    // flash result code 15 times
-    for( i = 0; i < 15; i ++ ) {
+    // flash result code 10 times
+    for( i = 0; i < 10; i ++ ) {
       test_led_setall( red, green, 0 );
       chThdSleepMilliseconds(500);
       test_led_setall( 0, 0, 0 );
