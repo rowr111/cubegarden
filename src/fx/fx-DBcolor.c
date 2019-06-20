@@ -23,6 +23,7 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop; 
   float level;
+  RgbColor c;
   
   uconfig = getConfig();
   uint8_t dBbkgd = uconfig->cfg_dBbkgd;
@@ -33,13 +34,12 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
 
   //there's no Math.max in C so we have to do something like this to limit the min/max
   //max:
-  if(cur_db > dBbkgd) level = dBmax;
+  if(cur_db > dBmax) level = (float)(dBmax - dBbkgd); 
   //min:
   if(cur_db - dBbkgd < 1) level = (float)1;
   else level = (float)(cur_db - dBbkgd);
 
   level = (level/((float)dBmax-(float)dBbkgd));
-  //level = level < 0.1 ? 0.1 : level; //some minimum value for safety
 
   //now let's smooth this puppy out
   static float avgs[2];
@@ -52,28 +52,47 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
 
   //if cube is tilted on its side, it will be fixed at a base color and not pulse
   if(z_inclination > 75 && z_inclination < 105){
-    HsvColor c;
+    HsvColor h;
     if (current_side == 0) { //white
-      c = color0;
+      h = color0;
     } else if (current_side == 90) { //cyan
-      c = color90;
+      h = color90;
     } else if (current_side == 180) { //magenta
-      c = color180;
+      h = color180;
     } else { //yellow
-      c = color270;
+      h = color270;
     }
-    RgbColor cc = HsvToRgb(c); 
-    ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
+    c = HsvToRgb(h); 
+    ledSetAllRGB(fb, count, (int)(c.r), (int)(c.g), (int)(c.b), shift);
   }
   else { //otherwise do the db effect!
     //let's iterate through a rainbow of colors to make it prettier
     int currHue = loop%255;
     HsvColor currHSV = {currHue, 255, 255};
-    RgbColor c = HsvToRgb(currHSV);
+    c = HsvToRgb(currHSV);
     //calculate final colors
-    avgLevel = pow(avgLevel, 2);
-    avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel;
-    ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
+    avgLevel = pow(avgLevel, 1.5);
+    avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel; //minimum value
+
+    if( avgLevel > 0.9 ) { //it's sparkle time, baby!
+    int i;
+    for( i = 0; i < count; i++ ) {
+      if( ((uint32_t)rand() % (unsigned int) count) < ((unsigned int) (count / 1.33) )) {
+	      c.r = (int)(c.r*avgLevel);
+        c.g = (int)(c.g*avgLevel);
+        c.b = (int)(c.b*avgLevel);
+        ledSetRGB(fb, i, c.r, c.g, c.b, shift);
+      }
+      else
+	      ledSetRGB(fb, i, 0, 0, 0, shift);
+      }
+    }
+    else{
+      c.r = (int)(c.r*avgLevel);
+      c.g = (int)(c.g*avgLevel);
+      c.b = (int)(c.b*avgLevel);
+      ledSetAllRGB(fb, count, (int)(c.r), (int)(c.g), (int)(c.b), shift);
+    }
   }
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect, 0);
