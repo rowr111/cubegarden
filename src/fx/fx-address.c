@@ -63,4 +63,4 @@ static void initColors(void) {
   colors[3] = blue;
 }
 
-orchard_effects("address", address, 0);
+orchard_effects("address", address);
