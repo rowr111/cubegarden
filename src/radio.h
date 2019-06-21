@@ -6,6 +6,7 @@ typedef struct _KRadioDevice KRadioDevice;
 
 #define RADIO_NETWORK_MAX_LENGTH 8
 #define RADIO_BROADCAST_ADDRESS 255
+#define RADIO_DEFAULT_NODE_ADDRESS 253
 #define RADIO_MAXCHANNELS 4
 #define RADIO_CH_SPACE 3 // make extra space between channels so there's less chance of interference
 
@@ -33,6 +34,7 @@ enum radio_protocols {
   radio_prot_peer_to_dut = 7,
   radio_prot_time        = 8,
   radio_prot_forward     = 9,
+  radio_prot_address     = 10,
 };
 
 extern KRadioDevice KRADIO1;

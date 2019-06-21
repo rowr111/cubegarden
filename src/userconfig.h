@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    6
+#define CONFIG_VERSION    8
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -12,6 +12,7 @@ typedef struct userconfig {
   uint32_t  sex_responses;   // numbef or times others have initiated sex
   uint32_t  cfg_autosex;     // set if sex automatically allowed
   uint32_t  cfg_channel;     // our default channel
+  uint8_t   cfg_address;     // radio address
   uint32_t  cfg_txboost;     // set txboost
   uint8_t   cfg_dBbkgd;      // bkg dB threshhold
   uint8_t   cfg_dBmax;       // max dB threshhold
@@ -31,6 +32,7 @@ void configSetAutosex(void);
 void configClearAutoSex(void);
 void configToggleAutosex(void);
 void configSetChannel(uint32_t channel);
+void configSetAddress(uint8_t address);
 void configSetdBbkgd(uint8_t dBbkgd);
 void configSetdBmax(uint8_t dBmax);
 void configSetpressuretrig(uint8_t pressuretrig);

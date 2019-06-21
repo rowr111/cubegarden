@@ -4,6 +4,7 @@
 #include "shellcfg.h"
 
 #include "cmd-forward.h"
+#include <stdlib.h>
 #include <string.h>
 #include "orchard-app.h"
 #include "paging.h"
@@ -18,13 +19,24 @@ void cmd_forward(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void)argc;
 
   if (argc == 0) {
-    chprintf(chp, "Usage: forward \"<command>\""SHELL_NEWLINE_STR);
-    chprintf(chp, "Runs the given command on nearby devices"SHELL_NEWLINE_STR);
+    chprintf(chp, "Usage: forward [address] \"<command>\""SHELL_NEWLINE_STR);
+    chprintf(chp, "Runs the given command on the given device or all nearby device if omitted"SHELL_NEWLINE_STR);
     return;
   }
 
+  uint8_t address;
+  char *command;
+
+  if (argc == 1) {
+    address = RADIO_BROADCAST_ADDRESS;
+    command = argv[0];
+  } else { // argc == 2
+    address = atoi(argv[0]);
+    command = argv[1];
+  }
+
   radioAcquire(radioDriver);
-  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(argv[0]) + 1, argv[0]);
+  radioSend(radioDriver, address, radio_prot_forward, strlen(command) + 1, command);
   radioRelease(radioDriver);
   
   return;

@@ -78,6 +78,10 @@ void configSetChannel(uint32_t channel) {
   config_cache.cfg_channel = channel;
 }
 
+void configSetAddressCounter(uint8_t addressCounter) {
+  config_cache.cfg_addressCounter = addressCounter;
+}
+
 void configClipMarkUsed(uint32_t clip) {
   if( clip >= MAX_CLIPS )
     return;
@@ -117,6 +121,7 @@ static void init_config(uint32_t block) {
   config.sex_responses = 0;
   config.cfg_autosex = 0;   // deny rapid breeding by default
   config.cfg_channel = 0;
+  config.cfg_addressCounter = 1;
   config.cfg_txboost = 0;   // range seems good enough without the boost
   config.cfg_dBbkgd = 50;        // bkg dB threshhold
   config.cfg_dBmax = 90;         // max dB threshhold

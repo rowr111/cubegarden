@@ -42,6 +42,7 @@
 #include "barometer.h"
 #include "gyro.h"
 #include "trigger.h"
+#include "address.h"
 
 #include "orchard-test.h"
 
@@ -196,6 +197,12 @@ static void doubletapchanged(eventid_t id) {
   (void)id;
  // chprintf(stream, "doubletap\r\n");
   doubletap();
+}
+
+static void initRadioAddress(void) {
+  if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
+    // requestRadioAddress();
+  }
 }
 
 void spiRuntSetup(SPIDriver *spip);
