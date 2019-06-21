@@ -101,14 +101,17 @@ orchard_effects("DBcolor", dbColorChangeAndIntensityEffect, 0);
 static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
+  int loop = config->loop;
 
-  int avgLevel = 50;
-  
-  int currHue = (int)(255-(255*avgLevel));
-  HsvColor currHSV = {currHue, 255, 255};
-  RgbColor c = HsvToRgb(currHSV);
-  
-  ledSetAllRGB(fb, count, (int)(c.r*avgLevel), (int)(c.g*avgLevel), (int)(c.b*avgLevel), shift);
+  HsvColor c;
+  c.h = 191; //blueish.
+  c.s = 255;
+  int brightness = loop%100;
+  brightness = brightness > 50 ? 100 - brightness : brightness;
+  float brightperc = (float)brightness/50;
+  c.v = (int) (255 * brightperc);
+  RgbColor x = HsvToRgb(c);
+  ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
 }
 orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
 #endif
