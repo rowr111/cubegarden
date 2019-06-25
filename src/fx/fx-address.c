@@ -63,4 +63,8 @@ static void initColors(void) {
   colors[3] = blue;
 }
 
+#ifndef MASTER_BADGE
+orchard_effects("address", address, 0);
+#else
 orchard_effects("address", address);
+#endif
