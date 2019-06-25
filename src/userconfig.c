@@ -78,6 +78,10 @@ void configSetChannel(uint32_t channel) {
   config_cache.cfg_channel = channel;
 }
 
+void configSetAddress(uint8_t address) {
+  config_cache.cfg_address = address;
+}
+
 void configClipMarkUsed(uint32_t clip) {
   if( clip >= MAX_CLIPS )
     return;
@@ -118,6 +122,7 @@ static void init_config(uint32_t block) {
   config.cfg_autosex = 0;   // deny rapid breeding by default
   config.cfg_channel = 0;
   config.cfg_txboost = 0;   // range seems good enough without the boost
+  config.cfg_address = RADIO_DEFAULT_NODE_ADDRESS;
   config.cfg_dBbkgd = 50;        // bkg dB threshhold
   config.cfg_dBmax = 90;         // max dB threshhold
   config.cfg_pressuretrig = 60;  // mPa

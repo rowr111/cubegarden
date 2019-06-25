@@ -474,8 +474,8 @@ void radioStart(KRadioDevice *radio, SPIDriver *spip) {
   radio_set_encoding(radio, encoding_whitening);
   radio_set_modulation(radio, modulation_fsk_gaussian_bt_0p3);
   radio_set_packet_mode(radio);
-  radio_set_broadcast_address(radio, 255);
-  radio_set_node_address(radio, 1);
+  radio_set_broadcast_address(radio, RADIO_BROADCAST_ADDRESS);
+  radio_set_node_address(radio, config->cfg_address);
 
   radio_set(radio, RADIO_TestLna, 0x2D); // put LNA into high sensitivity mode
   
@@ -640,6 +640,7 @@ void radioSetAddress(KRadioDevice *radio, uint8_t addr) {
 
   radio->address = addr;
   radio_set_node_address(radio, addr);
+  configSetAddress(addr);
 }
 
 uint8_t radioAddress(KRadioDevice *radio) {

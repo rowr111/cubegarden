@@ -173,6 +173,7 @@ CSRC = \
        gyro.c \
        time.c \
        trigger.c \
+       address.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \

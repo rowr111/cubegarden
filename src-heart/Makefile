@@ -25,7 +25,7 @@ endif
 
 # Linker extra options here.
 ifeq ($(USE_LDOPT),)
-  USE_LDOPT =
+  USE_LDOPT = 
 endif
 
 # Enable this if you want link time optimizations (LTO)
@@ -171,6 +171,7 @@ CSRC = \
        orchard-ui.c \
        analog.c \
        time.c \
+       address.c \
        $(wildcard cmd-*.c) \
        $(wildcard app-*.c) \
        $(wildcard ui-*.c) \
