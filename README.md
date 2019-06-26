@@ -12,7 +12,7 @@ There is also code for a cube master controller, that takes advantage of the BM1
   * ugfx
   
 ## Requirements and Setup
-There are detailed set up instructions [on the wiki](https://github.com/rowr111/cubegarden/wiki/Getting-Started---Getting-everything-connected-and-the-cube-code-running-on-the-controller) for both getting everything set up with a raspberry pi, and for getting the cubegarden code running on either the cubegarden board (for cubes only) or a BM17 badge (for the master controller only).
+There are detailed set up instructions [on the wiki](https://github.com/rowr111/cubegarden/wiki/getting-everything-connected-and-the-cube-code-running-on-the-controller) for both getting everything set up with a raspberry pi, and for getting the cubegarden code running on either the cubegarden board (for cubes only) or a BM17 badge (for the master controller only).
 
 You will need:  
 * a raspberry pi 3B+ connected to your local wireless internet
