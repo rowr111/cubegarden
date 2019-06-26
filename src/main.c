@@ -201,7 +201,7 @@ static void doubletapchanged(eventid_t id) {
 
 static void initRadioAddress(void) {
   if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
-    // requestRadioAddress();
+    requestRadioAddress();
   }
 }
 
@@ -293,6 +293,8 @@ static THD_FUNCTION(orchard_event_thread, arg) {
       break;
     }
   }
+
+  initRadioAddress();
 
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
   evtTableHook(orchard_events, orchard_app_terminated, orchard_app_restart);

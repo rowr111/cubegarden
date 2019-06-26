@@ -18,6 +18,7 @@ RgbColor colors[4];
 static void calculateAddressInColors(uint8_t address, uint8_t *addressInColors);
 static void initColors(void);
 
+#ifndef MASTER_BADGE
 /**
  * Displays the node's address as a sequence of colors.
  * 
@@ -49,6 +50,8 @@ static void address(struct effects_config *config){
   }
 }
 
+orchard_effects("address", address, 0);
+
 static void calculateAddressInColors(uint8_t address, uint8_t *addressInColors) {
   for (int i = 3; i >= 0; i--) {
     addressInColors[i] = address % 4;
@@ -62,9 +65,21 @@ static void initColors(void) {
   colors[2] = green;
   colors[3] = blue;
 }
-
-#ifndef MASTER_BADGE
-orchard_effects("address", address, 0);
 #else
+static void address(struct effects_config *config) {
+  uint8_t *fb = config->hwconfig->fb;
+  int count = config->count;
+  int loop = config->loop;
+
+  HsvColor c;
+  c.h = 0; //red.
+  c.s = 255;
+  int brightness = loop%100;
+  brightness = brightness > 50 ? 100 - brightness : brightness;
+  float brightperc = (float)brightness/50;
+  c.v = (int) (255 * brightperc);
+  RgbColor x = HsvToRgb(c);
+  ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
+}
 orchard_effects("address", address);
 #endif

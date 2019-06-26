@@ -97,7 +97,7 @@ void effectsCheckExpiredTempPattern(void);
 uint8_t effectsGetPattern(void);
 void setShift(uint8_t s);
 uint8_t getShift(void);
-uint8_t getCubeLayoutOffset(uint8_t, uint8_t);
+uint8_t getCubeLayoutOffset(uint8_t);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
 

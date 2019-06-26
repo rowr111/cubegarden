@@ -38,7 +38,7 @@ static void rainyday(struct effects_config *config) {
   static bool dolightning = false;
 
   if(current % 10 == 0){
-      chprintf(stream, "current: %d\n\r", current);
+      //chprintf(stream, "current: %d\n\r", current);
       //chprintf(stream, "sat: %d\n\r", sat);
   }
 

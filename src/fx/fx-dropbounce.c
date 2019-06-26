@@ -12,8 +12,6 @@ static void dropbounce(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  //int id = getId(); //TODO - getID function
-  static int id; // there will be 50 cubes.. for now we only have one so just pick a random number
   static int offset;
   static int on;
 
@@ -27,8 +25,7 @@ static void dropbounce(struct effects_config *config) {
 
   if(patternChanged){
       patternChanged = 0;
-      id = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
-      offset = getCubeLayoutOffset(cube_layout, id);
+      offset = getCubeLayoutOffset(cube_layout);
       if(offset == 0){
         on = 1;
         ClockTimeSinceLastBounce = chVTGetSystemTime();
@@ -43,7 +40,6 @@ static void dropbounce(struct effects_config *config) {
   } 
   if(loop % 3 == 0 && offset > 0){
     offset--;
-     chprintf(stream, "offset: %d\n\r", offset);
      if(offset == 0){
         on = 1;
         ClockTimeSinceLastBounce = chVTGetSystemTime();

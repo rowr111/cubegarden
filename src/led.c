@@ -12,6 +12,8 @@
 #include "genes.h"
 #include "storage.h"
 #include "time.h"
+#include "radio.h"
+#include "address.h"
 
 #include "orchard-test.h"
 #include "test-audit.h"
@@ -33,7 +35,7 @@ static uint8_t ledExitRequest = 0;
 uint32_t fx_starttime = 0; //start time for temporary effect
 
 uint8_t shift = 2;  // start a little bit dimmer
-uint8_t cube_layout = 1; //basic assumption is donut shaped layout
+uint8_t cube_layout = 3; //basic assumption is donut shaped layout
 uint8_t cube_count = 50; //basic assumption - 50 cubes
 
 
@@ -202,8 +204,19 @@ HsvColor getBaseHsvColor(uint8_t index){
 }
 
 //this expects an id of 1-50
-uint8_t getCubeLayoutOffset(uint8_t layout, uint8_t id){
+uint8_t getCubeLayoutOffset(uint8_t layout){
   uint8_t offset = 0;
+
+  //first let's check and see if we actually got the id already, if not, let's get it.
+  if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
+    requestRadioAddress();
+  }
+  uint8_t id = radioAddress(radioDriver);
+  //if it is still unable to get an address, pick a random number.
+  if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
+    id = ((uint32_t)rand() % cube_count) + 1;
+  }
+  
   
   // 1 == donut shape configuration of the cubes with central empty (of cubes) area
   // fixed number of offset layers of 6.
@@ -222,11 +235,11 @@ uint8_t getCubeLayoutOffset(uint8_t layout, uint8_t id){
   }
   // 2 == rows of 10 cubes
   else if(layout == 2){
-    offset = id%10;
+    offset = (id-1)%10; //id starts at 1, so make this 0 based
   }
   // 3 == rows of 5 cubes
   else if(layout == 3) {
-    offset = id%5;
+    offset = (id-1)%5; //id starts at 1, so make this 0 based
   }
   return offset;
 }

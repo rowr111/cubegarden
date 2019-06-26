@@ -20,16 +20,13 @@ static void rainbowblast(struct effects_config *config) {
   int rainbowtimes = 5; //how many times to iterate through the rainbow
   static int rainbowcount;
   static int rainbowcolor; 
-  //int id = getId(); //TODO - getID function
-  static int id; // there will be 50 cubes.. for now we only have one so just pick a random number
   static int offset;
   static RgbColor c;
   RgbColor black = {0,0,0};
  
   if(patternChanged) {
       patternChanged = 0;
-      id = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
-      offset = getCubeLayoutOffset(cube_layout, id);
+      offset = getCubeLayoutOffset(cube_layout);
       rainbowcount = 0;
       rainbowcolor = 0;
   }

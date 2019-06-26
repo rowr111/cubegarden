@@ -9,6 +9,8 @@
 
 #ifndef MASTER_BADGE
 
+#include "address.h"
+
 /*effect description:
     this effect is used for setup only.
     it will pick the offset for the desired configuration, and then pick a hue
@@ -20,12 +22,9 @@ static void setupoffset(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
 
-  uint8_t id; // there will be 50 cubes.. for now we only have one so just pick a random number
   HsvColor h;
 
-  id = 7; // this is just for now until we get a getId() function
-
-  uint8_t offset = getCubeLayoutOffset(cube_layout, id);
+  uint8_t offset = getCubeLayoutOffset(cube_layout);
   uint8_t hue = 0;
   if(cube_layout == 1){
     hue = (int)((255/6)*offset);
