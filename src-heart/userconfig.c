@@ -119,7 +119,7 @@ static void init_config(uint32_t block) {
 
   config.sex_initiations = 0;
   config.sex_responses = 0;
-  config.cfg_autosex = 0;   // deny rapid breeding by default
+  config.cfg_autosex = 1;   // cubegarden is always DTF!
   config.cfg_channel = 0;
   config.cfg_addressCounter = 1;
   config.cfg_txboost = 0;   // range seems good enough without the boost
