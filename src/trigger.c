@@ -11,6 +11,8 @@
 
 #include "storage.h"
 #include "time.h"
+#include "radio.h"
+#include "address.h"
 
 #include <string.h>
 #include <math.h>
@@ -66,11 +68,17 @@ void doubletap(void) {
 }
 
 void checkdoubletapTrigger(void){
-   int cubeid; // there will be 50 cubes.. for now we only have one so just pick a random number
-    //int id = getId(); //TODO - getID function
-   cubeid = (uint32_t) rand() % 50 + 1; // this is just for now until we get a getId() function
+  //first let's check and see if we actually got the id already, if not, let's get it.
+  if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
+    requestRadioAddress();
+  }
+  uint8_t id = radioAddress(radioDriver);
+  //if it is still unable to get an address, pick a random number.
+  if (radioAddress(radioDriver) == RADIO_DEFAULT_NODE_ADDRESS) {
+    id = ((uint32_t)rand() % cube_count) + 1;
+  }
 
-    //check doubletap_history and cleanup if in history longer than keepdoubletap
+  //check doubletap_history and cleanup if in history longer than keepdoubletap
   for(int i=0; i<DOUBLETAP_HISTORY; i++){
     if(doubletap_history[i] + keepdoubletap < chVTGetSystemTime()){
       doubletap_history[i] = 0;
@@ -89,7 +97,7 @@ void checkdoubletapTrigger(void){
   }
   if(doubletapcount == DOUBLETAP_HISTORY){
     char idString[32];
-    chsnprintf(idString, sizeof(idString), "fx trigger rainbowblast %d", cubeid);
+    chsnprintf(idString, sizeof(idString), "fx trigger rainbowblast %d", id);
     radioAcquire(radioDriver);
     radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
     radioRelease(radioDriver);
