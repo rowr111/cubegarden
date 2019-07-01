@@ -528,7 +528,9 @@ static void handle_radio_sex_ack(uint8_t prot, uint8_t src, uint8_t dst,
   }
 #else
   // ASSUME: current effect is in fact an Lg-series effect...
-  curfam = effectsCurName()[2] - '0';
+  // you know what happens when you assume? :P  
+  //curfam = effectsCurName()[2] - '0';
+  curfam = 0; // cube master only has one pattern, hardcoding to 0.
   meiosis(&egg, &(oldfam->haploidM[curfam]), &(oldfam->haploidP[curfam]));
   for( i = 0; i < GENE_FAMILYSIZE; i++ ) {
     if( i != curfam ) {
@@ -587,29 +589,25 @@ static void handle_radio_sex_req(uint8_t prot, uint8_t src, uint8_t dst,
       chThdSleepMilliseconds(SEX_TURNAROUND_TIME); // wait a little bit before responding to sex query
     }
     configIncSexResponses(); // record # times we've had sex
-    // sex with me!
-    if( strncmp(effectsCurName(), "Lg", 2) == 0 ) {
-      // and it's a generated light pattern!
-      
-      family_member = effectsCurName()[2] - '0';
-	
-      // silly biologists, they should have called it create_gamete
-      meiosis(&gamete, &(family->haploidM[family_member]),
-	      &(family->haploidP[family_member]));
+    // sex with me!    
+    //family_member = effectsCurName()[2] - '0';
+    family_member = 0; //there's only one effect in the cube master badge, hardcoding to 0.
 
+    // silly biologists, they should have called it create_gamete
+    meiosis(&gamete, &(family->haploidM[family_member]),
+      &(family->haploidP[family_member]));
 #if SEXTEST
-      handle_radio_sex_ack(radio_prot_sex_ack, 255, 255, sizeof(genome), &gamete);
+    handle_radio_sex_ack(radio_prot_sex_ack, 255, 255, sizeof(genome), &gamete);
 #else
-      memcpy(response, &gamete, sizeof(genome));
-      strncpy(&(response[sizeof(genome)]), who, GENE_NAMELENGTH);
-      radioAcquire(radioDriver);
-      sexmode = 1;
-      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_sex_ack,
-		sizeof(response), response);
-      sexmode = 0;
-      radioRelease(radioDriver);
+    memcpy(response, &gamete, sizeof(genome));
+    strncpy(&(response[sizeof(genome)]), who, GENE_NAMELENGTH);
+    radioAcquire(radioDriver);
+    sexmode = 1;
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_sex_ack,
+  sizeof(response), response);
+    sexmode = 0;
+    radioRelease(radioDriver);
 #endif
-    }
   }
 }
 
