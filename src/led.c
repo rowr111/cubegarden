@@ -35,6 +35,7 @@ static uint8_t ledExitRequest = 0;
 uint32_t fx_starttime = 0; //start time for temporary effect
 
 uint8_t shift = 2;  // start a little bit dimmer
+RgbColor superRgb;
 uint8_t cube_layout = 3; //basic assumption is donut shaped layout
 uint8_t cube_count = 50; //basic assumption - 50 cubes
 
@@ -434,7 +435,17 @@ static void draw_pattern(void) {
 
   fx_config.loop++;
 
-  curfx += fx_index;
+  //if we've been away from the master badge too long,
+  //force safety pattern (no fun mode!)
+  if(lastmasterping + TIME_PING_MAX_WAIT < ST2MS(chVTGetSystemTime())){
+    curfx += effectsNameLookup("safetyPattern");
+    if(fx_config.loop % 100 == 0){
+      chprintf(stream, "No masterbadge ping received in %d ms, forcing safetyPattern.\n\r", TIME_PING_MAX_WAIT);
+    }
+  }
+  else{
+    curfx += fx_index;
+  }
 
   if(curfx->duration > 0) {   //if we have a temporary pattern, check expiration
     effectsCheckExpiredTempPattern();

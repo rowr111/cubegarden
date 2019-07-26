@@ -9,6 +9,7 @@
 /////////// STRUCTURE
 #define LED_COUNT 32
 #define UI_LED_COUNT 32
+#define TIME_PING_MAX_WAIT 90000 //3min
 
 struct orchard_effects_instance;
 
@@ -88,7 +89,7 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb);
 
 void effectsStart(void);
 uint8_t effectsStop(void);
-extern uint8_t ledsOff;;
+extern uint8_t ledsOff;
 
 uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t);
@@ -149,6 +150,7 @@ extern HsvColor color270;
 extern uint32_t fx_starttime; //start time for temporary effect
 
 extern uint8_t shift;  // start a little bit dimmer
+extern RgbColor superRgb; //superrgb color for use when setting all the cubes
 extern uint8_t cube_layout;
 extern uint8_t cube_count;
 

@@ -12,6 +12,8 @@
  */
 int32_t offsetMs = 0;
 
+uint32_t lastmasterping = 0;
+
 /**
  * Returns current network time in milliseconds from boot of time master.
  * If no time message has been received, simply returns system time unmodified.
@@ -45,6 +47,7 @@ void handleRadioTime(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, con
   (void) length;
     
   uint32_t systemTimeMs = ST2MS(chVTGetSystemTime());
+  lastmasterping = systemTimeMs; //save last master ping time
   uint32_t networkTimeMs = *((uint32_t *) data);
 
   offsetMs = systemTimeMs - networkTimeMs;
