@@ -25,6 +25,7 @@
 #include "time.h"
 #include "cmd-forward.h"
 #include "address.h"
+#include "baton.h"
 
 #include "shellcfg.h"
 
@@ -1074,6 +1075,7 @@ void orchardAppInit(void) {
   radioSetHandler(radioDriver, radio_prot_time, handleRadioTime);
   radioSetHandler(radioDriver, radio_prot_forward, handleRadioForward);
   radioSetHandler(radioDriver, radio_prot_address, handleRadioAddress);
+  radioSetHandler(radioDriver, radio_prot_baton, handleRadioBaton);
 
   chVTReset(&chargecheck_timer);
   chVTSet(&chargecheck_timer, MS2ST(CHARGECHECK_INTERVAL), run_chargecheck, NULL);

@@ -25,7 +25,7 @@
 #define RADIO_BUFFER_SIZE         64
 #define RADIO_BUFFER_MASK         (RADIO_BUFFER_SIZE - 1)
 
-#define MAX_PACKET_HANDLERS       10
+#define MAX_PACKET_HANDLERS       12
 
 uint32_t crcfails = 0;
 uint8_t radio_rssi = 0;

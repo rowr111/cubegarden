@@ -174,6 +174,7 @@ CSRC = \
        time.c \
        trigger.c \
        address.c \
+       baton.c \
        $(wildcard cmd-*.c) \
        $(wildcard ui-*.c) \
        $(wildcard test-*.c) \

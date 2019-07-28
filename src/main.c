@@ -229,6 +229,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   
   geneStart();  // this has to start after random pool is initied
   configStart();
+  startBaton();  // this has to start after the config records are initialized
 
   flash_init = 1;
 

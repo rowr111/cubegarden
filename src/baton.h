@@ -3,11 +3,13 @@
 
 #include "ch.h"
 
-#define MAX_ACTUAL_CUBES 50  // address space is up to 254, but for baton passing we want to not try
+#define MAX_ACTUAL_CUBES 2  // address space is up to 254, but for baton passing we want to not try
 // passing to cubes that don't exist. So MAX_ACTUAL_CUBES limits the range of numbers to try for baton
 // passing.
 #define BATON_PASS_WAIT 200  // how long to wait in ms during a baton pass to sample responses
 #define BATON_HOLDER_INTERVAL 2000  // time between baton holder broadcast pings
+#define BATON_RADIO_ACK_DUP 3   // define how many times packets are resent by default
+#define BATON_RADIO_ACK_DUP_DELAY 27 // time in milliseconds to wait between resending dups
  
 typedef enum {
   baton_holder      = 1,   // this packet identifies the current baton holder
@@ -31,6 +33,15 @@ typedef enum {
   baton_increment = 1,
   baton_specified = 2,
 } baton_strategy_type;
+
+typedef struct _BatonState {
+  baton_return_type  state;
+  uint8_t  passing_to_addr;
+  uint32_t retry_interval;
+  baton_strategy_type strategy;
+  uint32_t retry_time;
+  uint32_t announce_time;
+} BatonState;
 
 /*
   Baton passing protocol. 
@@ -124,7 +135,7 @@ void abortBatonPass(void);
 
 /*
   Initialize the baton state to baton_not_holding, sets baton_increment counter to our current
-  address plus 1 modulo max cubes, and clears the retry timer.
+  address, and clears the retry timer.
  */
 void initBaton(void);
 
@@ -132,5 +143,13 @@ void initBaton(void);
   Low level radio baton holder. 
  */
 void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, const void *data);
+
+/*
+   Create the baton handler thread. Call exactly once on boot.
+ */
+void startBaton(void);
+
+// for debugging
+BatonState *getBatonState(void);
 
 #endif
