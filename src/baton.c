@@ -181,7 +181,7 @@ static THD_WORKING_AREA(waBatonThread, 0x200);
 static THD_FUNCTION(baton_thread, arg) {
   (void)arg;
   
-  chRegSetThreadName("Baton Manager");
+  chRegSetThreadName("BatonManager");
   initBaton();
   
   while (!chThdShouldTerminateX()) {
