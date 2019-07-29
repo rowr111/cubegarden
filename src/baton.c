@@ -12,6 +12,7 @@
 #include "orchard-math.h"
 
 static BatonState bstate;
+uint8_t maxActualCubes = MAX_ACTUAL_CUBES;
 
 BatonState *getBatonState(void) {
   return &bstate;
@@ -83,6 +84,9 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
     // we could also check address of the ack sent to see if it's from the cube we were targeting
     // to catch the case where we have two batons...
     break;
+  case baton_maxcube:
+    maxActualCubes = pkt->address;
+    break;
   default:
     chprintf(stream, "baton: bad packet type\n\r");
   }
@@ -131,11 +135,11 @@ baton_return_type passBaton(baton_strategy_type strategy, uint8_t address, uint3
     }
   } else if( bstate.strategy == baton_increment ) {
     bstate.passing_to_addr = config->cfg_address + 1; // scan through the space of cubes
-    if( bstate.passing_to_addr > MAX_ACTUAL_CUBES )
+    if( bstate.passing_to_addr > maxActualCubes )
       bstate.passing_to_addr = 1;
   } else if( bstate.strategy == baton_random ) {
     do {
-      bstate.passing_to_addr = (rand() % MAX_ACTUAL_CUBES) + 1;
+      bstate.passing_to_addr = (((uint32_t) rand()) % maxActualCubes) + 1;
     } while( bstate.passing_to_addr == config->cfg_address );
   }
 
@@ -216,4 +220,19 @@ void startBaton(void) {
 			       (NORMALPRIO + 1), // slightly higher than the main thread
 			       baton_thread,
 			       NULL);
+}
+
+void setMaxCubes(uint8_t maxcubes) {
+  BatonPacket pkt;
+
+  pkt.type = baton_maxcube;
+  pkt.address = maxcubes;
+
+  int i;
+  for( i = 0; i < 5; i++ ) {
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
+    radioRelease(radioDriver);
+    chThdSleepMilliseconds(33);
+  }
 }

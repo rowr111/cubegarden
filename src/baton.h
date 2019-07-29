@@ -5,16 +5,19 @@
 
 #define MAX_ACTUAL_CUBES 2  // address space is up to 254, but for baton passing we want to not try
 // passing to cubes that don't exist. So MAX_ACTUAL_CUBES limits the range of numbers to try for baton
-// passing.
+// passing. This is now just a "first draft" for size, can be updated by a baton_maxcube packet
 #define BATON_PASS_WAIT 200  // how long to wait in ms during a baton pass to sample responses
 #define BATON_HOLDER_INTERVAL 2000  // time between baton holder broadcast pings
 #define BATON_RADIO_ACK_DUP 3   // define how many times packets are resent by default
 #define BATON_RADIO_ACK_DUP_DELAY 27 // time in milliseconds to wait between resending dups
- 
+
+extern uint8_t maxActualCubes;
+
 typedef enum {
   baton_holder      = 1,   // this packet identifies the current baton holder
   baton_pass        = 2,   // this packet is an attempt to pass the baton to id at "address"
   baton_ack         = 3,   // this packet acknowledges the baton was received
+  baton_maxcube     = 4,   // transmitted by the master badge to reset the maxActualCubes number.
 } baton_packet_type;
 
 typedef struct _BatonPacket {
@@ -151,5 +154,8 @@ void startBaton(void);
 
 // for debugging
 BatonState *getBatonState(void);
+
+// for master badge only
+void setMaxCubes(uint8_t maxcubes);
 
 #endif

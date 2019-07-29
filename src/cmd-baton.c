@@ -22,6 +22,7 @@ void cmd_baton(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "  force"SHELL_NEWLINE_STR);
     chprintf(chp, "  passrand"SHELL_NEWLINE_STR);
     chprintf(chp, "  passinc"SHELL_NEWLINE_STR);
+    chprintf(chp, "  maxcube <number>\n\r" );
     return;
   }
 
@@ -59,6 +60,15 @@ void cmd_baton(BaseSequentialStream *chp, int argc, char *argv[]) {
   if (!strcasecmp(argv[0], "passinc")) {
     chprintf(chp, "Initiating a incrementing sweep with retry = 500ms.\n\r");
     passBaton(baton_increment, 0, 500);
+  }
+
+  if (!strcasecmp(argv[0], "maxcube")) {
+    if( argc != 2 ) {
+      chprintf(chp, "maxcube requires one argument\n\r");
+      return;
+    }
+    maxActualCubes = ((uint8_t) strtoul(argv[1], NULL, 0));
+    chprintf(chp, "Setting maxActualCubes to %d.\n\r", maxActualCubes);
   }
 }
 
