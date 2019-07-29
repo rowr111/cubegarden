@@ -659,6 +659,7 @@ void radioSend(KRadioDevice *radio,
   const struct userconfig *config;
 
   config = getConfig();
+  palClearPad(IOPORT5, 0); // turn on red LED
 
   pkt.length = bytes + sizeof(pkt);
   pkt.src = radio->address;
@@ -750,6 +751,8 @@ void radioSend(KRadioDevice *radio,
   
   radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady | DIO1_RxFifoNotEmpty);
   //  radioWrite(radio, RADIO_DioMapping1, DIO0_RxCrkOk);
+  
+  palSetPad(IOPORT5, 0); // turn off red LED
 }
 
 static uint32_t test_rxseq = 0;

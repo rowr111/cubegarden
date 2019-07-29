@@ -13,6 +13,15 @@
 static BatonState bstate;
 uint8_t maxActualCubes = MAX_ACTUAL_CUBES;
 
+
+// telemetry to the UI
+extern uint8_t baton_holder_g;
+extern baton_packet_type last_baton_packet_g;
+extern uint8_t baton_target_g;
+extern uint8_t baton_passing_g;
+extern uint32_t last_ping_g;
+
+
 BatonState *getBatonState(void) {
   return &bstate;
 }
@@ -55,11 +64,19 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
 
   BatonPacket *pkt = (BatonPacket *)data;
 
+  last_baton_packet_g = pkt->type;
+  
   switch(pkt->type) {
   case baton_holder: // the "true" baton holder is confirming its baton holding
     if( 254 != pkt->address ) {
       bstate.state = baton_not_holding;
     }
+
+    last_ping_g = chVTGetSystemTime();
+    if( baton_holder_g != pkt->address ) // case of we missed the ack, but the baton was actually passed
+      baton_passing_g = 0;
+    
+    baton_holder_g = pkt->address;
     break;
   case baton_pass:
     if( 254 == pkt->address ) {
@@ -67,13 +84,17 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
       bstate.announce_time = chVTGetSystemTime();
       sendBatonAck();
     }
+    baton_target_g = pkt->address;
+    baton_passing_g = 1;
     break;
   case baton_ack:
+    baton_holder_g = pkt->address;
     if( bstate.state == baton_passing )
       bstate.state = baton_not_holding;
     // right now, *any* ack will clear this -- we might get dups etc.
     // we could also check address of the ack sent to see if it's from the cube we were targeting
     // to catch the case where we have two batons...
+    baton_passing_g = 0;
     break;
   case baton_maxcube:
     // master badge should know this

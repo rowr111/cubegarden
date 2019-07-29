@@ -9,7 +9,7 @@
 #include <math.h>
 
 #include "fixmath.h"
-#include "fix16_fft.h"
+//#include "fix16_fft.h"
 
 uint8_t scopemode_g = 2;
 
@@ -86,16 +86,19 @@ void agc_fft(uint8_t  *sample) {
 
 // happens within a gfxlock
 void precompute(uint16_t *samples) {
+  uint16_t agc_samp[NUM_SAMPLES];
+#if 0
   fix16_t real[NUM_SAMPLES];
   fix16_t imag[NUM_SAMPLES];
-  uint16_t agc_samp[NUM_SAMPLES];
   uint8_t fft_samp[NUM_SAMPLES];
+#endif
   coord_t height;
   coord_t width;
   uint16_t i;
   uint16_t scale;
 
   agc( samples, agc_samp );
+#if 0
   if ( scopemode_g ) {
     for( i = 0; i < NUM_SAMPLES; i++ ) {
       fft_samp[i] = (uint8_t) (agc_samp[i] >> 8) & 0xFF;
@@ -111,6 +114,7 @@ void precompute(uint16_t *samples) {
       agc_samp[i] = ((uint16_t) fft_samp[i]) << 8;
     }
   }
+#endif
   
   height = gdispGetHeight();
   scale = 65535 / height;
@@ -208,6 +212,7 @@ static void redraw_ui(uint16_t *samples) {
   orchardGfxEnd();
 }
 
+#if 0
 static uint32_t oscope_init(OrchardAppContext *context) {
   (void)context;
 
@@ -234,7 +239,11 @@ void oscope_event(OrchardAppContext *context, const OrchardAppEvent *event) {
     if ( (event->key.flags == keyDown) && (event->key.code == keyLeft) ) {
       // orchardAppExit();  // I think this is a misfeature as "home" hold should be the way out
     } else  if ( (event->key.flags == keyDown) && (event->key.code == keySelect) ) {
-      scopemode_g = (scopemode_g + 1) % 3;
+      if( scopemode_g )
+	scopemode_g = 0;
+      else
+	scopemode_g = 2;
+      // 1 is FFT, we're eliminating that code path
     }
   } else if( event->type == adcEvent) {
     if( event->adc.code == adcCodeMic ) {
@@ -255,5 +264,4 @@ static void oscope_exit(OrchardAppContext *context) {
 }
 
 orchard_app("Sound scope", oscope_init, oscope_start, oscope_event, oscope_exit);
-
-
+#endif

@@ -179,7 +179,6 @@ CSRC = \
        $(wildcard test-*.c) \
        $(wildcard fx/fx-*.c) \
        $(LIBFIXMATHSRC) \
-       $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

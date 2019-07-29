@@ -25,6 +25,7 @@
 #include "time.h"
 #include "cmd-forward.h"
 #include "address.h"
+#include "baton.h"
 
 #include "shellcfg.h"
 
@@ -947,7 +948,7 @@ static void accel_bump_event(eventid_t id) {
     instance.app->event(instance.context, &evt);
 }
 
-static THD_WORKING_AREA(waOrchardAppThread, 0x980); // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
+static THD_WORKING_AREA(waOrchardAppThread, 0x780); // was 0x900 before we expanded oscope processing, 0xb00 without fft agc mod
 static THD_FUNCTION(orchard_app_thread, arg) {
 
   (void)arg;
@@ -1084,6 +1085,7 @@ void orchardAppInit(void) {
   radioSetHandler(radioDriver, radio_prot_time, handleRadioTime);
   radioSetHandler(radioDriver, radio_prot_forward, handleRadioForward);
   radioSetHandler(radioDriver, radio_prot_address, handleRadioAddress);
+  radioSetHandler(radioDriver, radio_prot_baton, handleRadioBaton);
 
   chVTReset(&chargecheck_timer);
   chVTSet(&chargecheck_timer, MS2ST(CHARGECHECK_INTERVAL), run_chargecheck, NULL);

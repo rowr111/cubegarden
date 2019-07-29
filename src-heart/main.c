@@ -151,7 +151,7 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x600);
+static THD_WORKING_AREA(waOrchardEventThread, 0x500);
 static THD_FUNCTION(orchard_event_thread, arg) {
 
   (void)arg;

@@ -17,8 +17,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "fixmath.h"
-#include "fix16_fft.h"
+//#include "fixmath.h"
+//#include "fix16_fft.h"
 
 #define SEXTEST 0
 
@@ -550,6 +550,6 @@ static void led_exit(OrchardAppContext *context) {
   (void)context;
 }
 
-orchard_app("Phasians and Sex!", led_init, led_start, led_event, led_exit);
+orchard_app("Set Cube Effect", led_init, led_start, led_event, led_exit);
 
 

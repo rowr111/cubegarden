@@ -13,88 +13,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-static const char *first_names[16] =
-  {"Happy",
-   "Dusty",
-   "Sassy",
-   "Sexy",
-   
-   "Silly",
-   "Curvy",
-   "Nerdy",
-   "Geeky",
-   
-   "OMG",
-   "Fappy",
-   "Trippy",
-   "Lovely",
-
-   "Furry",
-   "WTF",
-   "Spacy",
-   "Lacy",
-  };
-
-static const char *middle_names[16] =
-  {"Playa",
-   "OMG",
-   "Hot",
-   "Dope",
-   
-   "Pink",
-   "Balla",
-   "Sweet",
-   "Cool",
-   
-   "Cute",
-   "Nice",
-   "Fun",
-   "Soft",
-
-   "Short",
-   "Tall",
-   "Huge",
-   "Red",
-  };
-
-static const char *last_names[8] =
-  {"Virus",
-   "Brain",
-   "Raver",
-   "Hippie",
-   
-   "Profit",
-   "Relaxo",
-   "Phage",
-   "Blinky",
-  };
-
 extern genome diploid;
 
 void generateName(char *result) {
-  uint32_t r = rand();
-  uint8_t i = 0;
-
-  i = strlen(strcpy(result, first_names[r & 0xF]));
-  strcpy(&(result[i]), middle_names[(r >> 8) & 0xF]);
-  i = strlen(result);
-  strcpy(&(result[i]), last_names[(r >> 16) & 0x7]);
-  i = strlen(result);
-
-  osalDbgAssert( i < GENE_NAMELENGTH, "Name generated exceeds max length, revisit name database!\n\r" );
+  strlen(strcpy(result, "cubemaster"));
 }
 
-
-// for testing, mostly
-void cmd_gename(BaseSequentialStream *chp, int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
-  char genName[GENE_NAMELENGTH];
-
-  generateName(genName);
-  chprintf(chp, "%s\n\r", genName);
-}
-orchard_shell("gename", cmd_gename);
 
 void computeGeneExpression(const genome *hapM, const genome *hapP,
 			   genome *expr) {
@@ -122,13 +46,13 @@ void computeGeneExpression(const genome *hapM, const genome *hapP,
 static void generate_gene(struct genome *haploid) {
   char genName[GENE_NAMELENGTH];
 
-  haploid->cd_period = 6;
+  haploid->cd_period = 0;
   haploid->cd_rate = 15;
   haploid->cd_dir = 0;
   haploid->sat = 0x60;
-  haploid->hue_base = 0x20;
+  haploid->hue_base = 0x0;
   haploid->hue_ratedir = 0x0;
-  haploid->hue_bound = 0x21;
+  haploid->hue_bound = 255;
   haploid->lin = 0;
   haploid->strobe = 0;
   haploid->accel = 255;

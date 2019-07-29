@@ -72,12 +72,12 @@ static void redraw_ui(void) {
   orchardGfxEnd();
 }
 
-static uint32_t tune_init(OrchardAppContext *context) {
+static uint32_t mtune_init(OrchardAppContext *context) {
   (void)context;
   return 0;
 }
 
-static void tune_start(OrchardAppContext *context) {
+static void mtune_start(OrchardAppContext *context) {
   (void)context;
   const struct userconfig *config;
   config = getConfig();
@@ -87,7 +87,7 @@ static void tune_start(OrchardAppContext *context) {
 
 }
 
-static void tune_event(OrchardAppContext *context, const OrchardAppEvent *event) {
+static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
   uint8_t selected;
@@ -145,7 +145,7 @@ static void tune_event(OrchardAppContext *context, const OrchardAppEvent *event)
   }
 }
 
-static void tune_exit(OrchardAppContext *context) {
+static void mtune_exit(OrchardAppContext *context) {
   (void)context;
   const struct userconfig *config;
   config = getConfig();
@@ -174,4 +174,4 @@ static void tune_exit(OrchardAppContext *context) {
   }
 }
 
-orchard_app("tune", tune_init, tune_start, tune_event, tune_exit);
+orchard_app("Tune cubes", mtune_init, mtune_start, mtune_event, mtune_exit);
