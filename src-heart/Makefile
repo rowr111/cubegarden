@@ -172,6 +172,7 @@ CSRC = \
        analog.c \
        time.c \
        address.c \
+       baton.c \
        $(wildcard cmd-*.c) \
        $(wildcard app-*.c) \
        $(wildcard ui-*.c) \

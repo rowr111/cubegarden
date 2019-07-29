@@ -35,6 +35,7 @@ enum radio_protocols {
   radio_prot_time        = 8,
   radio_prot_forward     = 9,
   radio_prot_address     = 10,
+  radio_prot_baton       = 11,
 };
 
 extern KRadioDevice KRADIO1;
