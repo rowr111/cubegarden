@@ -3,7 +3,7 @@
 	url = https://github.com/rowr111/ChibiOS
 [submodule "ChibiOS-Contrib"]
 	path = ChibiOS-Contrib
-	url = https://github.com/rowr111/ChibiOS-Contrib
+	url = git@github.com:rowr111/ChibiOS-Contrib
 [submodule "ugfx"]
 	path = ugfx
 	url = https://github.com/rowr111/ugfx-xz.git
