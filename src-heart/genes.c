@@ -122,17 +122,17 @@ void computeGeneExpression(const genome *hapM, const genome *hapP,
 static void generate_gene(struct genome *haploid) {
   char genName[GENE_NAMELENGTH];
 
-  haploid->cd_period = map((int16_t) rand() & 0xFF, 0, 255, 0, 6);
-  haploid->cd_rate = (uint8_t) rand() & 0xFF;
-  haploid->cd_dir = (uint8_t) rand() & 0xFF;
-  haploid->sat = (uint8_t) rand() & 0xFF;
-  haploid->hue_base = (uint8_t) rand() & 0xFF;
-  haploid->hue_ratedir = (uint8_t) rand() & 0xFF;
-  haploid->hue_bound = (uint8_t) rand() & 0xFF;
-  haploid->lin = (uint8_t) rand() & 0xFF;
-  haploid->strobe = (uint8_t) rand() & 0xFF;
-  haploid->accel = (uint8_t) rand() & 0xFF;
-  haploid->nonlin = (uint8_t) rand() & 0xFF;
+  haploid->cd_period = 6;
+  haploid->cd_rate = 15;
+  haploid->cd_dir = 0;
+  haploid->sat = 0x60;
+  haploid->hue_base = 0x20;
+  haploid->hue_ratedir = 0x0;
+  haploid->hue_bound = 0x21;
+  haploid->lin = 0;
+  haploid->strobe = 0;
+  haploid->accel = 255;
+  haploid->nonlin = 255;
   
   generateName(genName);
   strncpy(haploid->name, genName, GENE_NAMELENGTH);
