@@ -365,6 +365,8 @@ static void radio_unload_packet(eventid_t id) {
   uint8_t flags;
   uint8_t crc_failed = 0;
 
+  palClearPad(IOPORT5, 0); // turn on red LED
+  
   flags = radioRead(radioDriver, RADIO_IrqFlags2);
   if( !(flags & IrqFlags2_CrcOk) ) {
 #ifdef DEBUG_CRC
@@ -427,6 +429,7 @@ static void radio_unload_packet(eventid_t id) {
                              pkt.dst,
                              sizeof(payload),
                              payload);
+  palSetPad(IOPORT5, 0); // turn off red LED
 }
 
 void radioStop(KRadioDevice *radio) {
@@ -659,6 +662,7 @@ void radioSend(KRadioDevice *radio,
   uint8_t flags;
   const struct userconfig *config;
 
+  palClearPad(IOPORT5, 0); // turn on red LED
   config = getConfig();
 
   pkt.length = bytes + sizeof(pkt);
@@ -751,6 +755,7 @@ void radioSend(KRadioDevice *radio,
   
   radioWrite(radio, RADIO_DioMapping1, DIO0_RxPayloadReady | DIO1_RxFifoNotEmpty);
   //  radioWrite(radio, RADIO_DioMapping1, DIO0_RxCrkOk);
+  palSetPad(IOPORT5, 0); // turn off red LED
 }
 
 static uint32_t test_rxseq = 0;
