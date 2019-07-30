@@ -493,6 +493,8 @@ uint8_t effectsGetPattern(void) {
 
 void effectsNextPattern(int skipstrobe) {
   fx_index = (fx_index + 1) % fx_max;
+  //also set the pattern changed
+  patternChanged = 1;
 
   if(skipstrobe) {
     if(strncmp(effectsCurName(), "strobe", 6) == 0) {
@@ -510,6 +512,8 @@ void effectsPrevPattern(int skipstrobe) {
   } else {
     fx_index--;
   }
+  //also set the pattern changed
+  patternChanged = 1;
 
   if(skipstrobe) {
     if(strncmp(effectsCurName(), "strobe", 6) == 0) {

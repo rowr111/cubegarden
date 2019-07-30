@@ -7,6 +7,9 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include "baton.h"
+
+extern uint8_t baton_holder_g;
 
 #ifndef MASTER_BADGE
 
@@ -17,12 +20,12 @@
 
 /*effect description:
 1. one cube is the 'master' cube whose actions control all the other cubes.
-2. the master cube is chosen by the masterbadge
-3. at the start of being chosen, the new mastercube will flash brightly three times
+2. the master cube is chosen by the masterbadge at the beginning
+3. at the start of being chosen, the new mastercube will flash brightly five times
 4. actions performed on the mastercube will then cause a broadcast out to other cubes
 5. other cubes will now be dependent on the mastercube for their color
-6. after 1 (?) minute or so, a new master cube will be selected
-7. master cube behavior will be the same as confettipulse.
+6. after 2 minutes, a new master cube will be selected by the current master cube
+7. master cube behavior will be the same as confettipulse (minus barometer).
 */
 static void LOTC(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
@@ -30,12 +33,18 @@ static void LOTC(struct effects_config *config) {
   int loop = config->loop;
   static int pulsenum = 200; //number of times to pulse at this color
   int pulselength = 100; //length of pulse 
+  uint32_t batonholdmaxtime = 120000; //ms to hold the baton (2min)
+  static uint32_t batonholdnexttime = 0; //when to pass the baton
+  BatonState *bstate;
+  bstate = getBatonState();
+  static uint8_t flashcount = 5; //number of times to flash at the beginning of the baton 
+  uint8_t flashspeed = 5; //how many loops to flash
+  static RgbColor fc;
   
   static int colorindex;
   static HsvColor h;  
-  static bool mastercube = false;
 
-  if (mastercube){
+  if (bstate->state != baton_not_holding){
 
   if (patternChanged){
     patternChanged = 0;
@@ -78,29 +87,84 @@ static void LOTC(struct effects_config *config) {
       c = color270;
     }
     RgbColor cc = HsvToRgb(c); 
-    ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
 
-    char idString[32];
-    chsnprintf(idString, sizeof(idString), "superrgb %d %d %d", cc.r, cc.g, cc.b);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-    radioRelease(radioDriver);
+    //flash flashcount times at beginning of baton holding
+    if ((bstate->state == baton_holding) && flashcount > 0){
+      if(loop % flashspeed == 0){
+        if(fc.r == 0){
+          fc.r = 255;
+          fc.g = 255;
+          fc.b = 255;
+        }
+        else{
+          fc.r = 0;
+          fc.g = 0;
+          fc.b = 0;
+        }
+        flashcount--;
+      }
+      ledSetAllRGB(fb, count, (fc.r), (fc.g), (fc.b), shift);
+    }
+    else
+    {
+      ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
+    }
+    if(loop%2 == 0){ //very slightly less spammy..
+      char idString[32];
+      chsnprintf(idString, sizeof(idString), "superrgb %d %d %d", cc.r, cc.g, cc.b);
+      radioAcquire(radioDriver);
+      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+      radioRelease(radioDriver);
+    }
   }
   //
   else { //otherwise, pulse at the expected color
     HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};
     RgbColor c = HsvToRgb(currHSV); 
-    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
-    char idString[32];
-    chsnprintf(idString, sizeof(idString), "superrgb %d %d %d", c.r, c.g, c.b);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-    radioRelease(radioDriver);
+     //flash flashcount times at beginning of baton holding
+    if ((bstate->state == baton_holding) && flashcount > 0){
+      if(loop % flashspeed == 0){
+        if(fc.r == 0){
+          fc.r = 255;
+          fc.g = 255;
+          fc.b = 255;
+          flashcount--;
+        }
+        else{
+          fc.r = 0;
+          fc.g = 0;
+          fc.b = 0;
+        }
+      }
+      ledSetAllRGB(fb, count, (fc.r), (fc.g), (fc.b), shift);
+    }
+    else{
+      ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
+    }
+    if(loop%2 == 0){ //very slightly less spammy..
+      char idString[32];
+      chsnprintf(idString, sizeof(idString), "superrgb %d %d %d", c.r, c.g, c.b);
+      radioAcquire(radioDriver);
+      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+      radioRelease(radioDriver);
+    }
   }
   }
   else
   {
        ledSetAllRGB(fb, count, (superRgb.r), (superRgb.g), (superRgb.b), shift);
+  }
+  //pass the baton if we're out of time
+  if (bstate->state == baton_holding){
+    if(batonholdnexttime == 0){ //if == 0 get start time
+       batonholdnexttime = chVTGetSystemTime() + batonholdmaxtime;
+       flashcount = 5; //reset flashcount
+    }
+    if(chVTGetSystemTime() > batonholdnexttime){ //if out of time, pass baton
+      chprintf(stream, "reached max time of %d, passing baton.\n\r", batonholdmaxtime);
+      passBaton(baton_random, 0, 500);
+      batonholdnexttime = 0; //reset baton holding time
+    }
   }
 }
 orchard_effects("LOTC", LOTC, 0);
@@ -110,6 +174,8 @@ static void LOTC(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
+  BatonState *bstate;
+  bstate = getBatonState();
 
   HsvColor c;
   c.h = 212; //pinkish.
@@ -120,6 +186,14 @@ static void LOTC(struct effects_config *config) {
   c.v = (int) (255 * brightperc);
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
+  //if no one is holding the baton, pass it randomly to kick things off
+  if( (baton_holder_g == 0) || (baton_holder_g == 254) ) {  
+    if (loop % 10 == 0){
+      chprintf(stream, "no baton holder, trying to pass to random\n\r");
+    }
+    bstate->state = baton_holding;
+    passBaton(baton_random, 0, 500);
+  } 
 }
 orchard_effects("LOTC", LOTC);
 #endif

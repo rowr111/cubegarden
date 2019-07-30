@@ -9,7 +9,7 @@
 /////////// STRUCTURE
 #define LED_COUNT 32
 #define UI_LED_COUNT 32
-#define TIME_PING_MAX_WAIT 90000 //3min
+#define TIME_PING_MAX_WAIT 180000 //3min
 
 struct orchard_effects_instance;
 

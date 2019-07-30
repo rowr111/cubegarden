@@ -110,7 +110,7 @@ static void redraw_ui(int banner) {
   gdispDrawStringBox(0, height*5, width, height,
 		     uiStr, font, White, justifyLeft);
 
-  // 6th line: A button help
+  // 6th line: B button help
   chsnprintf(uiStr, sizeof(uiStr), "B - new random baton" );
   gdispDrawStringBox(0, height*6, width, height,
 		     uiStr, font, White, justifyLeft);
