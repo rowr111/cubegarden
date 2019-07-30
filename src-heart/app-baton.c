@@ -143,6 +143,9 @@ static void baton_event(OrchardAppContext *context, const OrchardAppEvent *event
   if (event->type == keyEvent) {
     if( (event->key.flags == keyDown) && ((event->key.code == keyTopR)) ) { // "A" key
       redraw_ui(1);
+
+      setMaxCubes(config->cfg_addressCounter);
+      
       // clear the baton by claiming it to the master badge
       pkt.type = baton_holder;
       pkt.address = 254; // this is the master badge reserved address
@@ -157,6 +160,9 @@ static void baton_event(OrchardAppContext *context, const OrchardAppEvent *event
       
     } else if( (event->key.flags == keyDown) && ((event->key.code == keyBottomR)) ) { // "B" key
       redraw_ui(2);
+
+      setMaxCubes(config->cfg_addressCounter);
+      
       // clear the baton by claiming it to the master badge
       pkt.type = baton_holder;
       pkt.address = 254; // this is the master badge reserved address
