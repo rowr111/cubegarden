@@ -623,6 +623,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
   if( (((uptime / 60) % 5) == 0) && ((uptime % 60) == 0) ) { // update the uptime, batt state once every 5 mins
     chprintf(stream, "Uptime: %dh %dm %ds\n\r", uptime / 3600, (uptime / 60) % 60, uptime % 60);
     chprintf(stream, "Volts: %dmV Soc: %d%% Stat: %s Fault: %s\n\r", voltage, ggStateofCharge(), chgStat(), chgFault());
+    chprintf(stream, "last_time: %d\n\r", getNetworkTimeMs() );
   }
   
   uptime += CHARGECHECK_INTERVAL / 1000; // keep an uptime count in seconds
