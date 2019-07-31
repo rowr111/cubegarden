@@ -51,5 +51,5 @@ void handleRadioTime(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, con
   uint32_t networkTimeMs = *((uint32_t *) data);
 
   offsetMs = systemTimeMs - networkTimeMs;
-  chprintf(stream, "offset %d\n\r", offsetMs);
+  chprintf(stream, "offset %d, last_time %d\n\r", offsetMs, getNetworkTimeMs());
 }

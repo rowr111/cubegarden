@@ -31,7 +31,7 @@ uint32_t crcfails = 0;
 uint8_t radio_rssi = 0;
 uint8_t sexmode = 0;
 
-//#define DEBUG_CRC
+#define DEBUG_CRC
 
 /* This number was guessed based on observations (133 at 30 degrees) */
 static int temperature_offset = 133 + 30;
@@ -404,7 +404,8 @@ static void radio_unload_packet(eventid_t id) {
     (void)radio_get(radio, RADIO_Fifo);
   
 #ifdef DEBUG_CRC
-  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, radio_rssi );
+  // this is a bit too verbose for CRC fail debugging, as this triggers every friggin packet
+  //  chprintf(stream, "Unloaded prot %d payload %s len %d crc %x rssi -%ddBm\r\n", pkt.prot, payload, pkt.length, crc, radio_rssi );
 #endif
 
   /* Dispatch the packet handler */
