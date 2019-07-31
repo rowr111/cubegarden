@@ -10,6 +10,7 @@ uint8_t baton_holder_g = 0;
 uint8_t baton_target_g = 0;
 baton_packet_type last_baton_packet_g = baton_holder;
 uint8_t baton_passing_g = 0;
+uint8_t baton_fx_g = 0;
 
 uint32_t last_ping_g = 0;
 /*
@@ -18,6 +19,7 @@ uint32_t last_ping_g = 0;
   Last ping: ##### ms
   Last pkt: 'holder' or 'pass' or 'ack' or 'maxcube'
   Maxcubes: ###
+  fx: ###
   A - clear baton
   B - new random baton
  */
@@ -105,14 +107,19 @@ static void redraw_ui(int banner) {
   gdispDrawStringBox(0, height*4, width, height,
 		     uiStr, font, White, justifyLeft);
 
-  // 5th line: A button help
-  chsnprintf(uiStr, sizeof(uiStr), "A - clear baton" );
-  gdispDrawStringBox(0, height*5, width, height,
+  // 5th line: fx
+  chsnprintf(uiStr, sizeof(uiStr), "Fx: %d", baton_fx_g );
+  gdispDrawStringBox(0, height*4, width, height,
 		     uiStr, font, White, justifyLeft);
 
-  // 6th line: B button help
-  chsnprintf(uiStr, sizeof(uiStr), "B - new random baton" );
+  // 6th line: A button help
+  chsnprintf(uiStr, sizeof(uiStr), "A - clear baton" );
   gdispDrawStringBox(0, height*6, width, height,
+		     uiStr, font, White, justifyLeft);
+
+  // 7th line: B button help
+  chsnprintf(uiStr, sizeof(uiStr), "B - new random baton" );
+  gdispDrawStringBox(0, height*7, width, height,
 		     uiStr, font, White, justifyLeft);
 
   gdispFlush();

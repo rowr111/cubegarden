@@ -20,7 +20,7 @@ extern baton_packet_type last_baton_packet_g;
 extern uint8_t baton_target_g;
 extern uint8_t baton_passing_g;
 extern uint32_t last_ping_g;
-
+extern uint8_t baton_fx_g;
 
 BatonState *getBatonState(void) {
   return &bstate;
@@ -33,6 +33,15 @@ void initBaton(void) {
   bstate.strategy = baton_random;
   bstate.retry_time = chVTGetSystemTime();
   bstate.announce_time = chVTGetSystemTime();
+  bstate.fx = 0;
+}
+
+uint8_t getBatonFx(void) {
+  return bstate.fx;
+}
+
+void setBatonFx(uint8_t fx) {
+  bstate.fx = fx;
 }
 
 void sendBatonAck(void) {
@@ -40,6 +49,7 @@ void sendBatonAck(void) {
 
   pkt.type = baton_ack;
   pkt.address = 254;
+  pkt.fx = 0;
 
   int i;
   // this handler runs in the event thread so it means we won't be able
@@ -70,7 +80,10 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
   case baton_holder: // the "true" baton holder is confirming its baton holding
     if( 254 != pkt->address ) {
       bstate.state = baton_not_holding;
+      bstate.fx = pkt->fx; // fx updates based on the holder beacon
+      baton_fx_g = bstate.fx;
     }
+    
 
     last_ping_g = chVTGetSystemTime();
     if( baton_holder_g != pkt->address ) // case of we missed the ack, but the baton was actually passed
@@ -82,6 +95,8 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
     if( 254 == pkt->address ) {
       bstate.state = baton_holding;
       bstate.announce_time = chVTGetSystemTime();
+      bstate.fx = pkt->fx;
+      baton_fx_g = bstate.fx;
       sendBatonAck();
     }
     baton_target_g = pkt->address;
@@ -119,6 +134,7 @@ void sendBatonPassPacket(void) {
 
   pkt.type = baton_pass;
   pkt.address = bstate.passing_to_addr;
+  pkt.fx = bstate.fx;
 
   radioAcquire(radioDriver);
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
@@ -172,6 +188,7 @@ void sendBatonHoldingPacket(void) {
 
   pkt.type = baton_holder;
   pkt.address = 254; // this is the master badge reserved address
+  pkt.fx = bstate.fx;
 
   radioAcquire(radioDriver);
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
@@ -232,6 +249,7 @@ void setMaxCubes(uint8_t maxcubes) {
 
   pkt.type = baton_maxcube;
   pkt.address = maxcubes;
+  pkt.fx = bstate.fx;
 
   int i;
   for( i = 0; i < 5; i++ ) {

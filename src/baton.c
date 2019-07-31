@@ -18,6 +18,14 @@ BatonState *getBatonState(void) {
   return &bstate;
 }
 
+uint8_t getBatonFx(void) {
+  return bstate.fx;
+}
+
+void setBatonFx(uint8_t fx) {
+  bstate.fx = fx;
+}
+
 void initBaton(void) {
   const struct userconfig *config;
   config = getConfig();
@@ -28,6 +36,7 @@ void initBaton(void) {
   bstate.strategy = baton_random;
   bstate.retry_time = chVTGetSystemTime();
   bstate.announce_time = chVTGetSystemTime();
+  bstate.fx = 0;
 }
 
 void sendBatonAck(void) {
@@ -38,6 +47,7 @@ void sendBatonAck(void) {
 
   pkt.type = baton_ack;
   pkt.address = config->cfg_address;
+  pkt.fx = bstate.fx;
 
   int i;
   // this handler runs in the event thread so it means we won't be able
@@ -68,12 +78,14 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
   case baton_holder: // the "true" baton holder is confirming its baton holding
     if( config->cfg_address != pkt->address ) {
       bstate.state = baton_not_holding;
+      bstate.fx = pkt->fx; // fx updates based on the holder beacon
     }
     break;
   case baton_pass:
     if( config->cfg_address == pkt->address ) {
       bstate.state = baton_holding;
       bstate.announce_time = chVTGetSystemTime();
+      bstate.fx = pkt->fx; // or if it's been passed to us specifically
       sendBatonAck();
     }
     break;
@@ -83,13 +95,17 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
     // right now, *any* ack will clear this -- we might get dups etc.
     // we could also check address of the ack sent to see if it's from the cube we were targeting
     // to catch the case where we have two batons...
+
+    // don't update fx on the ack
     break;
   case baton_maxcube:
     maxActualCubes = pkt->address;
+    // don't update fx on the maxcube, this is an admin message only
     break;
   default:
     chprintf(stream, "baton: bad packet type\n\r");
   }
+
 }
 
 void abortBatonPass(void) {
@@ -108,6 +124,7 @@ void sendBatonPassPacket(void) {
 
   pkt.type = baton_pass;
   pkt.address = bstate.passing_to_addr;
+  pkt.fx = bstate.fx;
 
   radioAcquire(radioDriver);
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
@@ -174,6 +191,7 @@ void sendBatonHoldingPacket(void) {
 
   pkt.type = baton_holder;
   pkt.address = config->cfg_address;
+  pkt.fx = bstate.fx;
 
   radioAcquire(radioDriver);
   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
@@ -192,6 +210,7 @@ static THD_FUNCTION(baton_thread, arg) {
     if( (bstate.state == baton_passing) && (bstate.retry_interval > 0) ) {
       // we've specified a retry interval, so let's see if it's time to retry
       if( chVTTimeElapsedSinceX(bstate.retry_time) > bstate.retry_interval ) {
+	chprintf(stream, "baton pass retry\n" );
 	sendBatonPassPacket();
 	bstate.retry_time = chVTGetSystemTime();
       }
@@ -227,6 +246,7 @@ void setMaxCubes(uint8_t maxcubes) {
 
   pkt.type = baton_maxcube;
   pkt.address = maxcubes;
+  pkt.fx = bstate.fx;
 
   int i;
   for( i = 0; i < 5; i++ ) {

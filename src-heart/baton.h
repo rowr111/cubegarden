@@ -23,6 +23,7 @@ typedef enum {
 typedef struct _BatonPacket {
   baton_packet_type type;
   uint8_t  address;
+  uint8_t  fx;
 } BatonPacket;
 
 typedef enum {
@@ -44,6 +45,7 @@ typedef struct _BatonState {
   baton_strategy_type strategy;
   uint32_t retry_time;
   uint32_t announce_time;
+  uint8_t fx;
 } BatonState;
 
 /*
@@ -151,6 +153,9 @@ void handleRadioBaton(uint8_t prot, uint8_t src, uint8_t dst, uint8_t length, co
    Create the baton handler thread. Call exactly once on boot.
  */
 void startBaton(void);
+
+uint8_t getBatonFx(void);
+void setBatonFx(uint8_t fx);
 
 // for debugging
 BatonState *getBatonState(void);
