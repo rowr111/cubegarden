@@ -410,19 +410,23 @@ void led_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 	oscope_running = 0;
       } else if( event->key.code == keyTopR) {
 	// this is the "A" key
-	chsnprintf(effect_cmd, sizeof(effect_cmd), "fx use %s", effectsCurName());
-	radioAcquire(radioDriver);
-	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
-	  effect_cmd);
-	radioRelease(radioDriver);
+	for( i = 0; i < 4; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "fx use %s", effectsCurName());
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+		    effect_cmd);
+	  radioRelease(radioDriver);
 
-	// also re-update the brightess level, in case this was missed
-	shift = getShift();
-	chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
-	radioAcquire(radioDriver);
-	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
-	  effect_cmd);
-	radioRelease(radioDriver);
+	  chThdSleepMilliseconds(17);
+	  // also re-update the brightess level, in case this was missed
+	  shift = getShift();
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "b %d", 7 - shift);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1,
+		    effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(23);
+	}
 	
 	last_oscope_time = chVTGetSystemTime();
 	oscope_running = 0;
