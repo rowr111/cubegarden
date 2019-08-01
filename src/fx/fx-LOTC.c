@@ -162,6 +162,7 @@ static void LOTC(struct effects_config *config) {
     }
     if(chVTGetSystemTime() > batonholdnexttime){ //if out of time, pass baton
       chprintf(stream, "reached max time of %d, passing baton.\n\r", batonholdmaxtime);
+      bstate->fx++;
       passBaton(baton_random, 0, 500);
       batonholdnexttime = 0; //reset baton holding time
     }
@@ -187,12 +188,9 @@ static void LOTC(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
   //if no one is holding the baton, pass it randomly to kick things off
-  if( (baton_holder_g == 0) || (baton_holder_g == 254) ) {  
-    if (loop % 10 == 0){
-      chprintf(stream, "no baton holder, trying to pass to random\n\r");
-    }
-    bstate->state = baton_holding;
-    passBaton(baton_random, 0, 500);
+  if( chVTTimeElapsedSinceX(last_ping_g) > 30000 ) {   // 30 seconds no baton, pass a new one out
+    chprintf(stream, "no baton holder, trying to pass to random\n\r");
+    baton_new_random();
   } 
 }
 orchard_effects("LOTC", LOTC);

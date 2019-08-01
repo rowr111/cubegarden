@@ -140,6 +140,46 @@ static void baton_start(OrchardAppContext *context) {
   redraw_ui(0);
 }
 
+void baton_new_random(void) {
+  BatonPacket pkt;
+  int i;
+  const struct userconfig *config;
+  config = getConfig();
+  
+  setMaxCubes(config->cfg_addressCounter);
+      
+  // clear the baton by claiming it to the master badge
+  pkt.type = baton_holder;
+  pkt.address = 254; // this is the master badge reserved address
+
+  for( i = 0; i < 10; i++ ) {
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
+    radioRelease(radioDriver);
+    chThdSleepMilliseconds(10); // really spam it
+  }
+  baton_holder_g = 254; // presume i've got it
+
+  chThdSleepMilliseconds(200); // give cubes a moment to have their other threads run
+      
+  pkt.type = baton_pass;
+  pkt.address = (((uint32_t) rand()) % config->cfg_addressCounter) + 1;
+  baton_target_g = pkt.address;
+  baton_passing_g = 1;
+
+  for( i = 0; i < 20; i++ ) {
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
+    radioRelease(radioDriver);
+    chThdSleepMilliseconds(20); // really spam it
+    
+    if( baton_passing_g == 0 )
+      break; // stop spamming if we've got an ack
+  }
+  
+  last_ping_g = chVTGetSystemTime(); // reset the baton ping time
+}
+
 static void baton_event(OrchardAppContext *context, const OrchardAppEvent *event) {
   (void)context;
   BatonPacket pkt;
@@ -168,36 +208,7 @@ static void baton_event(OrchardAppContext *context, const OrchardAppEvent *event
     } else if( (event->key.flags == keyDown) && ((event->key.code == keyBottomR)) ) { // "B" key
       redraw_ui(2);
 
-      setMaxCubes(config->cfg_addressCounter);
-      
-      // clear the baton by claiming it to the master badge
-      pkt.type = baton_holder;
-      pkt.address = 254; // this is the master badge reserved address
-
-      for( i = 0; i < 10; i++ ) {
-	radioAcquire(radioDriver);
-	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
-	radioRelease(radioDriver);
-	chThdSleepMilliseconds(10); // really spam it
-      }
-      baton_holder_g = 254; // presume i've got it
-
-      chThdSleepMilliseconds(200); // give cubes a moment to have their other threads run
-      
-      pkt.type = baton_pass;
-      pkt.address = (((uint32_t) rand()) % config->cfg_addressCounter) + 1;
-      baton_target_g = pkt.address;
-      baton_passing_g = 1;
-
-      for( i = 0; i < 20; i++ ) {
-	radioAcquire(radioDriver);
-	radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_baton, sizeof(pkt), &pkt);
-	radioRelease(radioDriver);
-	chThdSleepMilliseconds(20); // really spam it
-
-	if( baton_passing_g == 0 )
-	  break; // stop spamming if we've got an ack
-      }
+      baton_new_random();
     }
   } else if(event->type == timerEvent) {
     // timer event will trigger this

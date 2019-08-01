@@ -157,6 +157,10 @@ void startBaton(void);
 uint8_t getBatonFx(void);
 void setBatonFx(uint8_t fx);
 
+
+// issue a new random baton, for effects and UI
+void baton_new_random(void);
+
 // for debugging
 BatonState *getBatonState(void);
 
