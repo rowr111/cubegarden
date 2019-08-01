@@ -171,6 +171,7 @@ static void LOTC(struct effects_config *config) {
 orchard_effects("LOTC", LOTC, 0);
 
 #else
+extern uint32_t last_ping_g;
 static void LOTC(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
