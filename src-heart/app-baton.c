@@ -109,7 +109,7 @@ static void redraw_ui(int banner) {
 
   // 5th line: fx
   chsnprintf(uiStr, sizeof(uiStr), "Fx: %d", baton_fx_g );
-  gdispDrawStringBox(0, height*4, width, height,
+  gdispDrawStringBox(0, height*5, width, height,
 		     uiStr, font, White, justifyLeft);
 
   // 6th line: A button help
