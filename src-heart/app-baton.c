@@ -103,7 +103,7 @@ static void redraw_ui(int banner) {
   
 
   // 4th line: maxcubes
-  chsnprintf(uiStr, sizeof(uiStr), "Maxcubes: %d", config->cfg_addressCounter );
+  chsnprintf(uiStr, sizeof(uiStr), "Maxcubes: %d", config->cfg_addressCounter - 1 );
   gdispDrawStringBox(0, height*4, width, height,
 		     uiStr, font, White, justifyLeft);
 
@@ -146,7 +146,7 @@ void baton_new_random(void) {
   const struct userconfig *config;
   config = getConfig();
   
-  setMaxCubes(config->cfg_addressCounter);
+  setMaxCubes(config->cfg_addressCounter - 1);
       
   // clear the baton by claiming it to the master badge
   pkt.type = baton_holder;
@@ -191,7 +191,7 @@ static void baton_event(OrchardAppContext *context, const OrchardAppEvent *event
     if( (event->key.flags == keyDown) && ((event->key.code == keyTopR)) ) { // "A" key
       redraw_ui(1);
 
-      setMaxCubes(config->cfg_addressCounter);
+      setMaxCubes(config->cfg_addressCounter - 1);
       
       // clear the baton by claiming it to the master badge
       pkt.type = baton_holder;
