@@ -11,6 +11,8 @@
 #include "radio.h"
 #include "baton.h"
 
+extern uint8_t maxActualCubes;
+
 void cmd_baton(BaseSequentialStream *chp, int argc, char *argv[]) {
   BatonState *bstate;
 
@@ -45,6 +47,8 @@ void cmd_baton(BaseSequentialStream *chp, int argc, char *argv[]) {
 
     chprintf(chp, " passing_to_addr: %d\n\r", bstate->passing_to_addr);
     chprintf(chp, " rtry_interval: %d\n\r", bstate->retry_interval);
+    chprintf(chp, " fx: 0x%02x %d\n\r", bstate->fx, bstate->fx);
+    chprintf(chp, " maxActualCubes: %d\n\r", maxActualCubes);
   }
 
   if (!strcasecmp(argv[0], "force")) {

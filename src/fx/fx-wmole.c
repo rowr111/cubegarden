@@ -43,7 +43,7 @@ typedef enum {
 
 #define STATE_MASK  0xC0    // top two bits are for tracking the game state
 #define COUNT_MASK  0x3F    // bottom 6 bits are for tracking the cube whack count
-#define HOLD_TIMEOUT (5 * 1000)  // time for the mole to be hit
+#define HOLD_TIMEOUT (6 * 1000)  // time for the mole to be hit
 #define REMISSION_TIMEOUT (20 * 1000)  // how long to wait before making a new mole in event of loss
 
 static void Whackamole(struct effects_config *config) {
@@ -64,6 +64,7 @@ static void Whackamole(struct effects_config *config) {
   static uint32_t sparkle_time = 0;
   static uint32_t sparkle_duration = 0;
   BatonState *bstate = getBatonState();
+  static uint32_t num_baton_retries = 0;
 
   HsvColor c;
   RgbColor x;
@@ -73,6 +74,7 @@ static void Whackamole(struct effects_config *config) {
   static uint8_t last_gamestate = 0;
   static uint8_t was_holding = 0;
   static uint32_t holding_time = 0;
+  const char winner[] = "Whackamole winner!";
   if( bstate->state == baton_holding ) {
     // do holder stuff
     if( was_holding == 0 ) {
@@ -102,17 +104,26 @@ static void Whackamole(struct effects_config *config) {
 	      progression = 2;
 	    break;
 	  case 2:
-	    if( series > 11 )
+	    if( series > 11 ) {
 	      progression = 3;
+	      // ANNOUNCE THE WINNAR!!!
+	      for( i = 0; i < 5; i++ ) {
+		radioAcquire(radioDriver);
+		radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_paging, strlen(winner)+1, winner);
+		radioRelease(radioDriver);
+		chThdSleepMilliseconds(10);
+	      }
+	    }
 	    break;
 	  case 3:
-	    progression = 0; // how anticlimactic
+	    progression = 0; // reset the game to zero
 	    break;
 	  }
 	  series++;
 	  
 	  bstate->fx = ((progression & 0x3) << 6) | (series & 0x3F);
 	  passBaton(baton_random, 0, 0); // we will retry the baton pass every cycle we are in passing
+	  num_baton_retries = 0;
 	  wmole_fx = wmole_whacked;
 	  wmole_fx_stash = wmole_whacked;
 	}
@@ -126,9 +137,16 @@ static void Whackamole(struct effects_config *config) {
       was_holding = 0;
       chprintf(stream, "Passing to new mole!\n\r");
       passBaton(baton_random, 0, 0); // pass on the baton, start a new cycle
+      num_baton_retries = 0;
     }
   } else if( bstate->state == baton_passing ) {
-    retryBatonPass();
+    num_baton_retries++;
+    if( num_baton_retries < 30 )
+      sendBatonPassPacket(); // low-level resend
+    else {
+      passBaton(baton_random, 0, 0); // give up, try a new address
+      num_baton_retries = 0;
+    }
   } else {
     was_holding = 0;
     // we're an observer
@@ -143,12 +161,12 @@ static void Whackamole(struct effects_config *config) {
       case 2:
 	wmole_fx_stash = wmole_fx;
 	wmole_fx = wmole_sparkle;
-	sparkle_duration = 2000;
+	sparkle_duration = 1000;
 	break;
       case 3:
 	wmole_fx_stash = wmole_fx;
 	wmole_fx = wmole_sparkle;
-	sparkle_duration = 8000;
+	sparkle_duration = 8000;  // this is long enough that you'll never find the new mole, forcing a loss
 	break;
       default:
 	// the game was "lost" or ended, reset everything to idle

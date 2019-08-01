@@ -124,6 +124,11 @@ baton_return_type passBaton(baton_strategy_type strategy, uint8_t address, uint3
 baton_return_type retryBatonPass(void);
 
 /*
+  like retryBatonPass, but without any waiting or reset of the timer. A very low level retry.
+ */
+void sendBatonPassPacket(void);
+
+/*
    Abort the current baton passing operation. This is a little bit of a dangerous call, but
    this allows the upper-level management code to decide baton passing isn't going to work at
    some point and conclude it is once again the baton holder. 
