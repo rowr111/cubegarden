@@ -202,6 +202,8 @@ static thread_t *batonThr = NULL;
 static THD_WORKING_AREA(waBatonThread, 0x200);
 static THD_FUNCTION(baton_thread, arg) {
   (void)arg;
+
+  uint8_t retry_attempts = 0;
   
   chRegSetThreadName("BatonManager");
   initBaton();
@@ -213,6 +215,15 @@ static THD_FUNCTION(baton_thread, arg) {
 	chprintf(stream, "baton pass retry\n\r" );
 	sendBatonPassPacket();
 	bstate.retry_time = chVTGetSystemTime();
+	retry_attempts++;
+      }
+      
+      // if not specified, consider trying a new address if we hit our retry attempt limit
+      if( ((bstate.strategy == baton_random) || (bstate.strategy == baton_increment)) &&
+	  retry_attempts > BATON_MAX_AUTORETRIES ) {
+	// retry the current strategy
+	passBaton(bstate.strategy, 0, bstate.retry_interval);
+	retry_attempts = 0;
       }
     }
 
@@ -222,6 +233,7 @@ static THD_FUNCTION(baton_thread, arg) {
 	bstate.announce_time = chVTGetSystemTime();
 	sendBatonHoldingPacket();
       }
+      retry_attempts = 0;
     }
     
     chThdSleepMilliseconds(10); // give some time for other threads

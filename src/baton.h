@@ -11,6 +11,8 @@
 #define BATON_RADIO_ACK_DUP 3   // define how many times packets are resent by default
 #define BATON_RADIO_ACK_DUP_DELAY 27 // time in milliseconds to wait between resending dups
 
+#define BATON_MAX_AUTORETRIES  4 // maximum number of times we'll auto-retry on random 
+
 extern uint8_t maxActualCubes;
 
 typedef enum {
