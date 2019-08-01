@@ -37,6 +37,8 @@ static void LOTC(struct effects_config *config) {
   static uint32_t batonholdnexttime = 0; //when to pass the baton
   BatonState *bstate;
   bstate = getBatonState();
+  bstate->fx_uses_baton = 1; // let the baton state machine know we are handling batons
+  
   static uint8_t flashcount = 5; //number of times to flash at the beginning of the baton 
   uint8_t flashspeed = 5; //how many loops to flash
   static RgbColor fc;

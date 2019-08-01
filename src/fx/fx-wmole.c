@@ -64,6 +64,7 @@ static void Whackamole(struct effects_config *config) {
   static uint32_t sparkle_time = 0;
   static uint32_t sparkle_duration = 0;
   BatonState *bstate = getBatonState();
+  bstate->fx_uses_baton = 1; // let the baton state machine know we are handling batons
   static uint32_t num_baton_retries = 0;
 
   HsvColor c;
@@ -82,6 +83,12 @@ static void Whackamole(struct effects_config *config) {
       was_holding = 1;
       chprintf(stream, "Became the mole!\n\r");
     }
+    
+    if( (loop % 4) == 0 ) {
+      bstate->announce_time = chVTGetSystemTime();
+      sendBatonHoldingPacket();
+    }
+      
     if( chVTTimeElapsedSinceX(holding_time) < HOLD_TIMEOUT ) {
       wmole_fx = wmole_sparkle;
       sparkle_time = chVTGetSystemTime(); // sparkle forever in this state

@@ -48,6 +48,7 @@ typedef struct _BatonState {
   uint32_t retry_time;
   uint32_t announce_time;
   uint8_t fx;
+  uint8_t fx_uses_baton;
 } BatonState;
 
 /*
@@ -163,6 +164,9 @@ void startBaton(void);
 
 uint8_t getBatonFx(void);
 void setBatonFx(uint8_t fx);
+
+void sendBatonHoldingPacket(void); // for low-level handling of baton holding. Use with caution.
+// should also update announce_time to chVTGetSystemTime() when using the above call
 
 // for debugging
 BatonState *getBatonState(void);

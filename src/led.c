@@ -14,6 +14,7 @@
 #include "time.h"
 #include "radio.h"
 #include "address.h"
+#include "baton.h"
 
 #include "orchard-test.h"
 #include "test-audit.h"
@@ -81,6 +82,7 @@ uint8_t effectsStop(void) {
 void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 {
   unsigned int j;
+  BatonState *bstate = getBatonState();
 
   // low-level init, and ensure all LEDs are off
   led_config.max_pixels = leds;
@@ -110,6 +112,7 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 
   curfx = orchard_effects_start();
   fx_max = 0;
+  bstate->fx_uses_baton = 0; // need to add this before any effect state transition
   fx_index = 0;
   while( curfx->name ) {
     fx_max++;
@@ -430,6 +433,7 @@ orchard_effects("safetyPattern", safetyPatternFB, 0);
 
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
+  BatonState *bstate = getBatonState();
   
   curfx = orchard_effects_start();
 
@@ -438,6 +442,7 @@ static void draw_pattern(void) {
   //if we've been away from the master badge too long,
   //force safety pattern (no fun mode!)
   if(lastmasterping + TIME_PING_MAX_WAIT < ST2MS(chVTGetSystemTime())){
+    bstate->fx_uses_baton = 0; // need to add this before any effect state transition
     curfx += effectsNameLookup("safetyPattern");
     if(fx_config.loop % 100 == 0){
       chprintf(stream, "No masterbadge ping received in %d ms, forcing safetyPattern.\n\r", TIME_PING_MAX_WAIT);
@@ -448,10 +453,11 @@ static void draw_pattern(void) {
   }
 
   if(curfx->duration > 0) {   //if we have a temporary pattern, check expiration
+    bstate->fx_uses_baton = 0; // need to add this before any effect state transition
     effectsCheckExpiredTempPattern();
   }
 
-  checkdoubletapTrigger(); //check to see if we need to send a trigger temp pattern reqest
+  checkdoubletapTrigger(); // check to see if we need to send a trigger temp pattern reqest
 
   curfx->computeEffect(&fx_config);
 }
@@ -529,10 +535,16 @@ void effectsCheckExpiredTempPattern(){
 }
 
 void effectsSetPattern(uint8_t index) {
+  BatonState *bstate = getBatonState();
+  
   if(index != fx_index){ //don't bother resetting the pattern if it hasn't changed
     if(index > fx_max) {
       index = 0;
     }
+
+    // reset fx_uses_baton flag on each effect transition
+    bstate->fx_uses_baton = 0;
+    
     const OrchardEffects *curfx;
     curfx = orchard_effects_start();
     curfx += index;
@@ -674,6 +686,9 @@ void listEffects(void) {
 }
 
 void effectsStart(void) {
+  BatonState *bstate = getBatonState();
+  bstate->fx_uses_baton = 0; // need to add this before any effect state transition
+  
   vividRainbow[0] = vividRed;
   vividRainbow[1] = vividOrangePeel;
   vividRainbow[2] = vividYellow;

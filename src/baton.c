@@ -229,9 +229,17 @@ static THD_FUNCTION(baton_thread, arg) {
 
     // if I'm the baton holder, periodically announce my holding
     if( bstate.state == baton_holding ) {
-      if( chVTTimeElapsedSinceX(bstate.announce_time) > BATON_HOLDER_INTERVAL ) {
-	bstate.announce_time = chVTGetSystemTime();
-	sendBatonHoldingPacket();
+      if( bstate.fx_uses_baton ) {
+	if( chVTTimeElapsedSinceX(bstate.announce_time) > BATON_HOLDER_INTERVAL ) {
+	  bstate.announce_time = chVTGetSystemTime();
+	  sendBatonHoldingPacket();
+	}
+      } else {
+	// the effect doesn't use a baton, pass it off, so we don't screw up effects that are using it...
+	chThdSleepMilliseconds(500); // wait a half second, then pass it
+	// the half-second cooldown is here so if a baton exists on a network that doesn't need it,
+	// bandwidth isn't being consumed by batons just being passed around pointlessly
+	passBaton(baton_random, 0, 100); // but pass it urgently once we do pass it
       }
       retry_attempts = 0;
     }
