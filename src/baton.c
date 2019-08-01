@@ -210,7 +210,7 @@ static THD_FUNCTION(baton_thread, arg) {
     if( (bstate.state == baton_passing) && (bstate.retry_interval > 0) ) {
       // we've specified a retry interval, so let's see if it's time to retry
       if( chVTTimeElapsedSinceX(bstate.retry_time) > bstate.retry_interval ) {
-	chprintf(stream, "baton pass retry\n" );
+	chprintf(stream, "baton pass retry\n\r" );
 	sendBatonPassPacket();
 	bstate.retry_time = chVTGetSystemTime();
       }
