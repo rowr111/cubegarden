@@ -19,14 +19,14 @@ static void hottFuzzPatternFB(struct effects_config *config) {
   uint8_t oldshift = shift;
   static uint32_t  nexttime = 0;
   
-  shift = 0;
-
+  uint8_t divide_index = config->loop % count;
+  
   // TODO some sort of time shift
   // TODO: store  divide_index
   
   
   for (i = 0; i < count; i++) {
-    if ( i < divide_index ||  ) {
+    if ( i < divide_index  ) {
 	ledSetRGB(fb, i, 255, 0, 0, shift);
     } else {
         ledSetRGB(fb, i, 0, 0, 255, shift);
