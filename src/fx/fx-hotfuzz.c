@@ -21,10 +21,6 @@ static void hottFuzzPatternFB(struct effects_config *config) {
   
   uint8_t divide_index = config->loop % count;
   
-  // TODO some sort of time shift
-  // TODO: store  divide_index
-  
-  
   for (i = 0; i < count; i++) {
     if ( i < divide_index  ) {
 	ledSetRGB(fb, i, 255, 0, 0, shift);
@@ -34,7 +30,7 @@ static void hottFuzzPatternFB(struct effects_config *config) {
   }
   divide_index = (divide_index + 1) % count;
 }
-orchard_effects("hotfuz", hottFuzzPatternFB, PAGE_DISPLAY_MS);
+orchard_effects("hotfuz", hottFuzzPatternFB, 0);
 
 #else
 
@@ -50,24 +46,7 @@ static void hottFuzzPatternFB(struct effects_config *config) {
   
   shift = 0;
 
-  if( hotfuzmode && (chVTGetSystemTime() > nexttime) ) {
-    for( i = 0; i < count; i++ ) {
-      if( (rand() % (unsigned int) count) < ((unsigned int) count / 3) )
-	ledSetRGB(fb, i, 8, 8, 8, shift);
-      else
-	ledSetRGB(fb, i, 0, 0, 0, shift);
-    }
-
-    nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
-    hotfuzmode = 0;
-  }
-
-  else if( !hotfuzmode && (chVTGetSystemTime() > nexttime) ) {
-    ledSetAllRGB(fb, count, 0, 0, 0, shift);
-    
-    nexttime = chVTGetSystemTime() + 30 + (rand() % 25);
-    hotfuzmode = 1;
-  }
+  ledSetAllRGB(fb, count, 0, 200, 0, shift);
 
   shift = oldshift;
 }
