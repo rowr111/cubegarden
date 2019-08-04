@@ -11,7 +11,7 @@
 
 #ifndef MASTER_BADGE
 
-static void hottFuzzPatternFB(struct effects_config *config) {
+static void hotFuzzPatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   
@@ -19,23 +19,36 @@ static void hottFuzzPatternFB(struct effects_config *config) {
   uint8_t oldshift = shift;
   static uint32_t  nexttime = 0;
   
-  uint8_t divide_index = config->loop % count;
-  
-  for (i = 0; i < count; i++) {
-    if ( i < divide_index  ) {
-	ledSetRGB(fb, i, 255, 0, 0, shift);
-    } else {
-        ledSetRGB(fb, i, 0, 0, 255, shift);
+  uint8_t blue_start = config->loop % count;
+  uint8_t red_start = (blue_start + (count / 2)) % count;
+
+  if (blue_start < red_start) {  
+    for (i = 0; i < blue_start; i++) {
+    	ledSetRGB(fb, i, 255, 0, 0, shift);
+    }
+    for (i; i < red_start; i++) {
+      ledSetRGB(fb, i, 0, 0, 255, shift);
+    }
+    for (i; i < count; i++) {
+      ledSetRGB(fb, i, 255, 0, 0, shift);
+    }
+  } else {
+    for (i = 0; i < red_start; i++) {
+      ledSetRGB(fb, i, 0, 0, 255, shift);
+    }
+    for (i; i < blue_start; i++) {
+      ledSetRGB(fb, i, 255, 0, 0, shift);
+    }
+    for (i; i < count; i++) {
+      ledSetRGB(fb, i, 0, 0, 255, shift);
     }
   }
-  divide_index = (divide_index + 1) % count;
 }
-orchard_effects("hotfuz", hottFuzzPatternFB, 0);
+orchard_effects("hotfuzz", hotFuzzPatternFB, 0);
 
 #else
 
-// TODO: Pick color/mode for master badge
-static void hottFuzzPatternFB(struct effects_config *config) {
+static void hotFuzzPatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   
@@ -50,6 +63,6 @@ static void hottFuzzPatternFB(struct effects_config *config) {
 
   shift = oldshift;
 }
-orchard_effects("hotfuz", hottFuzzPatternFB);
+orchard_effects("hotfuzz", hotFuzzPatternFB);
 
 #endif
