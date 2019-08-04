@@ -35,6 +35,7 @@ static void LOTC(struct effects_config *config) {
   int pulselength = 100; //length of pulse 
   uint32_t batonholdmaxtime = 120000; //ms to hold the baton (2min)
   static uint32_t batonholdnexttime = 0; //when to pass the baton
+  uint32_t fadeouttime = 3000; //ms to fade out the baton holding cube 
   BatonState *bstate;
   bstate = getBatonState();
   bstate->fx_uses_baton = 1; // let the baton state machine know we are handling batons
@@ -109,6 +110,19 @@ static void LOTC(struct effects_config *config) {
     }
     else
     {
+      if ((bstate->state == baton_holding) && (chVTGetSystemTime() > (batonholdnexttime - fadeouttime)))//if we're about to hand off the baton, fade out this particular cube
+      {
+        float perc = (float)(((float)batonholdnexttime - (float)chVTGetSystemTime())/(float)fadeouttime);
+        if(loop%10==0){
+          chprintf(stream, "%f\n\r", perc);
+          chprintf(stream, "batonholdnexttime: %d\n\r", batonholdnexttime);
+          chprintf(stream, "currentime: %d\n\r", chVTGetSystemTime());
+          chprintf(stream, "fadeouttime: %d\n\r", fadeouttime);
+        }
+        cc.r = (int)(cc.r * perc);
+        cc.g = (int)(cc.g * perc);
+        cc.b = (int)(cc.b * perc);
+      }
       ledSetAllRGB(fb, count, (cc.r), (cc.g), (cc.b), shift);
     }
     if(loop%2 == 0){ //very slightly less spammy..
@@ -141,6 +155,19 @@ static void LOTC(struct effects_config *config) {
       ledSetAllRGB(fb, count, (fc.r), (fc.g), (fc.b), shift);
     }
     else{
+      if ((bstate->state == baton_holding) && (chVTGetSystemTime() > (batonholdnexttime - fadeouttime)))//if we're about to hand off the baton, fade out this particular cube
+      {
+        float perc = (float)(((float)batonholdnexttime - (float)chVTGetSystemTime())/(float)fadeouttime);
+        if(loop%10==0){
+          chprintf(stream, "%f\n\r", perc);
+          chprintf(stream, "batonholdnexttime: %d\n\r", batonholdnexttime);
+          chprintf(stream, "currentime: %d\n\r", chVTGetSystemTime());
+          chprintf(stream, "fadeouttime: %d\n\r", fadeouttime);
+        }
+        c.r = (int)(c.r * perc);
+        c.g = (int)(c.g * perc);
+        c.b = (int)(c.b * perc);
+      }
       ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
     }
     if(loop%2 == 0){ //very slightly less spammy..

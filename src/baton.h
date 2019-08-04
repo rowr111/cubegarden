@@ -3,7 +3,7 @@
 
 #include "ch.h"
 
-#define MAX_ACTUAL_CUBES 2  // address space is up to 254, but for baton passing we want to not try
+#define MAX_ACTUAL_CUBES 10  // address space is up to 254, but for baton passing we want to not try
 // passing to cubes that don't exist. So MAX_ACTUAL_CUBES limits the range of numbers to try for baton
 // passing. This is now just a "first draft" for size, can be updated by a baton_maxcube packet
 #define BATON_PASS_WAIT 200  // how long to wait in ms during a baton pass to sample responses
