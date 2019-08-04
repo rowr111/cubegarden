@@ -34,9 +34,11 @@ typedef struct ColorCounts {
 } ColorCounts;
 
 static ColorCounts COLOR_COUNTS = {0, 0, 0, 0, 0, 0};
-static int CUR_COLOR_INDEX = -1;
+static int ORIG_COLOR_INDEX = -1;
+static int COLOR_INDEX_OFFSET = 0;
 
-RgbColor getRubiksColor(uint8_t index) {
+RgbColor getRubiksColor(uint8_t index_offset) {
+  uint8_t index = (ORIG_COLOR_INDEX + index_offset) % NUMSIDES;
   if (index == 0) {
     return RED;
   }
@@ -70,52 +72,35 @@ static void rubiks(struct effects_config *config) {
   // On start of effect, set to random color in the Rubiks family
   if (patternChanged){
     patternChanged = 0;
-    CUR_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
-    ledSetAllRgbColor(fb, count, getRubiksColor(CUR_COLOR_INDEX), shift);
+    ORIG_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
+    chprintf(stream, "got original random color...: %d\n\r\n", ORIG_COLOR_INDEX);
+    ledSetAllRgbColor(fb, count, getRubiksColor(0), shift);
     return;
   }
 
-  int prev_color_index = CUR_COLOR_INDEX;
+  int prev_index_offset = COLOR_INDEX_OFFSET;
 
-  RgbColor c;
   if(z_inclination > 75 && z_inclination < 105){
-    chprintf(stream, "z_inclination changed: %d\n\r\n", z_inclination);
     if (current_side == 0) {
       // FIXME just set off of index
-      c = RED;
-      CUR_COLOR_INDEX = 0;
-      chprintf(stream, "changing color to red\n");
+      COLOR_INDEX_OFFSET = 0;
     } else if (current_side == 90) {
-      chprintf(stream, "changing color to green\n");
-      CUR_COLOR_INDEX = 1;
-      c = GREEN;
+      COLOR_INDEX_OFFSET = 1;
     } else if (current_side == 180) {
-      chprintf(stream, "changing color to blue\n");
-      CUR_COLOR_INDEX = 2;
-      c = BLUE;
+      COLOR_INDEX_OFFSET = 2;
     } else {
-      chprintf(stream, "changing color to yellow\n");
-      CUR_COLOR_INDEX = 3;
-      c = YELLOW;
+      COLOR_INDEX_OFFSET = 3;
     }
   } else if (z_inclination <= 75) {
-    chprintf(stream, "z_inclination was < 75: %d\n\r\n", z_inclination);
-    chprintf(stream, "changing color to magenta\n");
-    c = MAGENTA;
-    CUR_COLOR_INDEX = 4;
+    COLOR_INDEX_OFFSET = 4;
   } else if (z_inclination >= 105) {
-    chprintf(stream, "z_inclination was > 105: %d\n\r\n", z_inclination);
-    chprintf(stream, "changing color to white\n");
-    c = WHITE;
-    CUR_COLOR_INDEX = 5;
-  } else {
-    chprintf(stream, "z_inclination was not anything... ( < 75 or > 105): %d\n\r\n", z_inclination);
+    COLOR_INDEX_OFFSET = 5;
   }
 
   // FIXME: Only set RGBs if color changed
   // FIXME: forward color value to master badge
-  if (CUR_COLOR_INDEX != prev_color_index) {
-    ledSetAllRgbColor(fb, count, c, shift);
+  if (COLOR_INDEX_OFFSET != prev_index_offset) {
+    ledSetAllRgbColor(fb, count, getRubiksColor(COLOR_INDEX_OFFSET), shift);
   }
 
 }
