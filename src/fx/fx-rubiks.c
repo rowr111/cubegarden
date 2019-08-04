@@ -22,6 +22,41 @@ static const RgbColor MAGENTA = {255, 0, 255};
 static const RgbColor WHITE = {255, 255, 255};
 static const int NUMSIDES = 6;
 
+/* Track the number of each color to calculate win-state
+ */
+typedef struct ColorCounts {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t yellow;
+  uint8_t magenta;
+  uint8_t white;
+} ColorCounts;
+
+static ColorCounts COLOR_COUNTS = {0, 0, 0, 0, 0, 0};
+static int CUR_COLOR_INDEX = -1;
+
+RgbColor getRubiksColor(uint8_t index) {
+  if (index == 0) {
+    return RED;
+  }
+  if (index == 1) {
+    return GREEN;
+  }
+  if (index == 2) {
+    return BLUE;
+  }
+  if (index == 3) {
+    return YELLOW;
+  }
+  if (index == 4) {
+    return MAGENTA;
+  }
+  if (index == 5) {
+    return WHITE;
+  }
+}
+
 /*effect description - this is a game:
   1. each cube starts as a random rubiks color (red, green, blue, yellow, white, magenta)
   2. each cube will statically remain that color
@@ -32,46 +67,56 @@ static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
 
-  static int colorindex;
-
+  // On start of effect, set to random color in the Rubiks family
   if (patternChanged){
     patternChanged = 0;
-    colorindex = (uint32_t)rand() % NUMSIDES; //get an initial color
-    colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
+    CUR_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
+    ledSetAllRgbColor(fb, count, getRubiksColor(CUR_COLOR_INDEX), shift);
+    return;
   }
+
+  int prev_color_index = CUR_COLOR_INDEX;
 
   RgbColor c;
   if(z_inclination > 75 && z_inclination < 105){
     chprintf(stream, "z_inclination changed: %d\n\r\n", z_inclination);
     if (current_side == 0) {
+      // FIXME just set off of index
       c = RED;
+      CUR_COLOR_INDEX = 0;
       chprintf(stream, "changing color to red\n");
     } else if (current_side == 90) {
       chprintf(stream, "changing color to green\n");
+      CUR_COLOR_INDEX = 1;
       c = GREEN;
     } else if (current_side == 180) {
       chprintf(stream, "changing color to blue\n");
+      CUR_COLOR_INDEX = 2;
       c = BLUE;
     } else {
       chprintf(stream, "changing color to yellow\n");
+      CUR_COLOR_INDEX = 3;
       c = YELLOW;
     }
   } else if (z_inclination <= 75) {
     chprintf(stream, "z_inclination was < 75: %d\n\r\n", z_inclination);
     chprintf(stream, "changing color to magenta\n");
     c = MAGENTA;
+    CUR_COLOR_INDEX = 4;
   } else if (z_inclination >= 105) {
     chprintf(stream, "z_inclination was > 105: %d\n\r\n", z_inclination);
     chprintf(stream, "changing color to white\n");
     c = WHITE;
+    CUR_COLOR_INDEX = 5;
   } else {
     chprintf(stream, "z_inclination was not anything... ( < 75 or > 105): %d\n\r\n", z_inclination);
   }
 
   // FIXME: Only set RGBs if color changed
   // FIXME: forward color value to master badge
-
-  ledSetAllRgbColor(fb, count, c, shift); // FIXME: set *all*?
+  if (CUR_COLOR_INDEX != prev_color_index) {
+    ledSetAllRgbColor(fb, count, c, shift);
+  }
 
 }
 orchard_effects("rubiks", rubiks, 0);
