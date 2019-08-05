@@ -22,7 +22,7 @@ float baseline = FUNDEFINE;
 int whenToStart = 0;
 
 static void tower(struct effects_config *config) {
-    uint8_t fb = *config->hwconfig->fb;
+    uint8_t *fb = config->hwconfig->fb;
     int loop = config->loop;
     int count = config->count;
 
