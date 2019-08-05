@@ -21,7 +21,7 @@ static void tower(struct effects_config *config) {
     int loop = config->loop;
 
     if (!baro_avg_valid) {
-        chprintf(stream, "Waiting for barometer to be available");
+        chprintf(stream, "Waiting for barometer to be available\n");
         return;
     }
 
