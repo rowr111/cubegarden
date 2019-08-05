@@ -16,6 +16,8 @@
 #include "gfx.h"
 #include "trigger.h"
 
+float baseline = null;
+
 static void tower(struct effects_config *config) {
     uint8_t *fb = config->hwconfig->fb;
     int loop = config->loop;
@@ -23,10 +25,14 @@ static void tower(struct effects_config *config) {
     if (!baro_avg_valid) {
         chprintf(stream, "Waiting for barometer to be available\n\r");
         return;
+    } else {
+
+    if (baseline == null) {
+        baseline = baro_avg;
     }
 
-    if (baro_avg_valid && loop % 30 == 0) {
-        chprintf(stream, "%f\n\r", baro_avg);
+    if (loop % 30 == 0) {
+        chprintf(stream, "%f\n\r", baro_avg - baseline);
     }
 }
 
