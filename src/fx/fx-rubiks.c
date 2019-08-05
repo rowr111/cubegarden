@@ -13,6 +13,7 @@
 #include "gyro.h"
 #include "gfx.h"
 #include "trigger.h"
+#include "radio.h"
 
 static const RgbColor RED = {255, 0, 0}; // FIXME: Should we make these global to all fx?
 static const RgbColor GREEN = {0, 255, 0}; // NOTE: They are in led.c
@@ -21,8 +22,6 @@ static const RgbColor YELLOW = {255, 255, 0};
 static const RgbColor MAGENTA = {255, 0, 255};
 static const RgbColor WHITE = {255, 255, 255};
 static const int NUMSIDES = 6;
-// FIXME: Pick this and make it tuneable
-static const int COLOR_COUNT_WIN_THRESHOLD = 2;
 
 static int ORIG_COLOR_INDEX = -1;
 static int COLOR_INDEX_OFFSET = 0;
@@ -47,6 +46,8 @@ RgbColor getRubiksColor(uint8_t index_offset) {
   if (index == 5) {
     return WHITE;
   }
+  // FIXME: "Bad color?"
+  return BLUE;
 }
 
 /*effect description - this is a game:
@@ -111,6 +112,10 @@ static void rubiks(struct effects_config *config) {
 orchard_effects("rubiks", rubiks, 0);
 
 #else
+
+// FIXME: Pick this and make it tuneable
+static const int COLOR_COUNT_WIN_THRESHOLD = 2;
+
 static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
@@ -130,8 +135,9 @@ static void rubiks(struct effects_config *config) {
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 
   for (uint8_t i = 0; i < NUMSIDES; i++) {
+    chprintf(stream, "Current counts = [%d, %d, %d, %d, %d, %d]", RUBIKS_COLOR_COUNTS[0], RUBIKS_COLOR_COUNTS[1], RUBIKS_COLOR_COUNTS[2], RUBIKS_COLOR_COUNTS[3], RUBIKS_COLOR_COUNTS[4], RUBIKS_COLOR_COUNTS[5]);
     // If any color has won, switch to rainbow blast
-    if (COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
+    if (RUBIKS_COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
       char idString[32];
       chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
       radioAcquire(radioDriver);
