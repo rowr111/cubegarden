@@ -610,7 +610,7 @@ static uint16_t calcBusyTime(uint16_t mr, uint16_t osr)
 {
 	// TODO: properly separate temperature and pressure measurements
 	// There is different timing dependent on the respective measurements
-	return ((uint32_t)20U << mr) + ((uint32_t)32U << (osr + mr));
+	return ((uint32_t)50U << mr) + ((uint32_t)32U << (osr + mr));
 }
 
 static int16_t readByte(uint8_t regAddress) {
