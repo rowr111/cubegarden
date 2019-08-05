@@ -21,14 +21,16 @@ static void tower(struct effects_config *config) {
     int loop = config->loop;
 
     if (!baro_avg_valid) {
-        chprintf(stream, "Waiting for barometer to be available\n");
+        chprintf(stream, "Waiting for barometer to be available\n\r");
         return;
     }
 
-    if (baro_avg_valid && loop % 10 == 0) {
-        chprintf(stream, "Value %f\n", baro_avg);
+    if (baro_avg_valid && loop % 30 == 0) {
+        chprintf(stream, "%f\n\r", baro_avg);
     }
 }
 
 orchard_effects("aa-tower", tower, 0);
+
+#endif
 
