@@ -43,14 +43,12 @@ RgbColor getRubiksColor(uint8_t index_offset) {
   if (index == 4) {
     return MAGENTA;
   }
-  if (index == 5) {
+  else { // index == 5
     return WHITE;
   }
-  // FIXME: "Bad color?"
-  return BLUE;
 }
 
-/*effect description - this is a game:
+/* Effect description - this is a game:
   1. each cube starts as a random rubiks color (red, green, blue, yellow, white, magenta)
   2. each cube will statically remain that color
   d. tilting a cube all the way to 90 degrees (or a little less) will cause the cube to change color
@@ -121,9 +119,7 @@ static void rubiks(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop;
 
-  // FIXME: Needs to reset rubiks on the first use of the effect (can probably get rid of global reset)
-
-  // FIXME: pick rubiks color for badge
+  // FIXME: More recognizable rubiks color for badge
   HsvColor c;
   c.h = 212; //pinkish.
   c.s = 255;
@@ -135,7 +131,6 @@ static void rubiks(struct effects_config *config) {
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 
   for (uint8_t i = 0; i < NUMSIDES; i++) {
-    chprintf(stream, "Current counts = [%d, %d, %d, %d, %d, %d]", RUBIKS_COLOR_COUNTS[0], RUBIKS_COLOR_COUNTS[1], RUBIKS_COLOR_COUNTS[2], RUBIKS_COLOR_COUNTS[3], RUBIKS_COLOR_COUNTS[4], RUBIKS_COLOR_COUNTS[5]);
     // If any color has won, switch to rainbow blast
     if (RUBIKS_COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
 
