@@ -138,6 +138,10 @@ static void rubiks(struct effects_config *config) {
     chprintf(stream, "Current counts = [%d, %d, %d, %d, %d, %d]", RUBIKS_COLOR_COUNTS[0], RUBIKS_COLOR_COUNTS[1], RUBIKS_COLOR_COUNTS[2], RUBIKS_COLOR_COUNTS[3], RUBIKS_COLOR_COUNTS[4], RUBIKS_COLOR_COUNTS[5]);
     // If any color has won, switch to rainbow blast
     if (RUBIKS_COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
+
+      // Reset vars so next time rubiks is played, the counts are 0
+      reset_rubiks();
+
       char idString[32];
       chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
       radioAcquire(radioDriver);
