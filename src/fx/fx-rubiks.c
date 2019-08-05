@@ -21,19 +21,9 @@ static const RgbColor YELLOW = {255, 255, 0};
 static const RgbColor MAGENTA = {255, 0, 255};
 static const RgbColor WHITE = {255, 255, 255};
 static const int NUMSIDES = 6;
+// FIXME: Pick this and make it tuneable
+static const int COLOR_COUNT_WIN_THRESHOLD = 2;
 
-/* Track the number of each color to calculate win-state
- */
-typedef struct ColorCounts {
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-  uint8_t yellow;
-  uint8_t magenta;
-  uint8_t white;
-} ColorCounts;
-
-static ColorCounts COLOR_COUNTS = {0, 0, 0, 0, 0, 0};
 static int ORIG_COLOR_INDEX = -1;
 static int COLOR_INDEX_OFFSET = 0;
 
@@ -72,9 +62,16 @@ static void rubiks(struct effects_config *config) {
   // On start of effect, set to random color in the Rubiks family
   if (patternChanged){
     patternChanged = 0;
+
     ORIG_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
-    chprintf(stream, "got original random color...: %d\n\r\n", ORIG_COLOR_INDEX);
     ledSetAllRgbColor(fb, count, getRubiksColor(0), shift);
+
+    // Add color to global COLOR_COUNTS
+    char idString[32];
+    chsnprintf(idString, sizeof(idString), "rubiks-count add %d", ORIG_COLOR_INDEX);
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+    radioRelease(radioDriver);
     return;
   }
 
@@ -82,7 +79,6 @@ static void rubiks(struct effects_config *config) {
 
   if(z_inclination > 75 && z_inclination < 105){
     if (current_side == 0) {
-      // FIXME just set off of index
       COLOR_INDEX_OFFSET = 0;
     } else if (current_side == 90) {
       COLOR_INDEX_OFFSET = 1;
@@ -97,22 +93,30 @@ static void rubiks(struct effects_config *config) {
     COLOR_INDEX_OFFSET = 5;
   }
 
-  // FIXME: Only set RGBs if color changed
-  // FIXME: forward color value to master badge
   if (COLOR_INDEX_OFFSET != prev_index_offset) {
     ledSetAllRgbColor(fb, count, getRubiksColor(COLOR_INDEX_OFFSET), shift);
+
+    uint8_t prev_index = (ORIG_COLOR_INDEX + prev_index_offset) % NUMSIDES;
+    uint8_t new_index = (ORIG_COLOR_INDEX + COLOR_INDEX_OFFSET) % NUMSIDES;
+
+    // Send color change to master badge
+    char idString[32];
+    chsnprintf(idString, sizeof(idString), "rubiks-count update %d %d", prev_index, new_index);
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+    radioRelease(radioDriver);
   }
 
 }
 orchard_effects("rubiks", rubiks, 0);
-
-// FIXME: How to tell that all cubes are the same color?
 
 #else
 static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
+
+  // FIXME: Needs to reset rubiks on the first use of the effect (can probably get rid of global reset)
 
   // FIXME: pick rubiks color for badge
   HsvColor c;
@@ -125,17 +129,16 @@ static void rubiks(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 
-  // FIXME: keep track of how many of each color
-
-  // FIXME: Trigger rainbow blast if enough cubes are the same color
-  /* if(trigger_count == REQUIRED_CUBE_PARTICIPATION){ */
-  /*   char idString[32]; */
-  /*   chsnprintf(idString, sizeof(idString), "fx use rainbowblast"); */
-  /*   radioAcquire(radioDriver); */
-  /*   radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString); */
-  /*   radioRelease(radioDriver); */
-  /* } */
-
+  for (uint8_t i = 0; i < NUMSIDES; i++) {
+    // If any color has won, switch to rainbow blast
+    if (COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
+      char idString[32];
+      chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
+      radioAcquire(radioDriver);
+      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+      radioRelease(radioDriver);
+    }
+  }
 }
 orchard_effects("rubiks", rubiks);
 #endif

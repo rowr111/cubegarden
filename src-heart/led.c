@@ -691,6 +691,22 @@ void effectsStart(void) {
   chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), "effects", NORMALPRIO - 6, effects_thread, &led_config);
 }
 
+/* Track the number of each Rubiks color to calculate win-state
+ */
+void update_rubiks(uint8_t old, uint8_t new) {
+    RUBIKS_COLOR_COUNTS[old] -= 1;
+    RUBIKS_COLOR_COUNTS[new] += 1;
+}
+
+void reset_rubiks() {
+    RUBIKS_COLOR_COUNTS = {0, 0, 0, 0, 0, 0};
+}
+
+void add_rubiks(uint8_t color_index) {
+    RUBIKS_COLOR_COUNTS[color_index] += 1;
+}
+
+
 OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
   
