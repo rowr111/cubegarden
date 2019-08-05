@@ -4,6 +4,7 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
+#include "radio.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -13,7 +14,7 @@
 #include "gyro.h"
 #include "gfx.h"
 #include "trigger.h"
-#include "radio.h"
+
 
 static const RgbColor RED = {255, 0, 0}; // FIXME: Should we make these global to all fx?
 static const RgbColor GREEN = {0, 255, 0}; // NOTE: They are in led.c
@@ -113,6 +114,7 @@ orchard_effects("rubiks", rubiks, 0);
 
 // FIXME: Pick this and make it tuneable
 static const int COLOR_COUNT_WIN_THRESHOLD = 2;
+static const int NUMSIDES = 6;
 
 static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
@@ -131,6 +133,7 @@ static void rubiks(struct effects_config *config) {
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 
   for (uint8_t i = 0; i < NUMSIDES; i++) {
+    chsnprintf(stream, "now checking colof %d with total count: %d \n", i, RUBIKS_COLOR_COUNTS[i]);
     // If any color has won, switch to rainbow blast
     if (RUBIKS_COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
 
