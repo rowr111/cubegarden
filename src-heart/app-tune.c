@@ -13,7 +13,6 @@ static uint8_t line = 0;
 static uint8_t dBbkgd = 0;
 static uint8_t dBmax = 0;
 static uint8_t pressure = 0;
-static struct OrchardUiContext listUiContext;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -87,10 +86,13 @@ static void mtune_start(OrchardAppContext *context) {
 
 }
 
+#define MTUNE_RETRIES 5
+#define MTUNE_RETRY_DELAY 37
 static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
-  uint8_t selected;
+  int i;
+  char effect_cmd[128];
 
   if (event->type == keyEvent) {
     if( (event->key.flags == keyDown) && ((event->key.code == keyBottom)) ) {
@@ -101,8 +103,35 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	line--;
       else
 	line = NUM_LINES - 1;
+    } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR)) ) {
+      // this is the "A" key
+      if(line == LINE_DBBKGD) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBbkgd %d", dBbkgd);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      } else if(line == LINE_DBMAX) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBmax %d", dBmax);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      } else if(line == LINE_PRESS) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune pressure %d", pressure);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      }
     }
-  } 
+  }
   
   if(event->key.code == keyRight){
        if(line == LINE_DBBKGD) {
@@ -127,50 +156,22 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
        }
   }
   
-  
-  else if( event->type == uiEvent ) {
-    chHeapFree(listUiContext.itemlist); // free the itemlist passed to the UI
-    selected = (uint8_t) context->instance->ui_result;
-    context->instance->ui = NULL;
-    context->instance->uicontext = NULL;
-    
-    // handle channel config
-    configSetChannel((uint32_t) selected);
-    radioUpdateChannelFromConfig(radioDriver);
-    friendClear();
-  }
-
-  if( context->instance->ui == NULL ) {
-    redraw_ui();
-  }
+  redraw_ui();
 }
 
 static void mtune_exit(OrchardAppContext *context) {
   (void)context;
   const struct userconfig *config;
   config = getConfig();
-  char effect_cmd[128];
 
   if(dBbkgd != config->cfg_dBbkgd){
     configSetdBbkgd(dBbkgd);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBbkgd %d", dBbkgd);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(dBmax != config->cfg_dBmax){
     configSetdBmax(dBmax);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBmax %d", dBmax);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(pressure != config->cfg_pressuretrig){
     configSetpressuretrig(pressure);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune pressure %d", pressure);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
 }
 
