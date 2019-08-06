@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    8
+#define CONFIG_VERSION    10
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -14,6 +14,7 @@ typedef struct userconfig {
   uint32_t  cfg_channel;     // our default channel
   uint8_t   cfg_addressCounter; // radio address
   uint32_t  cfg_txboost;     // set txboost
+  uint32_t  cfg_autoadv;     // set fx auto advance
   uint8_t   cfg_dBbkgd;      // bkg dB threshhold
   uint8_t   cfg_dBmax;       // max dB threshhold
   uint8_t   cfg_pressuretrig; // pressure trigger amt
@@ -39,6 +40,7 @@ void configSetpressuretrig(uint8_t pressuretrig);
 void configSetBrightThresh(uint32_t bright_thresh);
 void configSetBrightThresh2(uint32_t bright_thresh2);
 void configSetBrightThresh3(uint32_t bright_thresh3);
+void configSetAutoAdv(uint32_t autoadv);
 void configToggleBoost(void);
 void configClipMarkUsed(uint32_t clip);
 void configClipClearMarks(void);

@@ -178,5 +178,5 @@ static void rainyday(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
 }
-orchard_effects("rainyday", rainyday);
+orchard_effects("rainyday", rainyday, 0);
 #endif

@@ -18,6 +18,8 @@ orchard_effects("Lg0", lg0FB, 0);
 static void lg0FB(struct effects_config *config) {
   do_lightgene(config);
 }
-orchard_effects("Lg0", lg0FB);
+orchard_effects("Lg0", lg0FB, 10000000);
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 #endif
 

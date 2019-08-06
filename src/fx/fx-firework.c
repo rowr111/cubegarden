@@ -84,7 +84,7 @@ static void firework(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 }
-orchard_effects("firework", firework);
+orchard_effects("firework", firework, 8000);
 #endif
 
 

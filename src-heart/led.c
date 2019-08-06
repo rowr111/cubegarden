@@ -15,6 +15,7 @@
 
 #include "orchard-test.h"
 #include "test-audit.h"
+#include "userconfig.h"
 
 #include <string.h>
 #include <math.h>
@@ -30,6 +31,7 @@ static effects_config fx_config;
 static uint8_t fx_index;  // current effect
 static uint8_t fx_max;    // max # of effects
 static uint8_t ledExitRequest = 0;
+static uint32_t patternstarttime = 0;
 
 // global effects state
 uint8_t shift = 2;  // start a little bit dimmer
@@ -346,7 +348,9 @@ static void safetyPatternFB(struct effects_config *config) {
   }
  
 }
-orchard_effects("safetyPattern", safetyPatternFB);
+orchard_effects("safetyPattern", safetyPatternFB, 10000000); 
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 
@@ -425,7 +429,11 @@ static void draw_pattern(void) {
     fx_config.loop += bump_amount;
     bump_amount = 0;
   }
-
+  const struct userconfig *config;
+  config = getConfig();
+  if(config->cfg_autoadv > 0){
+    check_autoadv(config->cfg_autoadv); //check to see if it's time to advance the pattern.
+  }
   curfx += fx_index;
 
   curfx->computeEffect(&fx_config);
@@ -456,6 +464,39 @@ uint8_t effectsNameLookup(const char *name) {
   }
   
   return 0;  // name not found returns default effect
+}
+
+void check_autoadv(uint32_t autoadvmin){
+  uint32_t currenttime = chVTGetSystemTime();
+
+  if (patternstarttime == 0){ //set the time if it's zero
+    patternstarttime = currenttime;
+  }
+  if (currenttime > (patternstarttime + autoadvmin*60000)){ //if it's time to advance the pattern
+    chprintf(stream, "autoadvance time exceeded, advancing the pattern\n\r");
+    const OrchardEffects *curfx;
+    curfx = orchard_effects_start();
+    fx_index = (fx_index + 1) % fx_max;
+    curfx += fx_index;
+    while(curfx->duration > 0){
+      chprintf(stream, "next effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+      chprintf(stream, "temporary effect, autoadvancing to next pattern\n\r");
+      curfx = orchard_effects_start();
+      fx_index = (fx_index + 1) % fx_max;
+      curfx += fx_index;
+      //chprintf(stream, "next effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+    }
+    patternstarttime = currenttime; //reset the pattern start time
+    chprintf(stream, "new effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+    for(int i=0; i<=3; i++){
+      //set the new pattern, and send it a few times so hopefully it gets picked up
+      char idString[32];
+      chsnprintf(idString, sizeof(idString), "fx use %s", curfx->name);
+      radioAcquire(radioDriver);
+      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+      radioRelease(radioDriver);
+    }  
+  }
 }
 
 // checks to see if the current effect is one of the lightgenes

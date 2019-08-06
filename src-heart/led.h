@@ -32,6 +32,7 @@ void orchardEffectsRestart(void);
 typedef struct _OrchardEffects {
   char *name;
   void (*computeEffect)(struct effects_config *context);
+  int duration;
 } OrchardEffects;
 
 #define orchard_effects_start() \
@@ -41,15 +42,15 @@ typedef struct _OrchardEffects {
   (const OrchardEffects *)&start;            \
 })
 
-#define orchard_effects(_name, _func) \
+#define orchard_effects(_name, _func, _duration) \
   const OrchardEffects _orchard_fx_list_##_func \
   __attribute__((unused, aligned(4), section(".chibi_list_effects_2_" _name))) = \
-     { _name, _func }
+     { _name, _func, _duration }
 
 #define orchard_effects_end() \
   const OrchardEffects _orchard_fx_list_##_func \
   __attribute__((unused, aligned(4), section(".chibi_list_effects_3_end"))) = \
-     { NULL, NULL }
+     { NULL, NULL, 0 }
 
 
 /////////////////// EFFECTS
@@ -89,6 +90,7 @@ extern uint8_t ledsOff;;
 uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t);
 uint8_t effectsGetPattern(void);
+void check_autoadv(uint32_t);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
 uint8_t getShift(void);

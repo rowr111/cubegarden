@@ -55,7 +55,9 @@ static void setupoffset(struct effects_config *config) {
 
   ledSetAllRgbColor(fb, count, vividRainbow[0], shift);
 }
-orchard_effects("setupoffset", setupoffset);
+orchard_effects("setupoffset", setupoffset, 10000000);
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 #endif
 
 

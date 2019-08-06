@@ -223,7 +223,7 @@ static void LOTC(struct effects_config *config) {
     baton_new_random();
   } 
 }
-orchard_effects("LOTC", LOTC);
+orchard_effects("LOTC", LOTC, 0);
 #endif
 
 

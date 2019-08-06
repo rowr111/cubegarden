@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    8
+#define CONFIG_VERSION    10
 
 typedef struct userconfig {
   uint32_t  signature;

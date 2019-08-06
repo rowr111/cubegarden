@@ -113,5 +113,5 @@ static void dbColorChangeAndIntensityEffect(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
 }
-orchard_effects("DBcolor", dbColorChangeAndIntensityEffect);
+orchard_effects("DBcolor", dbColorChangeAndIntensityEffect, 0);
 #endif

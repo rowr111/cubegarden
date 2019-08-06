@@ -81,5 +81,7 @@ static void address(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
 }
-orchard_effects("address", address);
+orchard_effects("address", address, 10000000);
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 #endif

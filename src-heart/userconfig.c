@@ -71,6 +71,10 @@ void configSetBrightThresh3(uint32_t bright_thresh3){
   config_cache.cfg_bright_thresh3 = bright_thresh3;
 }
 
+void configSetAutoAdv(uint32_t autoadv) {
+  config_cache.cfg_autoadv = autoadv;
+}
+
 void configSetChannel(uint32_t channel) {
   if( channel >= RADIO_MAXCHANNELS )
     channel = 0;  // force to default if bogus stuff is sent to us
@@ -123,6 +127,7 @@ static void init_config(uint32_t block) {
   config.cfg_channel = 0;
   config.cfg_addressCounter = 1;
   config.cfg_txboost = 0;   // range seems good enough without the boost
+  config.cfg_autoadv = 0;
   config.cfg_dBbkgd = 50;        // bkg dB threshhold
   config.cfg_dBmax = 90;         // max dB threshhold
   config.cfg_pressuretrig = 60;  // mPa

@@ -107,7 +107,7 @@ static void confettipulse(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
 }
-orchard_effects("confettipulse", confettipulse);
+orchard_effects("confettipulse", confettipulse, 0);
 #endif
 
 
