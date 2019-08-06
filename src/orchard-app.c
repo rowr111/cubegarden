@@ -612,15 +612,15 @@ uint8_t stashed_shift = 2;
 static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
   struct accel_data accel; // for entropy call
-  int16_t voltage;
+  uint32_t voltage;
   static int was_charging = 0;
-  static int last_voltage = 4200;
+  static uint32_t last_voltage = 4200;
   const struct userconfig *config;
   config = getConfig();
 
   wdogPing(); // ping the watchdog
   
-  voltage = ggVoltage();
+  voltage = (uint32_t) ggVoltage(); // while technically a negative voltage can be returned...
   if( (((uptime / 60) % 5) == 0) && ((uptime % 60) == 0) ) { // update the uptime, batt state once every 5 mins
     chprintf(stream, "Uptime: %dh %dm %ds\n\r", uptime / 3600, (uptime / 60) % 60, uptime % 60);
     chprintf(stream, "Volts: %dmV Soc: %d%% Stat: %s Fault: %s\n\r", voltage, ggStateofCharge(), chgStat(), chgFault());
