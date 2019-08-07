@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "baton.h"
+#include "userconfig.h"
 
 extern uint8_t baton_holder_g;
 
@@ -42,8 +43,14 @@ static void LOTC(struct effects_config *config) {
   bstate = getBatonState();
   bstate->fx_uses_baton = 1; // let the baton state machine know we are handling batons
   
-  static uint8_t flashcount = 5; //number of times to flash at the beginning of the baton 
+  const struct userconfig *uconfig;
+  uconfig = getConfig();
+  static uint32_t flashing_time = 0;
+  static uint8_t was_holding = 0;
+  // replace flashcount with an absolute time
+  //static uint8_t flashcount = 5; //number of times to flash at the beginning of the baton 
   uint8_t flashspeed = 5; //how many loops to flash
+  
   static RgbColor fc;
   
   static int colorindex;
@@ -100,7 +107,8 @@ static void LOTC(struct effects_config *config) {
     RgbColor cc = HsvToRgb(c); 
 
     //flash flashcount times at beginning of baton holding
-    if ((bstate->state == baton_holding) && flashcount > 0){
+    if ((bstate->state == baton_holding) &&
+	(chVTTimeElapsedSinceX(flashing_time) < (uconfig->cfg_fx_newcube_time * 1000)) ) {
       if(loop % flashspeed == 0){
         if(fc.r == 0){
           fc.r = 255;
@@ -112,7 +120,6 @@ static void LOTC(struct effects_config *config) {
           fc.g = 0;
           fc.b = 0;
         }
-        flashcount--;
       }
       ledSetAllRGB(fb, count, (fc.r), (fc.g), (fc.b), shift);
     }
@@ -140,13 +147,13 @@ static void LOTC(struct effects_config *config) {
     HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};
     RgbColor c = HsvToRgb(currHSV); 
      //flash flashcount times at beginning of baton holding
-    if ((bstate->state == baton_holding) && flashcount > 0){
+    if ((bstate->state == baton_holding) &&
+	(chVTTimeElapsedSinceX(flashing_time) < (uconfig->cfg_fx_newcube_time * 1000)) ){
       if(loop % flashspeed == 0){
         if(fc.r == 0){
           fc.r = 255;
           fc.g = 255;
           fc.b = 255;
-          flashcount--;
         }
         else{
           fc.r = 0;
@@ -181,16 +188,23 @@ static void LOTC(struct effects_config *config) {
   }
   //pass the baton if we're out of time
   if (bstate->state == baton_holding){
+    if( was_holding == 0 ) {
+      flashing_time = chVTGetSystemTime();
+      was_holding = 1;
+    }
+    
     if(batonholdnexttime == 0){ //if == 0 get start time
        batonholdnexttime = chVTGetSystemTime() + batonholdmaxtime;
-       flashcount = 5; //reset flashcount
     }
     if(chVTGetSystemTime() > batonholdnexttime){ //if out of time, pass baton
       chprintf(stream, "reached max time of %d, passing baton.\n\r", batonholdmaxtime);
       bstate->fx++;
       passBaton(baton_random, 0, 500);
       batonholdnexttime = 0; //reset baton holding time
+      was_holding = 0;
     }
+  } else {
+    was_holding = 0;
   }
 }
 orchard_effects("LOTC", LOTC, 0);
