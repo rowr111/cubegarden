@@ -66,12 +66,6 @@ static void rubiks(struct effects_config *config) {
     ORIG_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
     ledSetAllRgbColor(fb, count, getRubiksColor(0), shift);
 
-    // Add color to global COLOR_COUNTS
-    char idString[32];
-    chsnprintf(idString, sizeof(idString), "rubiks-count add %d", ORIG_COLOR_INDEX);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-    radioRelease(radioDriver);
     return;
   }
 
@@ -98,15 +92,6 @@ static void rubiks(struct effects_config *config) {
 
     uint8_t prev_index = (ORIG_COLOR_INDEX + prev_index_offset) % NUMSIDES;
     uint8_t new_index = (ORIG_COLOR_INDEX + COLOR_INDEX_OFFSET) % NUMSIDES;
-
-    // Send color change to master badge
-    char idString[32];
-    chsnprintf(idString, sizeof(idString), "rubiks-count update %d %d", prev_index, new_index);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-    radioRelease(radioDriver);
-  }
-
 }
 orchard_effects("rubiks", rubiks, 0);
 
@@ -131,22 +116,6 @@ static void rubiks(struct effects_config *config) {
   c.v = (int) (255 * brightperc);
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
-
-  for (uint8_t i = 0; i < NUMSIDES; i++) {
-    chsnprintf(stream, "now checking colof %d with total count: %d \n", i, RUBIKS_COLOR_COUNTS[i]);
-    // If any color has won, switch to rainbow blast
-    if (RUBIKS_COLOR_COUNTS[i] >= COLOR_COUNT_WIN_THRESHOLD) {
-
-      // Reset vars so next time rubiks is played, the counts are 0
-      reset_rubiks();
-
-      char idString[32];
-      chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
-      radioAcquire(radioDriver);
-      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-      radioRelease(radioDriver);
-    }
-  }
 }
 orchard_effects("rubiks", rubiks);
 #endif

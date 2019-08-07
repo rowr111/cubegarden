@@ -156,10 +156,4 @@ extern unsigned int patternChanged;
 
 void do_lightgene(effects_config *config);
 
-// Keep track of Rubiks Color Counts for Win State
-extern uint8_t RUBIKS_COLOR_COUNTS[6];
-void update_rubiks(uint8_t old_color, uint8_t new_color);
-void reset_rubiks(void);
-void add_rubiks(uint8_t color_index);
-
 #endif /* __LED_H__ */
