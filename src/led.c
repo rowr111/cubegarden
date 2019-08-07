@@ -37,6 +37,7 @@ uint32_t fx_starttime = 0; //start time for temporary effect
 
 uint8_t shift = 2;  // start a little bit dimmer
 RgbColor superRgb;
+uint32_t superRgbLastTime;
 uint8_t cube_layout = 1; //basic assumption is donut shaped layout
 uint8_t cube_count = 50; //basic assumption - 50 cubes
 

@@ -151,6 +151,7 @@ extern uint32_t fx_starttime; //start time for temporary effect
 
 extern uint8_t shift;  // start a little bit dimmer
 extern RgbColor superRgb; //superrgb color for use when setting all the cubes
+extern uint32_t superRgbLastTime; //last time superrgb was set
 extern uint8_t cube_layout;
 extern uint8_t cube_count;
 
