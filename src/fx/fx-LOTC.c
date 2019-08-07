@@ -47,6 +47,7 @@ static void LOTC(struct effects_config *config) {
   uconfig = getConfig();
   static uint32_t flashing_time = 0;
   static uint8_t was_holding = 0;
+  static uint8_t initialized = 0;
   // replace flashcount with an absolute time
   //static uint8_t flashcount = 5; //number of times to flash at the beginning of the baton 
   uint8_t flashspeed = 5; //how many loops to flash
@@ -54,8 +55,18 @@ static void LOTC(struct effects_config *config) {
   static RgbColor fc;
   
   static int colorindex;
-  static HsvColor h;  
-  if ((superRgbLastTime + superRgbWaitTime) < chVTGetSystemTime()){
+  static HsvColor h;
+
+  // make sure time params get initialized on effect entry
+  if( initialized == 0 ) {
+    initialized = 1;
+    flashing_time = chVTGetSystemTime();
+    superRgbLastTime = chVTGetSystemTime();
+  }
+  
+
+  if ( ((superRgbLastTime + superRgbWaitTime) < chVTGetSystemTime()) &&
+       (bstate->state != baton_holding) ){
     mastercubeUnresponsive = true;
     if(loop%10 == true){
       chprintf(stream, "no color updates from master cube :'(.\n\r");
