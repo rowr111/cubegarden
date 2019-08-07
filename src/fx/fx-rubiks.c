@@ -20,7 +20,7 @@ static const RgbColor RED = {255, 0, 0}; // FIXME: Should we make these global t
 static const RgbColor GREEN = {0, 255, 0}; // NOTE: They are in led.c
 static const RgbColor BLUE = {0, 0, 255};
 static const RgbColor YELLOW = {255, 255, 0};
-static const RgbColor MAGENTA = {255, 0, 255};
+static const RgbColor MAGENTA = {138, 43, 226};
 static const RgbColor WHITE = {255, 255, 255};
 static const int NUMSIDES = 6;
 
