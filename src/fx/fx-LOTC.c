@@ -205,8 +205,6 @@ static void LOTC(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  BatonState *bstate;
-  bstate = getBatonState();
 
   HsvColor c;
   c.h = 212; //pinkish.

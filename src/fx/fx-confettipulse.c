@@ -35,6 +35,7 @@ static void confettipulse(struct effects_config *config) {
 
   if (patternChanged){
     patternChanged = 0;
+    pressure_changed = 0; //null out pressure changed so we get a fresh start
     colorindex = (uint32_t)rand() % numOfBaseHsvColors; //get an initial color
     colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
   }
