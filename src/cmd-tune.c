@@ -26,6 +26,7 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    bright1      1st battery brightness threshhold (default = 3750)"NL);
     chprintf(chp, "    bright2      2nd battery brightness threshhold (default = 3650)"NL);
     chprintf(chp, "    bright3      3rd battery brightness threshhold (default = 3550)"NL);
+    chprintf(chp, "    nofun        0 = turn no fun mode off, els turned on (default = 1)"NL);
     return;
   }
 
@@ -54,16 +55,19 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
       configSetdBmax(db);
   }
   else if (!strcasecmp(argv[0], "pressure") && argc == 2)  {
-      configSetpressuretrig(atoi(argv[1]));
+    configSetpressuretrig((uint8_t) strtoul(argv[1], NULL, 0));
   }
   else if (!strcasecmp(argv[0], "bright1") && argc == 2)  {
-      configSetBrightThresh(atoi(argv[1]));
+    configSetBrightThresh(strtoul(argv[1], NULL, 0));
   }
   else if (!strcasecmp(argv[0], "bright2") && argc == 2)  {
-      configSetBrightThresh2(atoi(argv[1]));
+    configSetBrightThresh2(strtoul(argv[1], NULL, 0));
   }
   else if (!strcasecmp(argv[0], "bright3") && argc == 2)  {
-      configSetBrightThresh3(atoi(argv[1]));
+    configSetBrightThresh3(strtoul(argv[1], NULL, 0));
+  }
+  else if (!strcasecmp(argv[0], "nofun") && argc == 2)  {
+    configSetNoFun((uint8_t) strtoul(argv[1], NULL, 0));
   }
   
   return;
