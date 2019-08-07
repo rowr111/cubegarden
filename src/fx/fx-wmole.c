@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "baton.h"
+#include "userconfig.h"
 
 extern uint8_t baton_holder_g;
 
@@ -43,7 +44,7 @@ typedef enum {
 
 #define STATE_MASK  0xC0    // top two bits are for tracking the game state
 #define COUNT_MASK  0x3F    // bottom 6 bits are for tracking the cube whack count
-#define HOLD_TIMEOUT (6 * 1000)  // time for the mole to be hit
+// #define HOLD_TIMEOUT (6 * 1000)  // time for the mole to be hit NOW USERCONFIG
 #define REMISSION_TIMEOUT (20 * 1000)  // how long to wait before making a new mole in event of loss
 
 static void Whackamole(struct effects_config *config) {
@@ -72,6 +73,9 @@ static void Whackamole(struct effects_config *config) {
   int i;
   uint8_t oldshift;
 
+  const struct userconfig *uconfig;
+  uconfig = getConfig();
+
   static uint8_t last_gamestate = 0;
   static uint8_t was_holding = 0;
   static uint32_t holding_time = 0;
@@ -89,7 +93,8 @@ static void Whackamole(struct effects_config *config) {
       sendBatonHoldingPacket();
     }
       
-    if( chVTTimeElapsedSinceX(holding_time) < HOLD_TIMEOUT ) {
+    if( chVTTimeElapsedSinceX(holding_time) < ((uconfig->cfg_fx_newcube_time + 2) * 1000) ) {
+      // add some extra time, I think whackamole is a harder game to "win"
       wmole_fx = wmole_sparkle;
       sparkle_time = chVTGetSystemTime(); // sparkle forever in this state
       sparkle_duration = 100000; // sparkle forever
@@ -111,7 +116,7 @@ static void Whackamole(struct effects_config *config) {
 	      progression = 2;
 	    break;
 	  case 2:
-	    if( series > 11 ) {
+	    if( series > 9 ) {
 	      progression = 3;
 	      // ANNOUNCE THE WINNAR!!!
 	      for( i = 0; i < 5; i++ ) {
