@@ -163,7 +163,7 @@ void baton_new_random(void) {
   chThdSleepMilliseconds(200); // give cubes a moment to have their other threads run
       
   pkt.type = baton_pass;
-  pkt.address = (((uint32_t) rand()) % config->cfg_addressCounter) + 1;
+  pkt.address = (((uint32_t) rand()) % (config->cfg_addressCounter-1)) + 1;
   baton_target_g = pkt.address;
   baton_passing_g = 1;
 
