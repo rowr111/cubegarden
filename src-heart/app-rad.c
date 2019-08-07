@@ -238,35 +238,35 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
     }
 
 
-    else if(event->key.code == keyRight){
-       if(line == LINE_BATT1) {
-          batt1 = batt1 >= 4300 ? 4300 : batt1 + 1; //must be less than max of 4300
-        }
-       if(line == LINE_BATT2){
-          batt2 = batt2 >= batt1 ? batt1 - 1 : batt2 + 1; //must be less than batt1
-        }
-       if(line == LINE_BATT3){
-           batt3 = batt3 >= batt2 ? batt2 - 1 : batt3 + 1; //must be less than batt2
-       }
-       if(line == LINE_AUTOADV){
-         autoadv = autoadv + 1;
-       }
-  }
-  else if(event->key.code == keyLeft){
-       if(line == LINE_BATT1) {
-          batt1 = batt1 <= batt2 ? batt2 + 1 : batt1 - 1; //must be > batt2
-       }
-       if(line == LINE_BATT2){
-          batt2 = batt2 <= batt3 ? batt3 + 1 : batt2 - 1; //must be > batt3
-       }
-       if(line == LINE_BATT3){
-           batt3 = batt3 == 0 ? 0 : batt3 - 1; // must be > 0
-       }
-       if(line == LINE_AUTOADV){
-          autoadv = autoadv == 0 ? 0 : autoadv - 1; //must be > 0
-       }
-  }
-
+    if(event->key.code == keyRight  && (event->key.flags != keyUp)){
+      if(line == LINE_BATT1) {
+	batt1 = batt1 >= 4250 ? 4250 : batt1 + 10; //must be less than max of 4250
+      }
+      if(line == LINE_BATT2){
+	batt2 = batt2 >= batt1 ? batt1 - 10 : batt2 + 10; //must be less than batt1
+      }
+      if(line == LINE_BATT3){
+	batt3 = batt3 >= batt2 ? batt2 - 10 : batt3 + 10; //must be less than batt2
+      }
+      if(line == LINE_AUTOADV){
+	autoadv = autoadv + 1;
+      }
+    }
+    if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
+      if(line == LINE_BATT1) {
+	batt1 = batt1 <= batt2 ? batt2 + 10 : batt1 - 10; //must be > batt2
+      }
+      if(line == LINE_BATT2){
+	batt2 = batt2 <= batt3 ? batt3 + 10 : batt2 - 10; //must be > batt3
+      }
+      if(line == LINE_BATT3){
+	batt3 = batt3 == 0 ? 3200 : batt3 - 10; // must be > 3200, 3200 the device automatically shuts down
+      }
+      if(line == LINE_AUTOADV){
+	autoadv = autoadv == 0 ? 0 : autoadv - 1; //must be > 0
+      }
+    }
+    
   } else if( event->type == uiEvent ) {
     chHeapFree(listUiContext.itemlist); // free the itemlist passed to the UI
     selected = (uint8_t) context->instance->ui_result;
@@ -278,6 +278,7 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
     radioUpdateChannelFromConfig(radioDriver);
     friendClear();
   }
+
 
   if( context->instance->ui == NULL ) {
     redraw_ui();
