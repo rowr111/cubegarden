@@ -408,11 +408,7 @@ void trigger_rb(uint8_t id){
       if(effect_trigger_rb[i][0] > 0) trigger_count++;
   }
   if(trigger_count == REQUIRED_CUBE_PARTICIPATION){
-    char idString[32];
-    chsnprintf(idString, sizeof(idString), "fx use rainbowblast");
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-    radioRelease(radioDriver);
+    sendFxWithRetries("rainbowblast");
   }
 }
 
@@ -488,21 +484,21 @@ void check_autoadv(uint32_t autoadvmin) {
     }
     patternstarttime = currenttime; //reset the pattern start time
     chprintf(stream, "new effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
-    //now send the pattern a few times so we hopefully will get it to take
-    for(int i=0; i<=EFFECT_SEND_DUP; i++){
-      sendAutoAdvancePattern(curfx->name);
-      // wait so we aren't super spammy
-      chThdSleepMilliseconds(EFFECT_SEND_DUP_DELAY);
-    }  
+    sendFxWithRetries(curfx->name);
   }
 }
 
-void sendAutoAdvancePattern(const char *name) {
-  char idString[32];
-  chsnprintf(idString, sizeof(idString), "fx use %s", name);
-  radioAcquire(radioDriver);
-  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-  radioRelease(radioDriver);
+void sendFxWithRetries(const char *name) {
+  //send the pattern a few times so we hopefully will get it to take
+  for(int i=0; i<=EFFECT_SEND_DUP; i++){
+    char idString[32];
+    chsnprintf(idString, sizeof(idString), "fx use %s", name);
+    radioAcquire(radioDriver);
+    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+    radioRelease(radioDriver);
+     // wait so we aren't super spammy
+     chThdSleepMilliseconds(EFFECT_SEND_DUP_DELAY);
+  }
 }
 
 // checks to see if the current effect is one of the lightgenes

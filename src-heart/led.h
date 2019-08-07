@@ -91,7 +91,7 @@ uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t);
 uint8_t effectsGetPattern(void);
 void check_autoadv(uint32_t);
-void sendAutoAdvancePattern(const char *name);
+void sendFxWithRetries(const char *name);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
 uint8_t getShift(void);
