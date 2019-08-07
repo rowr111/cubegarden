@@ -4,7 +4,8 @@
 #include "radio.h"
 #include <string.h>
 
-#define NUM_LINES 3
+#define NUM_LINES 4
+#define LINE_NOFUN 3
 #define LINE_PRESS 2
 #define LINE_DBMAX 1
 #define LINE_DBBKGD 0
@@ -13,6 +14,7 @@ static uint8_t line = 0;
 static uint8_t dBbkgd = 0;
 static uint8_t dBmax = 0;
 static uint8_t pressure = 0;
+static uint8_t nofun = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -67,6 +69,18 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_PRESS+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
+
+  // no fun mode
+  chsnprintf(uiStr, sizeof(uiStr), "no fun mode: %s", nofun ? "on" : "off");
+  if( line == LINE_NOFUN ) {
+    gdispFillArea(0, height*(LINE_NOFUN+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_NOFUN+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
+
   gdispFlush();
   orchardGfxEnd();
 }
@@ -83,6 +97,7 @@ static void mtune_start(OrchardAppContext *context) {
   dBmax = config->cfg_dBmax;
   dBbkgd = config->cfg_dBbkgd;
   pressure = config->cfg_pressuretrig;
+  nofun = config->cfg_no_fun_mode;
 
 }
 
@@ -130,31 +145,46 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	  radioRelease(radioDriver);
 	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
 	}
+      } else if(line == LINE_NOFUN || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune nofun %d", nofun);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      }
+      
+    }
+    
+    if(event->key.code == keyRight  && (event->key.flags != keyUp)){
+      if(line == LINE_DBBKGD) {
+	dBbkgd = dBbkgd == 120 ? 120 : dBbkgd + 1; //max usable value of 120
+      }
+      if(line == LINE_DBMAX){
+	dBmax = dBmax == 120 ? 120 : dBmax + 1; //max usable value of 120
+      }
+      if(line == LINE_PRESS){
+	pressure = pressure == 255 ? 255 : pressure + 1; //don't let value wrap around
+      }
+      if(line == LINE_NOFUN ) {
+	nofun = !nofun;
       }
     }
-  }
-  
-  if(event->key.code == keyRight){
-       if(line == LINE_DBBKGD) {
-          dBbkgd = dBbkgd == 120 ? 120 : dBbkgd + 1; //max usable value of 120
-        }
-       if(line == LINE_DBMAX){
-          dBmax = dBmax == 120 ? 120 : dBmax + 1; //max usable value of 120
-        }
-       if(line == LINE_PRESS){
-           pressure = pressure == 255 ? 255 : pressure + 1; //don't let value wrap around
-       }
-  }
-  if(event->key.code == keyLeft){
-       if(line == LINE_DBBKGD) {
-          dBbkgd = dBbkgd == 0 ? 0 : dBbkgd - 1; //min of 0
-       }
-       if(line == LINE_DBMAX){
-          dBmax = dBmax == 0 ? 0 : dBmax - 1; //min of 0
-       }
-       if(line == LINE_PRESS){
-           pressure = pressure == 0 ? 0 : pressure - 1; //don't let value wrap around
-       }
+    if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
+      if(line == LINE_DBBKGD) {
+	dBbkgd = dBbkgd == 0 ? 0 : dBbkgd - 1; //min of 0
+      }
+      if(line == LINE_DBMAX){
+	dBmax = dBmax == 0 ? 0 : dBmax - 1; //min of 0
+      }
+      if(line == LINE_PRESS){
+	pressure = pressure == 0 ? 0 : pressure - 1; //don't let value wrap around
+      }
+      if(line == LINE_NOFUN  && (event->key.flags != keyUp)) {
+	nofun = !nofun;
+      }
+    }
   }
   
   redraw_ui();
@@ -173,6 +203,9 @@ static void mtune_exit(OrchardAppContext *context) {
   }
   if(pressure != config->cfg_pressuretrig){
     configSetpressuretrig(pressure);
+  }
+  if(nofun != config->cfg_no_fun_mode) {
+    configSetNoFun(nofun);
   }
 }
 

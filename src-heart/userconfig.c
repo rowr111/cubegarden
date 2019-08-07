@@ -71,6 +71,10 @@ void configSetBrightThresh3(uint32_t bright_thresh3){
   config_cache.cfg_bright_thresh3 = bright_thresh3;
 }
 
+void configSetNoFun(uint8_t no_fun_mode) {
+  config_cache.cfg_no_fun_mode = no_fun_mode;
+}  
+
 void configSetAutoAdv(uint32_t autoadv) {
   config_cache.cfg_autoadv = autoadv;
 }
@@ -134,6 +138,7 @@ static void init_config(uint32_t block) {
   config.cfg_bright_thresh = 3750;
   config.cfg_bright_thresh2 = 3650;
   config.cfg_bright_thresh3 = 3550;
+  config.cfg_no_fun_mode = 1;  // no fun by default
 
   for( i = 0; i < MAX_CLIPS; i++ ) {
     config.cfg_clip_used[i] = 0;
