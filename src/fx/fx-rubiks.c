@@ -20,7 +20,7 @@ static const RgbColor RED = {255, 0, 0}; // FIXME: Should we make these global t
 static const RgbColor GREEN = {0, 255, 0}; // NOTE: They are in led.c
 static const RgbColor BLUE = {0, 0, 255};
 static const RgbColor YELLOW = {255, 255, 0};
-static const RgbColor MAGENTA = {138, 43, 226};
+static const RgbColor MAGENTA = {159, 0, 255};
 static const RgbColor WHITE = {255, 255, 255};
 static const int NUMSIDES = 6;
 
@@ -95,10 +95,6 @@ orchard_effects("rubiks", rubiks, 0);
 
 #else
 
-// FIXME: Pick this and make it tuneable
-static const int COLOR_COUNT_WIN_THRESHOLD = 2;
-static const int NUMSIDES = 6;
-
 static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
@@ -115,5 +111,5 @@ static void rubiks(struct effects_config *config) {
   RgbColor x = HsvToRgb(c);
   ledSetAllRGB(fb, count, x.r, x.g, x.b, shift);
 }
-orchard_effects("rubiks", rubiks);
+orchard_effects("rubiks", rubiks, 0);
 #endif
