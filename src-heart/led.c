@@ -466,7 +466,7 @@ uint8_t effectsNameLookup(const char *name) {
   return 0;  // name not found returns default effect
 }
 
-void check_autoadv(uint32_t autoadvmin){
+void check_autoadv(uint32_t autoadvmin) {
   uint32_t currenttime = chVTGetSystemTime();
 
   if (patternstarttime == 0){ //set the time if it's zero
@@ -488,15 +488,21 @@ void check_autoadv(uint32_t autoadvmin){
     }
     patternstarttime = currenttime; //reset the pattern start time
     chprintf(stream, "new effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
-    for(int i=0; i<=3; i++){
-      //set the new pattern, and send it a few times so hopefully it gets picked up
-      char idString[32];
-      chsnprintf(idString, sizeof(idString), "fx use %s", curfx->name);
-      radioAcquire(radioDriver);
-      radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
-      radioRelease(radioDriver);
+    //now send the pattern a few times so we hopefully will get it to take
+    for(int i=0; i<=EFFECT_SEND_DUP; i++){
+      sendAutoAdvancePattern(curfx->name);
+      // wait so we aren't super spammy
+      chThdSleepMilliseconds(EFFECT_SEND_DUP_DELAY);
     }  
   }
+}
+
+void sendAutoAdvancePattern(const char *name) {
+  char idString[32];
+  chsnprintf(idString, sizeof(idString), "fx use %s", name);
+  radioAcquire(radioDriver);
+  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+  radioRelease(radioDriver);
 }
 
 // checks to see if the current effect is one of the lightgenes

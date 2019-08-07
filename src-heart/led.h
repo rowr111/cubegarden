@@ -91,6 +91,7 @@ uint8_t effectsNameLookup(const char *name);
 void effectsSetPattern(uint8_t);
 uint8_t effectsGetPattern(void);
 void check_autoadv(uint32_t);
+void sendAutoAdvancePattern(const char *name);
 void bump(uint32_t amount);
 void setShift(uint8_t s);
 uint8_t getShift(void);
@@ -115,6 +116,8 @@ const char *lightgeneName(void);
 void check_lightgene_hack(void);
 
 #define EFFECTS_REDRAW_MS 35
+#define EFFECT_SEND_DUP 5   // define how many times packets are resent for effect auto advance
+#define EFFECT_SEND_DUP_DELAY 27
 
 
 /// these were perviously static, now global to facilitate splitting up the led effects into files
