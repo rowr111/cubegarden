@@ -92,5 +92,5 @@ static void dropbounce(struct effects_config *config) {
     }
   ledSetAllRGB(fb, count, 255*Height, 255*Height, 255*Height, shift);
 }
-orchard_effects("dropbounce", dropbounce);
+orchard_effects("dropbounce", dropbounce, 4400);
 #endif

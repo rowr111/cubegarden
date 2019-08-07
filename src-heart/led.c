@@ -15,6 +15,7 @@
 
 #include "orchard-test.h"
 #include "test-audit.h"
+#include "userconfig.h"
 
 #include <string.h>
 #include <math.h>
@@ -30,6 +31,7 @@ static effects_config fx_config;
 static uint8_t fx_index;  // current effect
 static uint8_t fx_max;    // max # of effects
 static uint8_t ledExitRequest = 0;
+static uint32_t patternstarttime = 0;
 
 // global effects state
 uint8_t shift = 2;  // start a little bit dimmer
@@ -79,7 +81,7 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
   led_config.ui_fb = o_ui_fb;
 
   led_config.final_fb = chHeapAlloc( NULL, sizeof(uint8_t) * led_config.max_pixels * 3 );
-  
+
   for (j = 0; j < leds * 3; j++)
     led_config.fb[j] = 0x0;
   for (j = 0; j < ui_leds * 3; j++)
@@ -93,7 +95,7 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 void uiLedGet(uint8_t index, Color *c) {
   if( index >= led_config.ui_pixels )
     index = led_config.ui_pixels - 1;
-  
+
   c->g = led_config.ui_fb[index*3];
   c->r = led_config.ui_fb[index*3+1];
   c->b = led_config.ui_fb[index*3+2];
@@ -102,7 +104,7 @@ void uiLedGet(uint8_t index, Color *c) {
 void uiLedSet(uint8_t index, Color c) {
   if( index >= led_config.ui_pixels )
     index = led_config.ui_pixels - 1;
-  
+
   led_config.ui_fb[index*3] = c.g;
   led_config.ui_fb[index*3+1] = c.r;
   led_config.ui_fb[index*3+2] = c.b;
@@ -147,7 +149,7 @@ Color ledGetColor(void *ptr, int x) {
   c.g = buf[0];
   c.r = buf[1];
   c.b = buf[2];
-  
+
   return c;
 }
 
@@ -179,7 +181,7 @@ Color alphaPix( Color c, uint8_t alpha ) {
   rc.g = (g / 255) & 0xFF;
   rc.b = (b / 255) & 0xFF;
 
-  return( rc );  
+  return( rc );
 }
 
 void do_lightgene(effects_config *config) {
@@ -204,7 +206,7 @@ void do_lightgene(effects_config *config) {
 
   static uint32_t reftime_lg = 0;
   static uint8_t sat_offset = 0;
-  
+
   tau = (uint32_t) map(diploid.cd_rate, 0, 255, 700, 8000);
   curtime = chVTGetSystemTime();
   if( (curtime - reftime_lg) > tau )
@@ -250,7 +252,7 @@ void do_lightgene(effects_config *config) {
     }
     hsvC.h = map_16( (int16_t) hsvC.h, 0, 255,
 		     (int16_t) diploid.hue_base, (int16_t) diploid.hue_bound );
-    
+
     // saturation chromosome
     hsvC.s = satadd_8(diploid.sat, sat_offset);
 
@@ -266,7 +268,7 @@ void do_lightgene(effects_config *config) {
                 fix16_div(fix16_from_int(i), fix16_from_int(count-1)) ));
 
     time = fix16_mul(twopi, fix16_div( fix16_from_int(indextime), fix16_from_int(tau) ));
-    
+
     // space +/- time based on direction
     if( diploid.cd_dir > 128 ) {
       spacetime = fix16_add( space, time );
@@ -319,7 +321,7 @@ static void safetyPatternFB(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  
+
   int i = 0;
 
   while (i < count) {
@@ -344,15 +346,17 @@ static void safetyPatternFB(struct effects_config *config) {
       ledSetRGB(fb, (i++ + loop) % count, 0, 0, 0, shift);
     }
   }
- 
+
 }
-orchard_effects("safetyPattern", safetyPatternFB);
+orchard_effects("safetyPattern", safetyPatternFB, 10000000); 
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 
 #define BUMP_DEBOUNCE 300 // 300ms debounce to next bump
 
 void bump(uint32_t amount) {
   static unsigned int bumptime = 0;
-  
+
   bump_amount = amount;
   if( chVTGetSystemTime() - bumptime > BUMP_DEBOUNCE ) {
     bumptime = chVTGetSystemTime();
@@ -360,15 +364,15 @@ void bump(uint32_t amount) {
   }
 }
 
-#define REQUIRED_CUBE_PARTICIPATION 1 //number of cubes required to participate to trigger an effect
-#define CUBE_PARTICPATION_EXPIRATION 10000 //number of ms to keep cube participation in history
+#define REQUIRED_CUBE_PARTICIPATION 5 //number of cubes required to participate to trigger an effect
+#define CUBE_PARTICIPATION_EXPIRATION 10000 //number of ms to keep cube participation in history
 static uint32_t effect_trigger_rb[REQUIRED_CUBE_PARTICIPATION][2]; //trigger for rainbowblast
 
 void trigger_rb(uint8_t id){
   uint32_t currenttime = chVTGetSystemTime();
   //clear out expired history
   for(int i=0; i<REQUIRED_CUBE_PARTICIPATION; i++){
-    if(effect_trigger_rb[i][1] + CUBE_PARTICPATION_EXPIRATION < currenttime){
+    if(effect_trigger_rb[i][1] + CUBE_PARTICIPATION_EXPIRATION < currenttime){
       effect_trigger_rb[i][0] = 0;
       effect_trigger_rb[i][1] = 0;
     }
@@ -392,7 +396,7 @@ void trigger_rb(uint8_t id){
   if(found == false && zeroid < UINT32_MAX){
     effect_trigger_rb[zeroid][0] = id;
     effect_trigger_rb[zeroid][1] = currenttime;
-  } 
+  }
   //otherwise if no zeros, replace the oldest entry
   else if(found == false && oldesttimeid < UINT32_MAX){
     effect_trigger_rb[oldesttimeid][0] = id;
@@ -416,16 +420,20 @@ void trigger_rb(uint8_t id){
 
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
-  
+
   curfx = orchard_effects_start();
-  
+
   fx_config.loop++;
 
   if( bump_amount != 0 ) {
     fx_config.loop += bump_amount;
     bump_amount = 0;
   }
-
+  const struct userconfig *config;
+  config = getConfig();
+  if(config->cfg_autoadv > 0){
+    check_autoadv(config->cfg_autoadv); //check to see if it's time to advance the pattern.
+  }
   curfx += fx_index;
 
   curfx->computeEffect(&fx_config);
@@ -435,7 +443,7 @@ const char *effectsCurName(void) {
   const OrchardEffects *curfx;
   curfx = orchard_effects_start();
   curfx += fx_index;
-  
+
   return (const char *) curfx->name;
 }
 
@@ -447,15 +455,54 @@ uint8_t effectsNameLookup(const char *name) {
   if( name == NULL ) {
     return 0;
   }
-  
+
   for( i = 0; i < fx_max; i++ ) {
     if( strcmp(name, curfx->name) == 0 ) {
       return i;
     }
     curfx++;
   }
-  
+
   return 0;  // name not found returns default effect
+}
+
+void check_autoadv(uint32_t autoadvmin) {
+  uint32_t currenttime = chVTGetSystemTime();
+
+  if (patternstarttime == 0){ //set the time if it's zero
+    patternstarttime = currenttime;
+  }
+  if (currenttime > (patternstarttime + autoadvmin*60000)){ //if it's time to advance the pattern
+    chprintf(stream, "autoadvance time exceeded, advancing the pattern\n\r");
+    const OrchardEffects *curfx;
+    curfx = orchard_effects_start();
+    fx_index = (fx_index + 1) % fx_max;
+    curfx += fx_index;
+    while(curfx->duration > 0){
+      chprintf(stream, "next effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+      chprintf(stream, "temporary effect, autoadvancing to next pattern\n\r");
+      curfx = orchard_effects_start();
+      fx_index = (fx_index + 1) % fx_max;
+      curfx += fx_index;
+      //chprintf(stream, "next effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+    }
+    patternstarttime = currenttime; //reset the pattern start time
+    chprintf(stream, "new effect: %s, duration: %d\n\r", curfx->name, curfx->duration);
+    //now send the pattern a few times so we hopefully will get it to take
+    for(int i=0; i<=EFFECT_SEND_DUP; i++){
+      sendAutoAdvancePattern(curfx->name);
+      // wait so we aren't super spammy
+      chThdSleepMilliseconds(EFFECT_SEND_DUP_DELAY);
+    }  
+  }
+}
+
+void sendAutoAdvancePattern(const char *name) {
+  char idString[32];
+  chsnprintf(idString, sizeof(idString), "fx use %s", name);
+  radioAcquire(radioDriver);
+  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, sizeof(idString), idString);
+  radioRelease(radioDriver);
 }
 
 // checks to see if the current effect is one of the lightgenes
@@ -463,7 +510,7 @@ uint8_t effectsNameLookup(const char *name) {
 void check_lightgene_hack(void) {
   const struct genes *family;
   uint8_t family_member = 0;
-  
+
   if( strncmp(effectsCurName(), "Lg", 2) == 0 ) {
     family = (const struct genes *) storageGetData(GENE_BLOCK);
     // handle lightgene special case
@@ -481,7 +528,7 @@ void effectsSetPattern(uint8_t index) {
   if(index > fx_max) {
     fx_index = 0;
     return;
-  } 
+  }
     fx_index = index;
     patternChanged = 1;
     check_lightgene_hack();
@@ -524,7 +571,7 @@ void effectsPrevPattern(int skipstrobe) {
       }
     }
   }
-  
+
   patternChanged = 1;
   check_lightgene_hack();
 }
@@ -563,7 +610,7 @@ static THD_FUNCTION(effects_thread, arg) {
     offset = offset < 0 ? -offset : offset;
     if( offset > 2 * EFFECTS_REDRAW_MS )
       last_time = getNetworkTimeMs();
-    
+
     if( (getNetworkTimeMs() - last_time) > EFFECTS_REDRAW_MS ) {
       last_time += EFFECTS_REDRAW_MS;
 
@@ -577,7 +624,7 @@ static THD_FUNCTION(effects_thread, arg) {
       // wait until the next update cycle
       chThdYield();
       chThdSleepMilliseconds(1);
-      
+
       // re-render the internal framebuffer animations
       draw_pattern();
     } else {
@@ -612,7 +659,7 @@ void listEffects(void) {
 
 void effectsStart(void) {
   const OrchardEffects *curfx;
-  
+
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
   fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
@@ -623,7 +670,7 @@ void effectsStart(void) {
   vividRainbow[3] = electricGreen;
   vividRainbow[4] = vividCerulean;
   vividRainbow[5] = vividViolet;
-  
+
   strncpy( diploid.name, "err!", GENE_NAMELENGTH ); // in case someone references before init
 
   curfx = orchard_effects_start();
@@ -646,11 +693,11 @@ void effectsStart(void) {
 
 OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   (void) my_name;
-  
+
   OrchardTestResult result = orchardResultPass;
   uint16_t i;
   uint8_t interactive = 0;
-  
+
   switch(test_type) {
   case orchardTestPoweron:
     // the LED is not easily testable as it's "write-only"
@@ -714,7 +761,7 @@ OrchardTestResult test_led(const char *my_name, OrchardTestType test_type) {
   default:
     return orchardResultNoTest;
   }
-  
+
   return orchardResultNoTest;
 }
 orchard_test("ws2812b", test_led);

@@ -103,9 +103,10 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	line--;
       else
 	line = NUM_LINES - 1;
-    } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR)) ) {
-      // this is the "A" key
-      if(line == LINE_DBBKGD) {
+    } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR) || (event->key.code == keyBottomR)) ) {
+      // this is the "A" key or "B" key
+      // if "B" key transmit all the params
+      if(line == LINE_DBBKGD || event->key.code == keyBottomR) {
 	for( i = 0; i < MTUNE_RETRIES; i++ ) {
 	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBbkgd %d", dBbkgd);
 	  radioAcquire(radioDriver);
@@ -113,7 +114,7 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	  radioRelease(radioDriver);
 	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
 	}
-      } else if(line == LINE_DBMAX) {
+      } else if(line == LINE_DBMAX || event->key.code == keyBottomR) {
 	for( i = 0; i < MTUNE_RETRIES; i++ ) {
 	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune dBmax %d", dBmax);
 	  radioAcquire(radioDriver);
@@ -121,7 +122,7 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	  radioRelease(radioDriver);
 	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
 	}
-      } else if(line == LINE_PRESS) {
+      } else if(line == LINE_PRESS || event->key.code == keyBottomR) {
 	for( i = 0; i < MTUNE_RETRIES; i++ ) {
 	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune pressure %d", pressure);
 	  radioAcquire(radioDriver);

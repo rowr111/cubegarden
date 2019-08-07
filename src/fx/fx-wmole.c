@@ -271,7 +271,7 @@ static void Whackamole(struct effects_config *config) {
     baton_new_random();
   } 
 }
-orchard_effects("Whackamole", Whackamole);
+orchard_effects("Whackamole", Whackamole, 0);
 #endif
 
 

@@ -61,7 +61,7 @@ static void rainbowblast(struct effects_config *config) {
 
   ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
 }
-orchard_effects("rainbowblast", rainbowblast);
+orchard_effects("rainbowblast", rainbowblast, 4000);
 #endif
 
 

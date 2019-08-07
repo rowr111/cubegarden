@@ -79,6 +79,6 @@ static void strobePatternFB(struct effects_config *config) {
 
   shift = oldshift;
 }
-orchard_effects("strobe", strobePatternFB);
+orchard_effects("strobe", strobePatternFB, PAGE_DISPLAY_MS);
 
 #endif

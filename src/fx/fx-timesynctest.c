@@ -34,5 +34,7 @@ static void timesynctest(struct effects_config *config){
   // 6 colors in the rainbow
   ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
 }
-orchard_effects("timesynctest", timesynctest);
+orchard_effects("timesynctest", timesynctest, 10000000);
+//giving this effect a very long duration so that it is not included in effect autoadvance
+//the duration is not used on the master badge except for autoadvance.
 #endif

@@ -27,6 +27,7 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    bright1      1st battery brightness threshhold (default = 3750)"NL);
     chprintf(chp, "    bright2      2nd battery brightness threshhold (default = 3650)"NL);
     chprintf(chp, "    bright3      3rd battery brightness threshhold (default = 3550)"NL);
+    chprintf(chp, "    autoadv      autoadvance the effect (minutes)"NL);
     return;
   }
 
@@ -43,6 +44,8 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
       chprintf(stream, "%d\n\r", config->cfg_bright_thresh2);
       chprintf(stream, "%s", "third battery brightness threshold: ");
       chprintf(stream, "%d\n\r", config->cfg_bright_thresh3);
+      chprintf(stream, "%s", "fx auto advance minutes: ");
+      chprintf(stream, "%d\n\r", config->cfg_autoadv);
   }
   else if (!strcasecmp(argv[0], "dBbkgd") && argc == 2) {
      uint8_t db = atoi(argv[1]);
@@ -65,6 +68,9 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
   }
   else if (!strcasecmp(argv[0], "bright3") && argc == 2)  {
       configSetBrightThresh3(atoi(argv[1]));
+  }
+   else if (!strcasecmp(argv[0], "autoadv") && argc == 2)  {
+      configSetAutoAdv(atoi(argv[1]));
   }
   
   return;

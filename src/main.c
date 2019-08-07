@@ -43,6 +43,7 @@
 #include "gyro.h"
 #include "trigger.h"
 #include "address.h"
+#include "baton.h"
 
 #include "orchard-test.h"
 

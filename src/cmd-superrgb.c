@@ -42,6 +42,8 @@ void cmd_superrgb(BaseSequentialStream *chp, int argc, char *argv[])
   superRgb.g = g;
   superRgb.b = b;
 
+  superRgbLastTime = chVTGetSystemTime(); //set the time every time this command is called
+
   return;
 }
 

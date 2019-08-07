@@ -4,7 +4,8 @@
 #include "radio.h"
 #include <string.h>
 
-#define NUM_LINES 6
+#define NUM_LINES 7
+#define LINE_AUTOADV 6
 #define LINE_BATT3 5
 #define LINE_BATT2 4
 #define LINE_BATT1 3
@@ -17,6 +18,7 @@ uint8_t anonymous = 0;
 static uint32_t batt1 = 0;
 static uint32_t batt2 = 0;
 static uint32_t batt3 = 0;
+static uint32_t autoadv = 0;
 static struct OrchardUiContext listUiContext;
 static const  char title[] = "Pick a channel";
 
@@ -88,7 +90,7 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_SILENT+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
-  // 7th line: first battery brightness threshold
+  // 4th line: first battery brightness threshold
   chsnprintf(uiStr, sizeof(uiStr), "bright_thresh: %d", batt1);
   if( line == LINE_BATT1 ) {
     gdispFillArea(0, height*(LINE_BATT1+1), width, height, White);
@@ -99,7 +101,7 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_BATT1+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
-  // 8th line: 2nd battery brightness threshold
+  // 5th line: 2nd battery brightness threshold
   chsnprintf(uiStr, sizeof(uiStr), "bright_thresh2: %d", batt2);
   if( line == LINE_BATT2 ) {
     gdispFillArea(0, height*(LINE_BATT2+1), width, height, White);
@@ -110,7 +112,7 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_BATT2+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
-  // 9th line: 3rd battery brightness threshold
+  // 6th line: 3rd battery brightness threshold
   chsnprintf(uiStr, sizeof(uiStr), "bright_thresh3: %d", batt3);
   if( line == LINE_BATT3 ) {
     gdispFillArea(0, height*(LINE_BATT3+1), width, height, White);
@@ -119,6 +121,17 @@ static void redraw_ui(void) {
     draw_color = White;
   }
   gdispDrawStringBox(0, height*(LINE_BATT3+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
+
+  // 7th line: 3rd battery brightness threshold
+  chsnprintf(uiStr, sizeof(uiStr), "fx auto adv: %d", autoadv);
+  if( line == LINE_AUTOADV ) {
+    gdispFillArea(0, height*(LINE_AUTOADV+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_AUTOADV+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
   // 10th line: firmware version -- not selectable
@@ -145,8 +158,11 @@ static void setting_start(OrchardAppContext *context) {
   batt1 = config->cfg_bright_thresh;
   batt2 = config->cfg_bright_thresh2;
   batt3 = config->cfg_bright_thresh3;
+  autoadv = config->cfg_autoadv;
 }
 
+#define MTUNE_RETRIES 5
+#define MTUNE_RETRY_DELAY 37
 static void setting_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
@@ -185,7 +201,42 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
           }
           listUi->start(context);
       }
+    } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR) || (event->key.code == keyBottomR)) ) {
+      // this is the "A" key or "B" key
+      // if "B" key transmit all the params
+      char effect_cmd[128];
+      int i;
+      if(line == LINE_BATT1 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright1 %d", batt1);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	
+	}
+      }
+      if(line == LINE_BATT2 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright2 %d", batt2);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	
+	}
+      }
+      if(line == LINE_BATT3 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright3 %d", batt3);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      }
     }
+
 
     else if(event->key.code == keyRight){
        if(line == LINE_BATT1) {
@@ -197,6 +248,9 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
        if(line == LINE_BATT3){
            batt3 = batt3 >= batt2 ? batt2 - 1 : batt3 + 1; //must be less than batt2
        }
+       if(line == LINE_AUTOADV){
+         autoadv = autoadv + 1;
+       }
   }
   else if(event->key.code == keyLeft){
        if(line == LINE_BATT1) {
@@ -207,6 +261,9 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
        }
        if(line == LINE_BATT3){
            batt3 = batt3 == 0 ? 0 : batt3 - 1; // must be > 0
+       }
+       if(line == LINE_AUTOADV){
+          autoadv = autoadv == 0 ? 0 : autoadv - 1; //must be > 0
        }
   }
 
@@ -232,28 +289,18 @@ static void setting_exit(OrchardAppContext *context) {
   (void)context;
   const struct userconfig *config;
   config = getConfig();
-  char effect_cmd[128];
 
   if(batt1 != config->cfg_bright_thresh){
     configSetBrightThresh(batt1);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright1 %d", batt1);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(batt2 != config->cfg_bright_thresh2){
     configSetBrightThresh2(batt2);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright2 %d", batt2);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(batt3 != config->cfg_bright_thresh3){
     configSetBrightThresh3(batt3);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright3 %d", batt3);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
+  }
+    if(autoadv != config->cfg_autoadv){
+    configSetAutoAdv(autoadv);
   }
 }
 

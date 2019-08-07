@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    9
+#define CONFIG_VERSION    11
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -12,16 +12,16 @@ typedef struct userconfig {
   uint32_t  sex_responses;   // numbef or times others have initiated sex
   uint32_t  cfg_autosex;     // set if sex automatically allowed
   uint32_t  cfg_channel;     // our default channel
-  uint8_t   cfg_address;     // radio address
   uint32_t  cfg_txboost;     // set txboost
-  uint8_t   cfg_dBbkgd;      // bkg dB threshhold
-  uint8_t   cfg_dBmax;       // max dB threshhold
-  uint8_t   cfg_pressuretrig; // pressure trigger amt
-  uint8_t  cfg_clip_used[MAX_CLIPS];
   uint32_t  cfg_bright_thresh; //battery charge threshold for dimming
   uint32_t  cfg_bright_thresh2; //battery charge threshold for dimming, second threshold
   uint32_t  cfg_bright_thresh3; //battery charge threshold for dimming, third threshold
-  uint32_t  cfg_no_fun_mode; // enables "no fun mode" when set
+  uint8_t   cfg_address;     // radio address
+  uint8_t   cfg_dBbkgd;      // bkg dB threshhold
+  uint8_t   cfg_dBmax;       // max dB threshhold
+  uint8_t   cfg_pressuretrig; // pressure trigger amt
+  uint8_t  cfg_no_fun_mode; // enables "no fun mode" when set
+  uint8_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
 void configStart(void);
