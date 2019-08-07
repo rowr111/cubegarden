@@ -364,15 +364,15 @@ void bump(uint32_t amount) {
   }
 }
 
-#define REQUIRED_CUBE_PARTICIPATION 1 //number of cubes required to participate to trigger an effect
-#define CUBE_PARTICPATION_EXPIRATION 10000 //number of ms to keep cube participation in history
+#define REQUIRED_CUBE_PARTICIPATION 5 //number of cubes required to participate to trigger an effect
+#define CUBE_PARTICIPATION_EXPIRATION 10000 //number of ms to keep cube participation in history
 static uint32_t effect_trigger_rb[REQUIRED_CUBE_PARTICIPATION][2]; //trigger for rainbowblast
 
 void trigger_rb(uint8_t id){
   uint32_t currenttime = chVTGetSystemTime();
   //clear out expired history
   for(int i=0; i<REQUIRED_CUBE_PARTICIPATION; i++){
-    if(effect_trigger_rb[i][1] + CUBE_PARTICPATION_EXPIRATION < currenttime){
+    if(effect_trigger_rb[i][1] + CUBE_PARTICIPATION_EXPIRATION < currenttime){
       effect_trigger_rb[i][0] = 0;
       effect_trigger_rb[i][1] = 0;
     }
