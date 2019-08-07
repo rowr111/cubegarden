@@ -89,9 +89,7 @@ static void rubiks(struct effects_config *config) {
 
   if (COLOR_INDEX_OFFSET != prev_index_offset) {
     ledSetAllRgbColor(fb, count, getRubiksColor(COLOR_INDEX_OFFSET), shift);
-
-    uint8_t prev_index = (ORIG_COLOR_INDEX + prev_index_offset) % NUMSIDES;
-    uint8_t new_index = (ORIG_COLOR_INDEX + COLOR_INDEX_OFFSET) % NUMSIDES;
+  }
 }
 orchard_effects("rubiks", rubiks, 0);
 
