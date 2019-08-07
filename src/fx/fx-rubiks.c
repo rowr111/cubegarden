@@ -26,6 +26,7 @@ static const int NUMSIDES = 6;
 
 static int ORIG_COLOR_INDEX = -1;
 static int COLOR_INDEX_OFFSET = 0;
+static int LAST_INTERACTION = 0;
 
 RgbColor getRubiksColor(uint8_t index_offset) {
   uint8_t index = (ORIG_COLOR_INDEX + index_offset) % NUMSIDES;
@@ -58,6 +59,9 @@ RgbColor getRubiksColor(uint8_t index_offset) {
 static void rubiks(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
+  int time_bright = 180000; // How long to stay bright after color change: 3 minutes
+  int pulselength = 100; //length of pulse
+  int cur_time = chVTGetSystemTime();
 
   // On start of effect, set to random color in the Rubiks family
   if (patternChanged){
@@ -65,7 +69,7 @@ static void rubiks(struct effects_config *config) {
 
     ORIG_COLOR_INDEX = (uint32_t)rand() % NUMSIDES;
     ledSetAllRgbColor(fb, count, getRubiksColor(0), shift);
-
+    LAST_INTERACTION = cur_time;
     return;
   }
 
@@ -89,7 +93,22 @@ static void rubiks(struct effects_config *config) {
 
   if (COLOR_INDEX_OFFSET != prev_index_offset) {
     ledSetAllRgbColor(fb, count, getRubiksColor(COLOR_INDEX_OFFSET), shift);
+    LAST_INTERACTION = cur_time;
+  } else {
+      // Pulse color
+      if (cur_time - LAST_INTERACTION > time_bright) {
+          int brightness = config->loop % pulselength;
+          brightness = brightness > pulselength/2 ? pulselength - brightness : brightness;
+          float brightperc = (float)brightness/(pulselength/2);
+          brightperc = (float)(0.2 + brightperc * 0.8); //let's not let the pulse get all the way dark
+          // HSV has easier time pulsing
+          HsvColor h = RgbToHsv(getRubiksColor(COLOR_INDEX_OFFSET));
+          HsvColor currHSV = {h.h, h.s, (int)h.v * brightperc};
+          RgbColor c = HsvToRgb(currHSV);
+          ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
+      }
   }
+
 }
 orchard_effects("rubiks", rubiks, 0);
 
