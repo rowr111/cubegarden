@@ -161,6 +161,8 @@ static void setting_start(OrchardAppContext *context) {
   autoadv = config->cfg_autoadv;
 }
 
+#define MTUNE_RETRIES 5
+#define MTUNE_RETRY_DELAY 37
 static void setting_event(OrchardAppContext *context, const OrchardAppEvent *event) {
 
   (void)context;
@@ -199,7 +201,42 @@ static void setting_event(OrchardAppContext *context, const OrchardAppEvent *eve
           }
           listUi->start(context);
       }
+    } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR) || (event->key.code == keyBottomR)) ) {
+      // this is the "A" key or "B" key
+      // if "B" key transmit all the params
+      char effect_cmd[128];
+      int i;
+      if(line == LINE_BATT1 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright1 %d", batt1);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	
+	}
+      }
+      if(line == LINE_BATT2 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright2 %d", batt2);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	
+	}
+      }
+      if(line == LINE_BATT3 || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright3 %d", batt3);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
+      }
     }
+
 
     else if(event->key.code == keyRight){
        if(line == LINE_BATT1) {
@@ -252,28 +289,15 @@ static void setting_exit(OrchardAppContext *context) {
   (void)context;
   const struct userconfig *config;
   config = getConfig();
-  char effect_cmd[128];
 
   if(batt1 != config->cfg_bright_thresh){
     configSetBrightThresh(batt1);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright1 %d", batt1);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(batt2 != config->cfg_bright_thresh2){
     configSetBrightThresh2(batt2);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright2 %d", batt2);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
   if(batt3 != config->cfg_bright_thresh3){
     configSetBrightThresh3(batt3);
-    chsnprintf(effect_cmd, sizeof(effect_cmd), "tune bright3 %d", batt3);
-    radioAcquire(radioDriver);
-    radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-    radioRelease(radioDriver);
   }
     if(autoadv != config->cfg_autoadv){
     configSetAutoAdv(autoadv);
