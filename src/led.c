@@ -15,6 +15,7 @@
 #include "radio.h"
 #include "address.h"
 #include "baton.h"
+#include "userconfig.h"
 
 #include "orchard-test.h"
 #include "test-audit.h"
@@ -434,6 +435,8 @@ orchard_effects("safetyPattern", safetyPatternFB, 0);
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
   BatonState *bstate = getBatonState();
+  const struct userconfig *config;
+  config = getConfig();
   
   curfx = orchard_effects_start();
 
@@ -441,7 +444,7 @@ static void draw_pattern(void) {
 
   //if we've been away from the master badge too long,
   //force safety pattern (no fun mode!)
-  if(lastmasterping + TIME_PING_MAX_WAIT < ST2MS(chVTGetSystemTime())){
+  if( (lastmasterping + TIME_PING_MAX_WAIT < ST2MS(chVTGetSystemTime())) && config->cfg_no_fun_mode ){
     bstate->fx_uses_baton = 0; // need to add this before any effect state transition
     curfx += effectsNameLookup("safetyPattern");
     if(fx_config.loop % 100 == 0){
