@@ -4,7 +4,8 @@
 #include "radio.h"
 #include <string.h>
 
-#define NUM_LINES 5
+#define NUM_LINES 6
+#define LINE_NEWCUBE 5
 #define LINE_TIMESYNC 4
 #define LINE_NOFUN 3
 #define LINE_PRESS 2
@@ -17,6 +18,7 @@ static uint8_t dBmax = 0;
 static uint8_t pressure = 0;
 static uint8_t nofun = 0;
 static uint32_t timesync = 0;
+static uint32_t newcube = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -94,6 +96,17 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_TIMESYNC+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
+  // newcube discovery interval
+  chsnprintf(uiStr, sizeof(uiStr), "newcube flash time: %d", newcube);
+  if( line == LINE_NEWCUBE ) {
+    gdispFillArea(0, height*(LINE_NEWCUBE+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_NEWCUBE+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
+
   gdispFlush();
   orchardGfxEnd();
 }
@@ -112,6 +125,7 @@ static void mtune_start(OrchardAppContext *context) {
   pressure = config->cfg_pressuretrig;
   nofun = config->cfg_no_fun_mode;
   timesync = config->cfg_timesync_interval;
+  newcube = config->cfg_fx_newcube_time;
 
 }
 
@@ -174,8 +188,15 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	if(timesync != config->cfg_timesync_interval) {
 	  configSetTimeSyncInterval(timesync);
 	}
+      } else if(line == LINE_NEWCUBE || event->key.code == keyBottomR) {
+	for( i = 0; i < MTUNE_RETRIES; i++ ) {
+	  chsnprintf(effect_cmd, sizeof(effect_cmd), "tune newcube %d", newcube);
+	  radioAcquire(radioDriver);
+	  radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+	  radioRelease(radioDriver);
+	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+	}
       }
-      
     }
     
     if(event->key.code == keyRight  && (event->key.flags != keyUp)){
@@ -194,6 +215,9 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 120 ? 120 : timesync + 1; // don't go more than 2 minutes without a timesync
       }
+      if(line == LINE_NEWCUBE ) {
+	newcube = newcube == 20 ? 20 : newcube + 1; // don't go more than 20 seconds for newcube discovery
+      }
     }
     if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
       if(line == LINE_DBBKGD) {
@@ -210,6 +234,9 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       }
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 1 ? 1 : timesync - 1; // don't go below once per second
+      }
+      if(line == LINE_NEWCUBE ) {
+	newcube = newcube == 1 ? 1 : newcube - 1; // don't go below 1 second
       }
     }
   }
@@ -237,6 +264,10 @@ static void mtune_exit(OrchardAppContext *context) {
   if(timesync != config->cfg_timesync_interval) {
     configSetTimeSyncInterval(timesync);
   }
+  if(newcube != config->cfg_fx_newcube_time ) {
+    configSetFxNewcubeTime(newcube);
+  }
+     
 }
 
 orchard_app("Tune cubes", mtune_init, mtune_start, mtune_event, mtune_exit);

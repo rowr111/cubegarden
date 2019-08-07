@@ -83,6 +83,10 @@ void configSetTimeSyncInterval(uint32_t timesync_interval) {
   config_cache.cfg_timesync_interval = timesync_interval;
 }
 
+void configSetFxNewcubeTime(uint32_t fx_newcube_time) {
+  config_cache.cfg_fx_newcube_time = fx_newcube_time;
+}
+
 void configSetChannel(uint32_t channel) {
   if( channel >= RADIO_MAXCHANNELS )
     channel = 0;  // force to default if bogus stuff is sent to us
@@ -143,6 +147,7 @@ static void init_config(uint32_t block) {
   config.cfg_bright_thresh2 = 3650;
   config.cfg_bright_thresh3 = 3550;
   config.cfg_no_fun_mode = 1;  // no fun by default
+  config.cfg_fx_newcube_time = 4; // seconds by default for people to find the new cube
   config.cfg_timesync_interval = 30; // 30 seconds by default
 
   for( i = 0; i < MAX_CLIPS; i++ ) {
