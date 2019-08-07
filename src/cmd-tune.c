@@ -27,6 +27,7 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    bright2      2nd battery brightness threshhold (default = 3650)"NL);
     chprintf(chp, "    bright3      3rd battery brightness threshhold (default = 3550)"NL);
     chprintf(chp, "    nofun        0 = turn no fun mode off, els turned on (default = 1)"NL);
+    chprintf(chp, "    newcube      time for a newcube to flash in effects (default = 4)"NL);
     return;
   }
 
@@ -43,6 +44,8 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
       chprintf(stream, "%d\n\r", config->cfg_bright_thresh2);
       chprintf(stream, "%s", "third battery brightness threshold: ");
       chprintf(stream, "%d\n\r", config->cfg_bright_thresh3);
+      chprintf(stream, "nofun: %s\n\r", config->cfg_no_fun_mode ? "on" : "off" );
+      chprintf(stream, "newcube: %ds\n\r", config->cfg_fx_newcube_time );
   }
   else if (!strcasecmp(argv[0], "dBbkgd") && argc == 2) {
      uint8_t db = atoi(argv[1]);
@@ -68,6 +71,9 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
   }
   else if (!strcasecmp(argv[0], "nofun") && argc == 2)  {
     configSetNoFun((uint8_t) strtoul(argv[1], NULL, 0));
+  }
+  else if (!strcasecmp(argv[0], "newcube") && argc == 2)  {
+    configSetFxNewcubeTime((uint8_t) strtoul(argv[1], NULL, 0));
   }
   
   return;
