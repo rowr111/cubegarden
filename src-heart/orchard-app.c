@@ -616,6 +616,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
   (void)id;
   struct accel_data accel; // for entropy call
   int16_t voltage;
+  const struct userconfig *config;
+  config = getConfig();
 
   wdogPing(); // ping the watchdog
   
@@ -655,7 +657,7 @@ static void handle_chargecheck_timeout(eventid_t id) {
       setShift(4);
   }
 
-  if (timekeeper && (uptime % 30) == 0) { // Run every 30 seconds for faster testing
+  if (timekeeper && (uptime % config->cfg_timesync_interval) == 0) { // Run every timesync interval
     chprintf(stream, "Broadcasting time: %d\n\r", getNetworkTimeMs());
     broadcastTime();
   }

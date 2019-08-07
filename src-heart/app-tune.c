@@ -4,7 +4,8 @@
 #include "radio.h"
 #include <string.h>
 
-#define NUM_LINES 4
+#define NUM_LINES 5
+#define LINE_TIMESYNC 4
 #define LINE_NOFUN 3
 #define LINE_PRESS 2
 #define LINE_DBMAX 1
@@ -15,6 +16,7 @@ static uint8_t dBbkgd = 0;
 static uint8_t dBmax = 0;
 static uint8_t pressure = 0;
 static uint8_t nofun = 0;
+static uint32_t timesync = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -81,6 +83,17 @@ static void redraw_ui(void) {
   gdispDrawStringBox(0, height*(LINE_NOFUN+1), width, height,
 		     uiStr, font, draw_color, justifyLeft);
 
+  // timesync interval
+  chsnprintf(uiStr, sizeof(uiStr), "timesync interval: %d", timesync);
+  if( line == LINE_TIMESYNC ) {
+    gdispFillArea(0, height*(LINE_TIMESYNC+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_TIMESYNC+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
+
   gdispFlush();
   orchardGfxEnd();
 }
@@ -98,6 +111,7 @@ static void mtune_start(OrchardAppContext *context) {
   dBbkgd = config->cfg_dBbkgd;
   pressure = config->cfg_pressuretrig;
   nofun = config->cfg_no_fun_mode;
+  timesync = config->cfg_timesync_interval;
 
 }
 
@@ -108,6 +122,8 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
   (void)context;
   int i;
   char effect_cmd[128];
+  const struct userconfig *config;
+  config = getConfig();
 
   if (event->type == keyEvent) {
     if( (event->key.flags == keyDown) && ((event->key.code == keyBottom)) ) {
@@ -153,6 +169,11 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
 	  radioRelease(radioDriver);
 	  chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
 	}
+      } else if(line == LINE_TIMESYNC || event->key.code == keyBottomR) {
+	// this is just a local commit
+	if(timesync != config->cfg_timesync_interval) {
+	  configSetTimeSyncInterval(timesync);
+	}
       }
       
     }
@@ -170,6 +191,9 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       if(line == LINE_NOFUN ) {
 	nofun = !nofun;
       }
+      if(line == LINE_TIMESYNC ) {
+	timesync = timesync == 120 ? 120 : timesync + 1; // don't go more than 2 minutes without a timesync
+      }
     }
     if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
       if(line == LINE_DBBKGD) {
@@ -183,6 +207,9 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       }
       if(line == LINE_NOFUN  && (event->key.flags != keyUp)) {
 	nofun = !nofun;
+      }
+      if(line == LINE_TIMESYNC ) {
+	timesync = timesync == 1 ? 1 : timesync - 1; // don't go below once per second
       }
     }
   }
@@ -206,6 +233,9 @@ static void mtune_exit(OrchardAppContext *context) {
   }
   if(nofun != config->cfg_no_fun_mode) {
     configSetNoFun(nofun);
+  }
+  if(timesync != config->cfg_timesync_interval) {
+    configSetTimeSyncInterval(timesync);
   }
 }
 
