@@ -45,7 +45,7 @@ typedef enum {
 #define STATE_MASK  0xC0    // top two bits are for tracking the game state
 #define COUNT_MASK  0x3F    // bottom 6 bits are for tracking the cube whack count
 // #define HOLD_TIMEOUT (6 * 1000)  // time for the mole to be hit NOW USERCONFIG
-#define REMISSION_TIMEOUT (20 * 1000)  // how long to wait before making a new mole in event of loss
+#define REMISSION_TIMEOUT (15 * 1000)  // how long to wait before making a new mole in event of loss
 
 static void Whackamole(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
@@ -94,7 +94,7 @@ static void Whackamole(struct effects_config *config) {
     }
       
     if( chVTTimeElapsedSinceX(holding_time) < ((uconfig->cfg_fx_newcube_time + 2) * 1000) ) {
-      // add some extra time, I think whackamole is a harder game to "win"
+      // add some extra time for notice + run
       wmole_fx = wmole_sparkle;
       sparkle_time = chVTGetSystemTime(); // sparkle forever in this state
       sparkle_duration = 100000; // sparkle forever
@@ -140,7 +140,8 @@ static void Whackamole(struct effects_config *config) {
 	  wmole_fx_stash = wmole_whacked;
 	}
       }
-    } else if( chVTTimeElapsedSinceX(holding_time) < REMISSION_TIMEOUT ){
+    } else if( chVTTimeElapsedSinceX(holding_time) <
+	       (REMISSION_TIMEOUT + ((uconfig->cfg_fx_newcube_time + 2) * 1000)) ) {
       // we timed out
       bstate->fx = 0;  // reinitialize the game state to 0
       wmole_fx = wmole_idle;
