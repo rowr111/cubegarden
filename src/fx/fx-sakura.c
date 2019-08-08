@@ -93,7 +93,7 @@ static void sakura(struct effects_config *config) {
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   }
 }
-orchard_effects("AAAsakura", sakura, 0);
+orchard_effects("sakura", sakura, 0);
 
 #else
 static void sakura(struct effects_config *config) {
