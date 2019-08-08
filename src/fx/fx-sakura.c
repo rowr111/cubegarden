@@ -101,15 +101,10 @@ static void sakura(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop;
 
-  HsvColor c;
-  c.h = 191; //blueish.
-  c.s = 255;
-  int brightness = loop%100;
-  brightness = brightness > 50 ? 100 - brightness : brightness;
-  float brightperc = (float)brightness/50;
-  c.v = (int) (255 * brightperc);
-  RgbColor x = HsvToRgb(c);
-  ledSetAllRGB(fb, count, x.r, x.g, x.b, shift); 
+  // Each loop value lasts for 35 ms
+  // 1 s is 1000/35 ~ 30 steps
+  // 6 colors in the rainbow
+  ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
 }
 orchard_effects("sakura", sakura, 0);
 #endif
