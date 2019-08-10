@@ -9,21 +9,17 @@
 #include <string.h>
 #include <math.h>
 
-const RgbColor black = {0, 0, 0};
-const RgbColor white = {255, 255, 255};
-
-
-static void fx(struct effects_config *config){
+static void run(struct effects_config *config){
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int step = loop % 256;
+  int step = loop % 50;
 
   if (radioAddress(radioDriver) == step) {
-    ledSetAllRgbColor(fb, count, white, shift);
+    ledSetAllRGB(fb, count, 255, 255, 255, shift);
   } else {
-    ledSetAllRgbColor(fb, count, black, shift);
+    ledSetAllRGB(fb, count, 0, 0, 0, shift);
   }
 }
 
-orchard_effects("run", fx, 0);
+orchard_effects("run", run, 0);

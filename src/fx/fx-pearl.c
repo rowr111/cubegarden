@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-static void fx(struct effects_config *config){
+static void pearl(struct effects_config *config){
   static bool started = false;
   static RgbColor source = {0, 0, 0};
   static RgbColor destination;
@@ -33,4 +33,4 @@ static void fx(struct effects_config *config){
   ledSetAllRgbColor(fb, count, source, shift);
 }
 
-orchard_effects("pearl", fx, 0);
+orchard_effects("pearl", pearl, 0);
