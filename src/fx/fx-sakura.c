@@ -24,7 +24,7 @@ upon single tap, switch who you are
 
 //I just picked some hue values that seemed ok.. (jeanie)
 static const uint16_t SakuraLeaf[3] = {64, 85, 106};
-static const uint16_t SakuraFlower = 232;
+static const uint16_t SakuraFlower = 242;
 
 static void sakura(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
@@ -64,7 +64,7 @@ static void sakura(struct effects_config *config) {
     uint8_t pinkoffset = (loop/2) % count;
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
-        if (i<count/2){
+        if (i<(int)((float)count/1.5)){
             HsvColor sakurahsv = {SakuraFlower, 255, 255};
             RgbColor sakurargb = HsvToRgb(sakurahsv); 
             ledSetRgbColor(fb, (i+pinkoffset)%count, sakurargb, shift);
