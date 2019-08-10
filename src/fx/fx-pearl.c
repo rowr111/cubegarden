@@ -33,4 +33,8 @@ static void pearl(struct effects_config *config){
   ledSetAllRgbColor(fb, count, source, shift);
 }
 
+#ifndef MASTER_BADGE
 orchard_effects("pearl", pearl, 0);
+#else
+orchard_effects("pearl", pearl, 10000000);
+#endif
