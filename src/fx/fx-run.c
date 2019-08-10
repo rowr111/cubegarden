@@ -14,10 +14,11 @@ static void run(struct effects_config *config){
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int step = loop % 50;
+  int step = loop % 80;
+  int pos = step - radioAddress(radioDriver);
 
-  if (radioAddress(radioDriver) == step) {
-    ledSetAllRGB(fb, count, 255, 255, 255, shift);
+  if (pos >=0 && pos < 30) {
+    ledSetAllRGB(fb, count, 255 - pos * 8, 255 - pos * 8, 255 - pos * 8, shift);
   } else {
     ledSetAllRGB(fb, count, 0, 0, 0, shift);
   }
@@ -29,13 +30,10 @@ static void run(struct effects_config *config){
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
-  int step = loop % 50;
+  int step = loop % count;
 
-  if (step == 0) {
-    ledSetAllRGB(fb, count, 255, 255, 255, shift);
-  } else {
-    ledSetAllRGB(fb, count, 0, 0, 0, shift);
-  }
+  ledSetAllRGB(fb, count, 0, 0, 0, shift);
+  ledSetRGB(fb, step, 255, 255, 255, shift);
 }
 
 orchard_effects("run", run, 10000000);
