@@ -442,19 +442,7 @@ static void draw_pattern(void) {
   curfx = orchard_effects_start();
 
   fx_config.loop++;
-
-  //if we've been away from the master badge too long,
-  //force safety pattern (no fun mode!)
-  if( (lastmasterping + TIME_PING_MAX_WAIT < ST2MS(chVTGetSystemTime())) && config->cfg_no_fun_mode ){
-    bstate->fx_uses_baton = 0; // need to add this before any effect state transition
-    curfx += effectsNameLookup("safetyPattern");
-    if(fx_config.loop % 100 == 0){
-      chprintf(stream, "No masterbadge ping received in %d ms, forcing safetyPattern.\n\r", TIME_PING_MAX_WAIT);
-    }
-  }
-  else{
-    curfx += fx_index;
-  }
+  curfx += fx_index;
 
   if(curfx->duration > 0) {   //if we have a temporary pattern, check expiration
     bstate->fx_uses_baton = 0; // need to add this before any effect state transition
