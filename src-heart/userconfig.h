@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    13
+#define CONFIG_VERSION    14
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -23,7 +23,6 @@ typedef struct userconfig {
   uint8_t   cfg_dBbkgd;      // bkg dB threshhold
   uint8_t   cfg_dBmax;       // max dB threshhold
   uint8_t   cfg_pressuretrig; // pressure trigger amt
-  uint8_t   cfg_no_fun_mode;
   uint32_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
@@ -46,7 +45,6 @@ void configSetBrightThresh3(uint32_t bright_thresh3);
 void configSetFxNewcubeTime(uint32_t fx_newcube_time);
 void configSetTimeSyncInterval(uint32_t timesync_interval);
 void configSetAutoAdv(uint32_t autoadv);
-void configSetNoFun(uint8_t no_fun_mode);
 void configToggleBoost(void);
 void configClipMarkUsed(uint32_t clip);
 void configClipClearMarks(void);
