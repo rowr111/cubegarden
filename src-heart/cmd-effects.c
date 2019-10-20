@@ -21,7 +21,6 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    list         list effects"NL);
     chprintf(chp, "    get          return name of current effect"NL);
     chprintf(chp, "    use <effect> switch to given effect"NL);
-    chprintf(chp, "    trigger <effect> <cubeid> trigger request for a particular effect from cube");
     return;
   }
 
@@ -43,12 +42,6 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
 
   else if (!strcasecmp(argv[0], "use") && argc == 2) {
     effectsSetPattern(effectsNameLookup(argv[1]));
-  }
-
-  else if (!strcasecmp(argv[0], "trigger") && argc == 3) {
-    if(!strcasecmp(argv[1], "rainbowblast")){
-      trigger_rb((uint8_t)atoi(argv[2]));
-    }
   }
   
   return;
