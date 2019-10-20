@@ -449,8 +449,6 @@ static void draw_pattern(void) {
     effectsCheckExpiredTempPattern();
   }
 
-  checkdoubletapTrigger(); // check to see if we need to send a trigger temp pattern reqest
-
   curfx->computeEffect(&fx_config);
 }
 
