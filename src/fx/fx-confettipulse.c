@@ -19,8 +19,7 @@
 2. each cube will pulse light and dark on that color while offering interactivity
   a. tapping will change the color
   b. tilting will change hue
-  c. sitting or lifting will induce a temporary color 
-  d. tilting all the way to 90 deg will cause the cube to be fixed on a particular color, depending on the side. 
+  c. tilting all the way to 90 deg will cause the cube to be fixed on a particular color, depending on the side. 
 3. each cube will change its base color every so often (not very often)
 */
 static void confettipulse(struct effects_config *config) {
@@ -35,7 +34,6 @@ static void confettipulse(struct effects_config *config) {
 
   if (patternChanged){
     patternChanged = 0;
-    pressure_changed = 0; //null out pressure changed so we get a fresh start
     colorindex = (uint32_t)rand() % numOfBaseHsvColors; //get an initial color
     colorindex++; //need to be on a scale of 1-numOfBaseHsvColors
   }
@@ -50,14 +48,6 @@ static void confettipulse(struct effects_config *config) {
     singletapped = 0;
     colorindex++;
     if (colorindex > numOfBaseHsvColors) colorindex = colorindex % numOfBaseHsvColors; //wrap around
-  }
-
-  //barometer - pressure change will trigger temporary strobe
-  if(loop % 10 == 0){
-      if(pressure_changed){
-        pressure_changed = 0;
-        effectsSetTempPattern(effectsNameLookup("strobe"));
-    }
   }
 
   h = getBaseHsvColor(colorindex);

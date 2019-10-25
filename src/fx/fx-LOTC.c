@@ -26,7 +26,7 @@ extern uint8_t baton_holder_g;
 4. actions performed on the mastercube will then cause a broadcast out to other cubes
 5. other cubes will now be dependent on the mastercube for their color
 6. after 2 minutes, a new master cube will be selected by the current master cube
-7. master cube behavior will be the same as confettipulse (minus barometer).
+7. master cube behavior will be the same as confettipulse.
 */
 static void LOTC(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;

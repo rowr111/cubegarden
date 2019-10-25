@@ -55,10 +55,6 @@ void configSetdBmax(uint8_t dBmax){
   config_cache.cfg_dBmax = dBmax;
 }
 
-void configSetpressuretrig(uint8_t pressuretrig){
-  config_cache.cfg_pressuretrig = pressuretrig;
-}
-
 void configSetBrightThresh(uint32_t bright_thresh){
   config_cache.cfg_bright_thresh = bright_thresh;
 }
@@ -138,7 +134,6 @@ static void init_config(uint32_t block) {
   config.cfg_autoadv = 0;
   config.cfg_dBbkgd = 50;        // bkg dB threshhold
   config.cfg_dBmax = 90;         // max dB threshhold
-  config.cfg_pressuretrig = 60;  // mPa
   config.cfg_bright_thresh = 3750;
   config.cfg_bright_thresh2 = 3650;
   config.cfg_bright_thresh3 = 3550;
