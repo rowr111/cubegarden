@@ -169,7 +169,6 @@ CSRC = \
        app-dummy.c \
        oscope-routines.c \
        pir.c \
-       barometer.c \
        gyro.c \
        time.c \
        trigger.c \

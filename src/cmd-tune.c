@@ -22,7 +22,6 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "Usage: tune [constant] [value]:"SHELL_NEWLINE_STR);
     chprintf(chp, "    dBbkgd       dB background threshold (total range: 0-120)"NL);
     chprintf(chp, "    dBmax        dB maximum (total range: 0-120)"NL);
-    chprintf(chp, "    pressure     amount to trigger change notification in mPa"NL);
     chprintf(chp, "    bright1      1st battery brightness threshhold (default = 3750)"NL);
     chprintf(chp, "    bright2      2nd battery brightness threshhold (default = 3650)"NL);
     chprintf(chp, "    bright3      3rd battery brightness threshhold (default = 3550)"NL);
@@ -35,8 +34,6 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
       chprintf(stream, "%d\n\r", config->cfg_dBbkgd);
       chprintf(stream, "%s", "max dB threshold: ");
       chprintf(stream, "%d\n\r", config->cfg_dBmax);
-      chprintf(stream, "%s", "pressure trigger amnt (mPa): ");
-      chprintf(stream, "%d\n\r", config->cfg_pressuretrig);
       chprintf(stream, "%s", "first battery brightness threshold: ");
       chprintf(stream, "%d\n\r", config->cfg_bright_thresh);
       chprintf(stream, "%s", "second battery brightness threshold: ");
@@ -54,9 +51,6 @@ void tuneCommand(BaseSequentialStream *chp, int argc, char *argv[])
       uint8_t db = atoi(argv[1]);
       db = db > 120 ? 120 : db; //max usable value of 120
       configSetdBmax(db);
-  }
-  else if (!strcasecmp(argv[0], "pressure") && argc == 2)  {
-    configSetpressuretrig((uint8_t) strtoul(argv[1], NULL, 0));
   }
   else if (!strcasecmp(argv[0], "bright1") && argc == 2)  {
     configSetBrightThresh(strtoul(argv[1], NULL, 0));

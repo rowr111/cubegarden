@@ -145,9 +145,7 @@ extern uint8_t shift;  // start a little bit dimmer
 
 extern uint32_t bump_amount;
 extern uint8_t bumped;
-extern uint8_t pressure_changed;
 extern uint8_t singletapped;
-extern unsigned int pressurechangedtime;
 extern unsigned int singletaptime;
 extern unsigned int patternChanged;
 

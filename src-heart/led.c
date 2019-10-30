@@ -38,9 +38,7 @@ uint8_t shift = 2;  // start a little bit dimmer
 
 uint32_t bump_amount = 0;
 uint8_t bumped = 0;
-uint8_t pressure_changed = 0;
 uint8_t singletapped = 0;
-unsigned int pressurechangedtime = 0;
 unsigned int singletaptime = 0;
 unsigned int patternChanged = 0;
 

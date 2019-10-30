@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    14
+#define CONFIG_VERSION    15
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -22,7 +22,6 @@ typedef struct userconfig {
   uint8_t   cfg_addressCounter; // radio address
   uint8_t   cfg_dBbkgd;      // bkg dB threshhold
   uint8_t   cfg_dBmax;       // max dB threshhold
-  uint8_t   cfg_pressuretrig; // pressure trigger amt
   uint32_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
@@ -38,7 +37,6 @@ void configSetChannel(uint32_t channel);
 void configSetAddressCounter(uint8_t addressCounter);
 void configSetdBbkgd(uint8_t dBbkgd);
 void configSetdBmax(uint8_t dBmax);
-void configSetpressuretrig(uint8_t pressuretrig);
 void configSetBrightThresh(uint32_t bright_thresh);
 void configSetBrightThresh2(uint32_t bright_thresh2);
 void configSetBrightThresh3(uint32_t bright_thresh3);

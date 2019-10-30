@@ -39,7 +39,6 @@
 #include "paging.h"
 #include "analog.h"
 #include "pir.h"
-#include "barometer.h"
 #include "gyro.h"
 #include "trigger.h"
 #include "address.h"
@@ -52,7 +51,6 @@
 static uint8_t fb[LED_COUNT * 3];
 static uint8_t ui_fb[LED_COUNT * 3];
 
-static uint8_t baro_ready = 0;
 static uint8_t event_ready = 0;
 
 struct evt_table orchard_events;
@@ -285,17 +283,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
 
-  // wait for barometer to become ready before starting apps
-  uint32_t init_delay = chVTGetSystemTime();
-  while( baro_ready == 0 ) {
-    chThdYield();
-    chThdSleepMilliseconds(10);
-    if( chVTTimeElapsedSinceX(init_delay) > 4000 ) {
-      chprintf(stream, "Subsystem initialization timeout! baro: %d\n\r", baro_ready);
-      break;
-    }
-  }
-
   initRadioAddress();
 
   evtTableHook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
@@ -324,73 +311,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro_freefall, freefall);
   evtTableUnhook(orchard_events, orchard_app_terminated, orchard_app_restart);
   evtTableUnhook(orchard_events, chg_keepalive_event, chgKeepaliveHandler);
-
-  chSysLock();
-  chThdExitS(MSG_OK);
-}
-
-float baro_pressure = -1.0;
-float baro_temp = -1.0;
-float baro_avg = -1.0;
-uint8_t baro_avg_valid = 0;
-
-static thread_t *baroThr = NULL;
-static THD_WORKING_AREA(waBaroThread, 0x200);
-static THD_FUNCTION(baro_thread, arg) {
-
-  (void)arg;
-  int16_t oversampling = 7;
-  float baro_history[BARO_HISTORY];
-  float acc;
-  int index = 0;
-  int i;
-  int loops = 0;
-  
-  chRegSetThreadName("Barometer");
-  chThdSleepMilliseconds(250); // wait for other subsystems to finish booting
-
-  for( i = 0; i < BARO_HISTORY; i++ ) {
-    baro_history[i] = 10000.0;
-  }
-  
-  // init the barometer
-  baro_init();
-  float temperature;
-  float pressure;
-  // do a dummy read to setup barometer internal state
-  baro_measureTempOnce(&temperature, 7);
-  baro_measurePressureOnce(&pressure, 7);
-  
-  baro_ready = 1; // signal to the test subsystem that the barometer init is done
-  
-  while (!chThdShouldTerminateX()) {
-    if( (loops % 30) == 0 ) { // temperature doesn't need to update as fast as barometer
-      baro_measureTempOnce(&baro_temp, oversampling);
-    }
-    loops++;
-    baro_measurePressureOnce(&baro_pressure, oversampling);
-    baro_history[index] = baro_pressure;
-
-    const struct userconfig *uconfig;
-    uconfig = getConfig();
-    uint8_t pressure_trigger_amnt = uconfig->cfg_pressuretrig;
-
-    if(baro_avg_valid == 1 && abs(baro_pressure-baro_avg) > pressure_trigger_amnt){
-      // chprintf(stream, "pressure changed suddenly!\r\n");
-      pressureChanged();
-    }
-
-    index = (index + 1) % BARO_HISTORY;
-    if( index == (BARO_HISTORY - 1) )
-      baro_avg_valid = 1;
-    
-    for( acc = 0, i = 0; i < BARO_HISTORY; i++ ) {
-      acc += baro_history[i];
-    }
-    baro_avg = acc / (float) BARO_HISTORY;
-    
-    chThdSleepMilliseconds(10); // give some time for other threads
-  }
 
   chSysLock();
   chThdExitS(MSG_OK);
@@ -522,13 +442,6 @@ int main(void) {
   chprintf(stream, "User flash start: 0x%x  user flash end: 0x%x  length: 0x%x\r\n",
       __storage_start__, __storage_end__, __storage_size__);
 
-  // start the barometer monitoring thread
-  baroThr = chThdCreateStatic(waBaroThread,
-			      sizeof(waBaroThread),
-			      (NORMALPRIO - 6),
-			      baro_thread,
-			      NULL);
-
   // start the gyro monitoring thread
   gyroThr = chThdCreateStatic(waGyroThread,
 			      sizeof(waGyroThread),
@@ -538,12 +451,12 @@ int main(void) {
 
   
   uint32_t init_delay = chVTGetSystemTime();
-  while( !event_ready && !baro_ready ) {
+  while( !event_ready ) {
     chThdYield();
     chThdSleepMilliseconds(10);
     if( chVTTimeElapsedSinceX(init_delay) > 4000 ) {
-      chprintf(stream, "Subsystem initialization timeout! event: %d baro: %d\n\r",
-	       event_ready, baro_ready);
+      chprintf(stream, "Subsystem initialization timeout! event: %d\n\r",
+	       event_ready);
       break;
     }
   }
