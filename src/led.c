@@ -24,12 +24,14 @@
 #include <math.h>
 
 orchard_effects_end();
+orchard_layers_end();
 
 // static (master-local) effects state
 led_config_def  led_config;
 static effects_config fx_config;
 static uint8_t fx_index;  // current effect
 static uint8_t fx_max;    // max # of effects
+static uint8_t lx_max;    // max # of layers
 static uint8_t fx_previndex; //previous effect
 static uint8_t ledExitRequest = 0;
 
@@ -103,18 +105,25 @@ void ledStart(uint32_t leds, uint8_t *o_fb)
 
   // now setup some basic effects bookkeeping state
   const OrchardEffects *curfx;
+  const OrchardLayers *curlx;
   
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
   fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
 
   curfx = orchard_effects_start();
+  curlx = orchard_layers_start();
   fx_max = 0;
+  lx_max = 0;
   bstate->fx_uses_baton = 0; // need to add this before any effect state transition
   fx_index = 0;
   while( curfx->name ) {
     fx_max++;
     curfx++;
+  }
+  while( curlx->name ) {
+    lx_max++;
+    curlx++;
   }
   
 }
@@ -629,6 +638,17 @@ void listEffects(void) {
   while( curfx->name ) {
     chprintf(stream, "%s\n\r", curfx->name );
     curfx++;
+  }
+}
+
+void listLayers(void) {
+  const OrchardLayers *curlx;
+
+  curlx = orchard_layers_start();
+  
+  while(curlx->name) {
+    chprintf(stream,"%s\n\r", curlx->name );
+    curlx++;
   }
 }
 

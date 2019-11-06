@@ -9,7 +9,7 @@
 /////////// STRUCTURE
 #define LED_COUNT 32
 
-struct orchard_effects_instance;
+//struct orchard_effects_instance;
 
 typedef struct led_config_def {
   uint8_t       *fb; // effects frame buffer
@@ -25,14 +25,19 @@ typedef struct effects_config {
   uint32_t loop;
 } effects_config;
 
-void orchardEffectsInit(void);
-void orchardEffectsRestart(void);
+//void orchardEffectsInit(void);
+//void orchardEffectsRestart(void);
 
 typedef struct _OrchardEffects {
   char *name;
   void (*computeEffect)(struct effects_config *context);
   int duration;
 } OrchardEffects;
+
+typedef struct _OrchardLayers {
+  char *name;
+  void (*computeLayer)(struct effects_config *context);
+} OrchardLayers;
 
 #define orchard_effects_start() \
 ({ \
@@ -51,6 +56,22 @@ typedef struct _OrchardEffects {
   __attribute__((unused, aligned(4), section(".chibi_list_effects_3_end"))) = \
      { NULL, NULL, 0 }
 
+#define orchard_layers_start() \
+({ \
+  static char start[0] __attribute__((unused,  \
+    aligned(4), section(".chibi_list_layers_1")));        \
+  (const OrchardLayers *)&start;            \
+})
+
+#define orchard_layers(_name, _func ) \
+  const OrchardLayers _orchard_lx_list_##_func \
+  __attribute__((unused, aligned(4), section(".chibi_list_layers_2_" _name))) = \
+     { _name, _func }
+
+#define orchard_layers_end() \
+  const OrchardLayers _orchard_lx_list_##_func \
+  __attribute__((unused, aligned(4), section(".chibi_list_layers_3_end"))) = \
+     { NULL, NULL }
 
 /////////////////// EFFECTS
 extern void ledUpdate(uint8_t *fb, uint32_t len);
@@ -102,6 +123,7 @@ void uiLedGet(uint8_t index, Color *c);
 void uiLedSet(uint8_t index, Color c);
 
 void listEffects(void);
+void listLayers(void);
 
 const char *effectsCurName(void);
 const char *lightgeneName(void);
