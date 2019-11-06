@@ -15,7 +15,6 @@ typedef struct led_config_def {
   uint8_t       *final_fb;  // merged ui + effects frame buffer
   uint32_t      pixel_count;  // generated pixel length
   uint32_t      max_pixels;   // maximal generation length
-  uint8_t       *ui_fb; // frame buffer for UI effects
   uint32_t      ui_pixels;  // number of LEDs on the PCB itself for UI use
 } led_config_def;
 extern led_config_def  led_config;
@@ -81,7 +80,7 @@ HsvColor RgbToHsv(RgbColor rgb);
 uint8_t gray_encode(uint8_t n);
 uint8_t gray_decode(uint8_t n);
 
-void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb);
+void ledStart(uint32_t leds, uint8_t *o_fb);
 
 void effectsStart(void);
 uint8_t effectsStop(void);
@@ -101,9 +100,6 @@ void setdBbkgd(uint8_t b);
 uint8_t getdBbkgd(void);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
-
-void uiLedGet(uint8_t index, Color *c);
-void uiLedSet(uint8_t index, Color c);
 
 void listEffects(void);
 
