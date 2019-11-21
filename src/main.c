@@ -49,6 +49,7 @@
 #define SPI_TIMEOUT MS2ST(3000)
 
 static uint8_t fb[LED_COUNT * 3];
+static uint8_t ui_fb[LED_COUNT * 3];
 
 static uint8_t event_ready = 0;
 
@@ -482,7 +483,7 @@ int main(void) {
   
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
-  ledStart(LED_COUNT, fb);
+  ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
 
   palSetPad(IOPORT5, 0); // turn off red LED
   

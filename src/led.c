@@ -83,7 +83,7 @@ uint8_t effectsStop(void) {
  * @param[out] o_fb     initialized frame buffer
  *
  */
-void ledStart(uint32_t leds, uint8_t *o_fb)
+void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 {
   unsigned int j;
   BatonState *bstate = getBatonState();
@@ -91,13 +91,17 @@ void ledStart(uint32_t leds, uint8_t *o_fb)
   // low-level init, and ensure all LEDs are off
   led_config.max_pixels = leds;
   led_config.pixel_count = leds;
+  led_config.ui_pixels = ui_leds;
 
   led_config.fb = o_fb;
+  led_config.ui_fb = o_ui_fb;
 
   led_config.final_fb = chHeapAlloc( NULL, sizeof(uint8_t) * led_config.max_pixels * 3 );
   
   for (j = 0; j < leds * 3; j++)
     led_config.fb[j] = 0x0;
+  for (j = 0; j < ui_leds * 3; j++)
+    led_config.ui_fb[j] = 0x0;
 
   chSysLock();
   ledUpdate(led_config.fb, led_config.max_pixels);
@@ -126,6 +130,24 @@ void ledStart(uint32_t leds, uint8_t *o_fb)
     curlx++;
   }
   
+}
+
+void uiLedGet(uint8_t index, Color *c) {
+  if( index >= led_config.ui_pixels )
+    index = led_config.ui_pixels - 1;
+  
+  c->g = led_config.ui_fb[index*3];
+  c->r = led_config.ui_fb[index*3+1];
+  c->b = led_config.ui_fb[index*3+2];
+}
+
+void uiLedSet(uint8_t index, Color c) {
+  if( index >= led_config.ui_pixels )
+    index = led_config.ui_pixels - 1;
+  
+  led_config.ui_fb[index*3] = c.g;
+  led_config.ui_fb[index*3+1] = c.r;
+  led_config.ui_fb[index*3+2] = c.b;
 }
 
 void ledSetRGBClipped(void *fb, uint32_t i,
@@ -577,6 +599,24 @@ void effectsPrevPattern(int skipstrobe) {
   effectsSetPattern(index);
 }
 
+static void blendFbs(void) {
+  uint8_t i;
+  // UI FB + effects FB blend (just do a saturating add)
+  for( i = 0; i < led_config.ui_pixels * 3; i ++ ) {
+    led_config.final_fb[i] = satadd_8(led_config.fb[i], led_config.ui_fb[i]);
+  }
+
+  // copy over the remainder of the effects FB that extends beyond UI FB
+  for( i = led_config.ui_pixels * 3; i < led_config.max_pixels * 3; i++ ) {
+    led_config.final_fb[i] = led_config.fb[i];
+  }
+  if( ledExitRequest ) {
+    for( i = 0; i < led_config.max_pixels * 3; i++ ) {
+      led_config.final_fb[i] = 0; // turn all the LEDs off
+    }
+  }
+}
+
 int32_t time_slop = 0;
 static THD_FUNCTION(effects_thread, arg) {
 
@@ -600,6 +640,8 @@ static THD_FUNCTION(effects_thread, arg) {
 
     if( (getNetworkTimeMs() - last_time + time_slop) > EFFECTS_REDRAW_MS ) {
       last_time += EFFECTS_REDRAW_MS;
+      
+      blendFbs();
     
       // transmit the actual framebuffer to the LED chain
       chSysLock();
@@ -618,6 +660,7 @@ static THD_FUNCTION(effects_thread, arg) {
 
     if( ledExitRequest ) {
       // force one full cycle through an update on request to force LEDs off
+      blendFbs(); 
       chSysLock();
       ledUpdate(led_config.final_fb, led_config.pixel_count);
       ledsOff = 1;

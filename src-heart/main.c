@@ -45,7 +45,9 @@
 #define SPI_TIMEOUT MS2ST(3000)
 
 #define LED_COUNT 32
+#define UI_LED_COUNT 32
 static uint8_t fb[LED_COUNT * 3];
+static uint8_t ui_fb[LED_COUNT * 3];
 
 struct evt_table orchard_events;
 
@@ -337,7 +339,7 @@ int main(void) {
     
   palSetPadMode(IOPORT1, 12, PAL_MODE_OUTPUT_PUSHPULL); // weird, why do i have to have this line???
   palSetPad(IOPORT3, 2); // power on +5V
-  ledStart(LED_COUNT, fb);
+  ledStart(LED_COUNT, fb, UI_LED_COUNT, ui_fb);
   effectsStart();
 
   chThdSleepMilliseconds(200);
