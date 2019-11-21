@@ -112,6 +112,7 @@ uint8_t effectsStop(void);
 extern uint8_t ledsOff;
 
 uint8_t effectsNameLookup(const char *name);
+uint8_t layerNameLookup(const char *name);
 void effectsSetPattern(uint8_t);
 void effectsSetTempPattern(uint8_t);
 void effectsCheckExpiredTempPattern(void);
@@ -145,6 +146,7 @@ void ledSetColor(void *ptr, int x, Color c, uint8_t shift);
 void ledSetRGBClipped(void *fb, uint32_t i,
                       uint8_t r, uint8_t g, uint8_t b, uint8_t shift);
 Color ledGetColor(void *ptr, int x);
+extern Color currentColors[LED_COUNT];
 
 // Colors
 extern const RgbColor vividViolet;
