@@ -73,7 +73,7 @@ static void dBbrightness(struct effects_config *config){
         c.r = (int)(c.r*avgLevel);
         c.g = (int)(c.g*avgLevel);
         c.b = (int)(c.b*avgLevel);
-        ledSetAllRGB(fb, count, (int)(c.r), (int)(c.g), (int)(c.b), shift);
+        ledSetRGB(fb, count, (int)(c.r), (int)(c.g), (int)(c.b), shift);
       }
     }
 
