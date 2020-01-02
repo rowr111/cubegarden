@@ -325,7 +325,6 @@ static THD_FUNCTION(gyro_thread, arg) {
   int loops = 0;
   
   chRegSetThreadName("Gyro");
-  chThdSleepMilliseconds(250); // wait for other subsystems to finish booting
   
   // init the gyro
   gyro_init();
