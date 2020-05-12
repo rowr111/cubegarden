@@ -17,7 +17,7 @@
 #ifndef _MCUCONF_H_
 #define _MCUCONF_H_
 
-#define K22x_MCUCONF
+#define K20x_MCUCONF
 
 /*
  * HAL driver system settings.
@@ -72,13 +72,13 @@
 /*
  * SERIAL driver system settings.
  */
-#define KINETIS_SERIAL_USE_UART3              TRUE
-#define KINETIS_SERIAL_USE_LPUART0            TRUE
+#define KINETIS_SERIAL_USE_UART3              FALSE
+#define KINETIS_SERIAL_USE_LPUART0            FALSE
 #define KINETIS_SERIAL_UART3_PRIORITY         12
 
 #define KINETIS_SERIAL_USE_UART0              FALSE
 #define KINETIS_SERIAL_UART0_PRIORITY         11
-#define KINETIS_SERIAL_USE_UART1              FALSE
+#define KINETIS_SERIAL_USE_UART1              TRUE
 #define KINETIS_SERIAL_UART1_PRIORITY         11
 #define KINETIS_SERIAL_USE_UART2              FALSE
 #define KINETIS_SERIAL_UART2_PRIORITY         11

@@ -9,11 +9,11 @@ void halt(void);
 #define ORCHARD_OS_VERSION_MAJOR      1
 #define ORCHARD_OS_VERSION_MINOR      0
 
-#define serialDriver                  (&SD4)
+#define serialDriver                  (&SD2)
 #define stream_driver                 ((BaseSequentialStream *)serialDriver)
 #define radioDriver                   (&KRADIO1)
 
-#define stream (BaseSequentialStream *)&SD4
+#define stream (BaseSequentialStream *)&SD2
 
 //extern void *stream;
 

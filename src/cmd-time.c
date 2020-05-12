@@ -11,7 +11,7 @@
 
 static int should_stop(void) {
   uint8_t bfr[1];
-  return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
+  return chnReadTimeout(&SD2, bfr, sizeof(bfr), 1);
 }
 
 extern int32_t offsetMs;

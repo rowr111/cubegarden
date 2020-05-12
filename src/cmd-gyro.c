@@ -14,7 +14,7 @@
 
 static int should_stop(void) {
   uint8_t bfr[1];
-  return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
+  return chnReadTimeout(&SD2, bfr, sizeof(bfr), 1);
 }
 
 void gyroCommand(BaseSequentialStream *chp, int argc, char *argv[]) {

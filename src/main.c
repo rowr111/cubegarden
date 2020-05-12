@@ -38,7 +38,6 @@
 #include "mic.h"
 #include "paging.h"
 #include "analog.h"
-#include "pir.h"
 #include "gyro.h"
 #include "trigger.h"
 #include "address.h"
@@ -79,7 +78,7 @@ void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
+    //    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq1, PORTA, 18},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq2, PORTD, 3},
@@ -135,7 +134,7 @@ static const ADCConfig adccfg1 = {
 
 static const SPIConfig spi_config = {
   NULL,
-  IOPORT4,
+  IOPORT5,
   4,
   KINETIS_SPI_TAR_8BIT_FAST
 };
@@ -153,7 +152,7 @@ extern void programDumbRleFile(void);
 
 #define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(1024)
 
-//#define stream (BaseSequentialStream *)&SD4
+//#define stream (BaseSequentialStream *)&SD2
 
 static const SerialConfig serialConfig = {
   115200,
@@ -217,7 +216,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   chRegSetThreadName("Events");
 
   swStart();
-  pirStart();
   gyro_init();
   flashStart();
   orchardTestInit();
@@ -254,13 +252,13 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   uiStart();
 
-  spiObjectInit(&SPID1);
+  //  spiObjectInit(&SPID1);
 
   // setup drive strengths on SPI1
-  PORTD_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
-  PORTD_PCR5 = 0x703; // pull up enabled, fast slew (clk)
-  PORTD_PCR6 = 0x700; // fast slew (mosi)
-  PORTD_PCR7 = 0x707; // slow slew, pull-up (miso)
+  PORTE_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
+  PORTE_PCR2 = 0x703; // pull up enabled, fast slew (clk)
+  PORTE_PCR1 = 0x700; // fast slew (mosi)
+  PORTE_PCR3 = 0x707; // slow slew, pull-up (miso)
   
   evtTableInit(orchard_events, 16);
   orchardEventsStart();
@@ -291,7 +289,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, gyro_singletap, singletapchanged);
   evtTableHook(orchard_events, gyro_singletap, test_singletap);
   evtTableHook(orchard_events, gyro_doubletap, doubletapchanged); 
-  evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
   evtTableHook(orchard_events, gyro2_process, gyro2_proc);
@@ -304,7 +301,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro2_process, gyro2_proc);
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
-  evtTableUnhook(orchard_events, pir_process, pir_proc);
   evtTableUnhook(orchard_events, gyro_doubletap, doubletapchanged); 
   evtTableUnhook(orchard_events, gyro_singletap, test_singletap);
   evtTableUnhook(orchard_events, gyro_singletap, singletapchanged);
@@ -389,7 +385,7 @@ int main(void) {
   
   palClearPad(IOPORT5, 0); // turn on red LED
   
-  sdStart(&SD4, &serialConfig);
+  sdStart(&SD2, &serialConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
   
   i2cObjectInit(&I2CD1);

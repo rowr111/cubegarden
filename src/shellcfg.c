@@ -46,7 +46,7 @@ char *completion_buffer[SHELL_MAX_COMPLETIONS];
 static char start[0] __attribute__((unused, aligned(4), section(".chibi_list_zshell_1")));
 
 const ShellConfig shell_cfg = {
-  (BaseSequentialStream *)&SD4,
+  (BaseSequentialStream *)&SD2,
   (const ShellCommand *)&start,
   history_buffer,
   sizeof(history_buffer),

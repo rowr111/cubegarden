@@ -97,7 +97,7 @@ include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k22
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K22x/platform.mk
-include ../boards/KOSAGI_BM17/board.mk
+include ../boards/KOSAGI_CUBE2/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
@@ -109,7 +109,7 @@ include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/shell/shell.mk
 
 # Define linker script file here
-LDSCRIPT= ../ld/MK22FN128.ld
+LDSCRIPT= ../ld/MK22FN512.ld
 
 #cruft from CMSIS-DAP openSDA
 #OPENSDA = opensda
