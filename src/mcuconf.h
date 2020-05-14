@@ -17,7 +17,8 @@
 #ifndef _MCUCONF_H_
 #define _MCUCONF_H_
 
-#define K20x_MCUCONF
+#define K20DN512
+//K20x_MCUCONF
 
 /*
  * HAL driver system settings.
@@ -33,6 +34,8 @@
 #define KINETIS_MCG_MODE            KINETIS_MCG_MODE_PEE
 #define KINETIS_XTAL_FREQUENCY      8000000UL
 #define KINETIS_SYSCLK_FREQUENCY    95977472UL
+#define KINETIS_BUSCLK_FREQUENCY    (95977472UL/2)
+#define KINETIS_FLASHCLK_FREQUENCY  (95977472UL/4)
 #define DEFAULT_SYSTEM_CLOCK        KINETIS_SYSCLK_FREQUENCY
 #define CPU_XTAL32k_CLK_HZ             32768u              /* Value of the external 32k crystal or oscillator clock frequency in Hz */
 // ^^^ correct based on 32.768kHz * 2929 DCO DXM32=1, DRST_DRS=11, FRDIV=000 so divide by 1
@@ -105,7 +108,7 @@
 /*
  * SPI system settings.
  */
-#define KINETIS_SPI_USE_SPI0                    TRUE
+#define KINETIS_SPI_USE_SPI0                    FALSE
 #define KINETIS_SPI_USE_SPI1                    TRUE
 #define KINETIS_SPI_SPI0_IRQ_PRIORITY           5
 #define KINETIS_SPI_SPI1_IRQ_PRIORITY           6

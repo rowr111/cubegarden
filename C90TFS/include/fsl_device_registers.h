@@ -96,10 +96,12 @@
 
     #define K20D10_SERIES
 
+#if 0  /// REDUNDANT ALREADY INCLUDED - bunnie
     /* CMSIS-style register definitions */
     #include "MK20D10/include/MK20D10.h"
     /* Extension register definitions */
     #include "MK20D10/include/MK20D10_extension.h"
+#endif
     /* CPU specific feature definitions */
     #include "MK20D10/include/MK20D10_features.h"
 

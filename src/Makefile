@@ -71,7 +71,8 @@ endif
 
 # Enables the use of FPU on Cortex-M4 (no, softfp, hard).
 ifeq ($(USE_FPU),)
-  USE_FPU = hard
+  USE_FPU = no
+  USE_OPT += -mcpu=cortex-m4 -msoft-float
 #  USE_OPT += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 #  DDEFS += -DCORTEX_USE_FPU=TRUE
 endif
@@ -93,10 +94,10 @@ CHIBIOS_CONTRIB = ../ChibiOS-Contrib
 XZSRC = ..
 
 # Startup files.
-include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k22x.mk
+include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k20d10.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
-include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K22x/platform.mk
+include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K20x/platform.mk
 include ../boards/KOSAGI_CUBE2/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
@@ -265,7 +266,7 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1  -DTESTER_DEVICE for tester peer
-UDEFS = -DTARGET_MK22F -D__FPU_PRESENT=1 #-DDISABLE_WATCHDOG -DTESTER_DEVICE ## comment out -DDISABLE_WATCHDOG for production # 
+UDEFS = -DCPU_MK20DN512VLK10 -D__FPU_PRESENT=0 #-DDISABLE_WATCHDOG -DTESTER_DEVICE ## comment out -DDISABLE_WATCHDOG for production # 
 
 # Define ASM defines here
 UADEFS =
@@ -277,8 +278,8 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = lib/libm.a lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a 
-#ULIBS = lib/libm.a lib/libc_nano.a lib/libg_nano.a lib/libgcc.a 
+#ULIBS = lib/libm.a lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a 
+ULIBS = lib/libm.a lib/libc_nano.a  lib/libgcc.a # lib/libg_nano.a
 
 #
 # End of user defines
