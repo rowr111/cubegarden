@@ -1,5 +1,5 @@
 # List of all the board related files.
-BOARDSRC = ../boards/KOSAGI_BM17/board.c
+BOARDSRC = ../boards/KOSAGI_CUBE2/board.c
 
 # Required include directories
-BOARDINC = ../boards/KOSAGI_BM17
+BOARDINC = ../boards/KOSAGI_CUBE2

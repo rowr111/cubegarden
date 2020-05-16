@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+// note to future self: CPU hacks for k20d10 support at ~/code/cubegarden/ChibiOS-Contrib/os/common/ext/CMSIS/KINETIS/k20d10.h
 #include "hal.h"
 
 #include "chprintf.h"
