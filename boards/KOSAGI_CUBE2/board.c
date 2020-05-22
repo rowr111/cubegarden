@@ -31,8 +31,8 @@ const PALConfig pal_default_config =
     {
       .port = IOPORT1,  // PORTA
       .pads = {
-        /* PTA0*/ PAL_MODE_ALTERNATIVE_7,   /* PTA1*/ PAL_MODE_UNCONNECTED,     /* PTA2*/ PAL_MODE_UNCONNECTED,
-        /* PTA3*/ PAL_MODE_ALTERNATIVE_7,   /* PTA4*/ PAL_MODE_INPUT_PULLUP,     /* PTA5*/ PAL_MODE_UNCONNECTED,
+        /* PTA0*/ PAL_MODE_ALTERNATIVE_7,   /* PTA1*/ PAL_MODE_ALTERNATIVE_7,    /* PTA2*/ PAL_MODE_ALTERNATIVE_7,
+        /* PTA3*/ PAL_MODE_ALTERNATIVE_7,   /* PTA4*/ PAL_MODE_INPUT_PULLUP,     /* PTA5*/ PAL_MODE_ALTERNATIVE_7,
         /* PTA6*/ PAL_MODE_UNCONNECTED,     /* PTA7*/ PAL_MODE_UNCONNECTED,     /* PTA8*/ PAL_MODE_UNCONNECTED,
         /* PTA9*/ PAL_MODE_UNCONNECTED,     /*PTA10*/ PAL_MODE_UNCONNECTED,     /*PTA11*/ PAL_MODE_UNCONNECTED,
         /*PTA12*/ PAL_MODE_OUTPUT_PUSHPULL, /*PTA13*/ PAL_MODE_INPUT,           /*PTA14*/ PAL_MODE_UNCONNECTED, // led0, rstat1, nc
@@ -137,6 +137,9 @@ bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
   return false;
 }
 #endif
+
+#define CLOCK_SETUP
+
 void SystemInit (void) {
 
   /* Watchdog disable */
@@ -146,12 +149,13 @@ void SystemInit (void) {
   /* WDOG->UNLOCK: WDOGUNLOCK=0xD928 */
   WDOG->UNLOCK = WDOG_UNLOCK_WDOGUNLOCK(0xD928); /* Key 2 */
   /* WDOG->STCTRLH: ?=0,DISTESTWDOG=0,BYTESEL=0,TESTSEL=0,TESTWDOG=0,?=0,?=1,WAITEN=1,STOPEN=1,DBGEN=0,ALLOWUPDATE=1,WINEN=0,IRQRSTEN=0,CLKSRC=1,WDOGEN=0 */
-  WDOG->STCTRLH = WDOG_STCTRLH_BYTESEL(0x00) |
+  /*  WDOG->STCTRLH = WDOG_STCTRLH_BYTESEL(0x00) |
                  WDOG_STCTRLH_WAITEN_MASK |
                  WDOG_STCTRLH_STOPEN_MASK |
                  WDOG_STCTRLH_ALLOWUPDATE_MASK |
                  WDOG_STCTRLH_CLKSRC_MASK |
-                 0x0100U;
+                 0x0100U;*/
+  WDOG->STCTRLH = 0x1D0;
 #endif /* (DISABLE_WDOG) */
 #ifdef CLOCK_SETUP
   /* Wake-up from VLLSx? */
@@ -425,6 +429,14 @@ void SystemCoreClockUpdate (void) {
 
 }
 
+void led_on(void) {
+  *((unsigned int *) 0x40048038) |= 0x3E00; // enable all gpio clocks    (SIM_SCGC5)
+  *((unsigned int *) 0x4004d000) = 0x104; // port e gpio
+  *((unsigned int *) 0x400ff114) |= 0x01; // set rec_led to output
+  *((unsigned int *) 0x400ff108) = 0x1; // rec_led clear register
+  //  *((unsigned int *) 0x400ff104) = 0x1; // rec_led set register
+}
+
 /**
  * @brief   Early initialization code.
  * @details This initialization must be performed just after stack setup
@@ -432,14 +444,20 @@ void SystemCoreClockUpdate (void) {
  */
 void __early_init(void) {
 
-  *((unsigned int *) 0x40048038) |= 0x400; // enable clock to port 2
-  *((unsigned int *) 0x4004A004) = 0x104; // select GPIO
-  *((unsigned int *) 0x400ff054) |= 0x2; // set DDR to output
-  *((unsigned int *) 0x400ff044) |= 0x2; // set output
+  //  *((unsigned int *) 0x40048038) |= 0x400; // enable clock to port 2
+  //  *((unsigned int *) 0x4004A004) = 0x104; // select GPIO
+  //  *((unsigned int *) 0x400ff054) |= 0x2; // set DDR to output
+  //  *((unsigned int *) 0x400ff044) |= 0x2; // set output
   
   //  k20x_clock_init();
+
+  
   SystemInit();
+
   SystemCoreClockUpdate();
+  
+  // led_on(); // just for the debuggening
+  
 }
 
 /**

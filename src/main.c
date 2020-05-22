@@ -78,7 +78,7 @@ void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 5},
     //    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq1, PORTA, 18},
@@ -209,7 +209,7 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x400);
+static THD_WORKING_AREA(waOrchardEventThread, 0x600);
 // audit May 26, 2019 -- this should leave about 700 bytes margin
 static THD_FUNCTION(orchard_event_thread, arg) {
 
@@ -257,19 +257,13 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   // setup drive strengths on SPI1
   PORTE_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
-  PORTE_PCR2 = 0x703; // pull up enabled, fast slew (clk)
-  PORTE_PCR1 = 0x700; // fast slew (mosi)
-  PORTE_PCR3 = 0x707; // slow slew, pull-up (miso)
+  PORTE_PCR2 = 0x203; // pull up enabled, fast slew (clk)
+  PORTE_PCR1 = 0x200; // fast slew (mosi)
+  PORTE_PCR3 = 0x207; // slow slew, pull-up (miso)
   
   evtTableInit(orchard_events, 16);
   orchardEventsStart();
   orchardAppInit();
-
-  spiStart(&SPID2, &spi_config);
-  spiRuntSetup(&SPID2);
-  radioStart(radioDriver, &SPID2);
-  radioSetDefaultHandler(radioDriver, default_radio_handler);
-  pagingStart();
 
   micStart(); 
   //i2sStartRx(&I2SD1); // start the audio sampling buffer
@@ -281,6 +275,12 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extInit();
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
+
+  spiStart(&SPID2, &spi_config);
+  spiRuntSetup(&SPID2);
+  radioStart(radioDriver, &SPID2);
+  radioSetDefaultHandler(radioDriver, default_radio_handler);
+  pagingStart();
 
   initRadioAddress();
 
@@ -314,7 +314,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 }
 
 static thread_t *gyroThr = NULL;
-static THD_WORKING_AREA(waGyroThread, 0x200);
+static THD_WORKING_AREA(waGyroThread, 0x400);
 // gyro thread size audit May 28, 2019; about 300 extra bytes available
 static THD_FUNCTION(gyro_thread, arg) {
 
@@ -480,7 +480,7 @@ static OrchardTestResult test_cpu(const char *my_name, OrchardTestType test_type
   case orchardTestPoweron:
   case orchardTestTrivial:
   case orchardTestInteractive:
-    if( SIM->SDID != 0x22000695 ) // just check the CPUID is correct
+    if( SIM->SDID != 0x0000D116 ) // just check the CPUID is correct
       return orchardResultFail;
     else
       return orchardResultPass;

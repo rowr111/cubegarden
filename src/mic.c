@@ -34,10 +34,10 @@ extern event_source_t i2s_full_event;
 int rx_dma_count = 0;
 
 #define I2S_RX_WATERMARK 4
-#define DMA_I2S 2
-#define DMA_BACKBUFFER 3
+#define DMA_I2S 2  // was 2
+#define DMA_BACKBUFFER 3 // was 3
 
-OSAL_IRQ_HANDLER(KINETIS_DMA3_IRQ_VECTOR) {
+OSAL_IRQ_HANDLER(KINETIS_DMA3_IRQ_VECTOR) {  // KINETIS_DMA15_IRQ_VECTOR
   int i;
   
   OSAL_IRQ_PROLOGUE();
@@ -83,9 +83,9 @@ void micStart(void) {
   // configure receive framing
   writel( &I2S->RCR1, I2S_RX_WATERMARK ); // watermark
   writel( &I2S->RCR2, 0x07000001 ); // clock config
-  writel( &I2S->RCR4, 0x11f1b ); // fifo and framing
+  writel( &I2S->RCR4, 0x00011f1b ); // fifo and framing
   writel( &I2S->RCR5, 0x1f1f1f00 ); // word widths
-  writel( &I2S->RMR, 0x2 ); // receive masking
+  writel( &I2S->RMR, 0x2 ); // receive masking  was 0x2
 
   // setup receive DMA
   tcd = &(DMA->TCD[DMA_I2S]); // channel 2 is I2S
@@ -100,7 +100,20 @@ void micStart(void) {
   writeb(&DMA->DCHPRI1, 0xC2); // dummy setting, cannot preempt or suspend 
   writeb(&DMA->DCHPRI2, 0x00); // cannot suspend a lower priority channel; cannot be suspended by others
   writeb(&DMA->DCHPRI3, 0xC3); // back-buffer copy cannot suspend a lower priority channel, can be suspended
-
+  writeb(&DMA->DCHPRI4, 0xC5); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI5, 0xC6); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI6, 0xC7); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI7, 0xC8); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI8, 0xC9); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI9, 0xCA); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI10, 0xCB); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI11, 0xCC); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI12, 0xCD); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI13, 0xCE); // dummy setting, cannot preempt or suspend 
+  writeb(&DMA->DCHPRI14, 0xCF);
+  writeb(&DMA->DCHPRI15, 0xCF);
+ 
+  
   // configure the I2S read TCD
   writel( &tcd->SADDR, (uint32_t) &(I2S->RDR[0]) ); // source is read fifo
   writew( &tcd->SOFF, 0); // don't increment when reading from fifo
@@ -126,7 +139,7 @@ void micStart(void) {
 
   writel( &tcd2->DADDR, (uint32_t) rx_samples + 1024 ); // double-buffer location
   writew( &tcd2->DOFF, 4 );  
-  //  writel( &tcd2->DLASTSGA, -(NUM_RX_SAMPLES * sizeof(uint32_t)) ); //-1024;
+  //writel( &tcd2->DLASTSGA, -(NUM_RX_SAMPLES * sizeof(uint32_t)) ); //-1024;
   writel( &tcd2->DLASTSGA, 0 ); //-1024;
   
   writew( &tcd2->ATTR, (DMA_ATTR_SSIZE(2) | DMA_ATTR_DSIZE(2) | DMA_ATTR_DMOD(10) | DMA_ATTR_SMOD(10)) ); 
@@ -137,7 +150,7 @@ void micStart(void) {
   writew( &tcd2->BITER_ELINKNO, 1 ); // these two have to match
 
   // configure the DMA mux
-  writeb( &DMAMUX->CHCFG[DMA_I2S], (DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(12)) ); // i2s rx (channel 12) -> DMA channel 2
+  writeb( &DMAMUX->CHCFG[DMA_I2S], (DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(14)) ); // i2s rx (channel 14) -> DMA channel 2
   
   // enable interrupt to dump back buffer to processing buffer
   nvicEnableVector(DMA3_IRQn, KINETIS_I2S_RX_DMA_PRIORITY);

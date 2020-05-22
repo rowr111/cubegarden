@@ -54,12 +54,6 @@ __ram0_end__            = __ram0_start__ + __ram0_size__;
 __ram1_start__          = ORIGIN(ram1);
 __ram1_size__           = LENGTH(ram1);
 __ram1_end__            = __ram1_start__ + __ram1_size__;
-
-__storage_start__       = ORIGIN(flashram);
-__storage_size__        = LENGTH(flashram);
-__storage_end__         = __storage_start__ + __storage_size__ - 1;
-
-
 __ram2_start__          = ORIGIN(ram2);
 __ram2_size__           = LENGTH(ram2);
 __ram2_end__            = __ram2_start__ + __ram2_size__;
@@ -78,6 +72,12 @@ __ram6_end__            = __ram6_start__ + __ram6_size__;
 __ram7_start__          = ORIGIN(ram7);
 __ram7_size__           = LENGTH(ram7);
 __ram7_end__            = __ram7_start__ + __ram7_size__;
+
+__storage_start__       = ORIGIN(flashram);
+__storage_size__        = LENGTH(flashram);
+__storage_end__         = __storage_start__ + __storage_size__ - 1;
+
+ENTRY(Reset_Handler)
 
 SECTIONS
 {
@@ -397,7 +397,7 @@ SECTIONS
         __ram7_free__ = .;
     } > ram7
 
-.note.gnu.build-id :
+  .note.gnu.build-id :
   {
     . = ALIGN(4);
     PROVIDE( _note = .);
@@ -408,12 +408,12 @@ SECTIONS
     PROVIDE( _enote = .);
   }  > flash
 
-   fxdata : ALIGN(4) SUBALIGN(4)
+   fpga-config : ALIGN(4) SUBALIGN(4)
     {
         . = ALIGN(4);
-	PROVIDE( _fxdata = .);
-        *(.fxdata.data);
-    } > fxdata
+	PROVIDE( _fpga_config = .);
+        *(.fpga.data);
+    } > flash
 
 
 

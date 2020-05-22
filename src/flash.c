@@ -29,7 +29,7 @@ void go_72mhz_mode(void) {
 
 void go_96mhz_mode(void) {
     SMC->PMCTRL = (SMC->PMCTRL & ~SMC_PMCTRL_RUNM_MASK) | SMC_PMCTRL_RUNM(3); // pop into high speed run mode
-    while( SMC->PMSTAT != 0x80 ) // wait for HS run mode to enage
+    while( SMC->PMSTAT != 0x01 ) // wait for run mode to enage
       ;
     MCG->C4 = (MCG->C4 & ~MCG_C4_DRST_DRS_MASK) | MCG_C4_DRST_DRS(3); // increase clock to 96 mhz
     // we don't wait the 1ms here because we don't care at this point about lock
