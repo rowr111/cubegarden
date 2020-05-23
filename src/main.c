@@ -253,7 +253,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   uiStart();
 
-  //  spiObjectInit(&SPID1);
+  // spiObjectInit(&SPID1);
 
   // setup drive strengths on SPI1
   PORTE_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
@@ -265,6 +265,12 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   orchardEventsStart();
   orchardAppInit();
 
+  spiStart(&SPID2, &spi_config);
+  spiRuntSetup(&SPID2);
+  radioStart(radioDriver, &SPID2);
+  radioSetDefaultHandler(radioDriver, default_radio_handler);
+  pagingStart();
+
   micStart(); 
   //i2sStartRx(&I2SD1); // start the audio sampling buffer
 
@@ -275,12 +281,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   extInit();
   extObjectInit(&EXTD1);
   extStart(&EXTD1, &extcfg);
-
-  spiStart(&SPID2, &spi_config);
-  spiRuntSetup(&SPID2);
-  radioStart(radioDriver, &SPID2);
-  radioSetDefaultHandler(radioDriver, default_radio_handler);
-  pagingStart();
 
   initRadioAddress();
 

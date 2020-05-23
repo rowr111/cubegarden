@@ -139,12 +139,12 @@
 #define KINETIS_EXT_PORTE_WIDTH                 0
 #endif
 
-/* MK22 64pin  */
+/* MK20D 80pin  */
 #define KINETIS_EXT_PORTA_WIDTH                 20
 #define KINETIS_EXT_PORTB_WIDTH                 20
 #define KINETIS_EXT_PORTC_WIDTH                 12
 #define KINETIS_EXT_PORTD_WIDTH                 8
-#define KINETIS_EXT_PORTE_WIDTH                 2
+#define KINETIS_EXT_PORTE_WIDTH                 6
 
 #if 0
 /* MK20 144pin  */
