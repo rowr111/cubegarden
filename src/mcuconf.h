@@ -79,12 +79,14 @@
 #define KINETIS_SERIAL_USE_LPUART0            FALSE
 #define KINETIS_SERIAL_UART3_PRIORITY         12
 
-#define KINETIS_SERIAL_USE_UART0              FALSE
+#define KINETIS_SERIAL_USE_UART0              TRUE
 #define KINETIS_SERIAL_UART0_PRIORITY         11
 #define KINETIS_SERIAL_USE_UART1              TRUE
 #define KINETIS_SERIAL_UART1_PRIORITY         11
 #define KINETIS_SERIAL_USE_UART2              FALSE
 #define KINETIS_SERIAL_UART2_PRIORITY         11
+
+#define KINETIS_PWM_USE_FTM0                  TRUE
 
 /*
  * I2C driver settings.

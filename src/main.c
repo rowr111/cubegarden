@@ -102,10 +102,20 @@ void swStart(void) {
   sw_debounce = chVTGetSystemTime();
 }
 
+#define TELEMETRY_STREAM (BaseSequentialStream *)&SD1
 uint8_t test_switch = 0;
 void sw_proc(eventid_t id) {
 
   (void)id;
+  int16_t voltage = ggVoltage();
+  int16_t soc = ggStateofCharge();
+  int is_charging = isCharging();
+  if (is_charging) {
+    chprintf(TELEMETRY_STREAM, "Chg %dmV %\%", voltage, soc / 10);
+  } else {
+    chprintf(TELEMETRY_STREAM, "%dmV %\%", voltage, soc / 10);
+  }
+  
   test_switch = 1; // trigger just for test functions *DO NOT USE FOR REGULAR CODE* it is not thread-safe
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
     chprintf(stream, "switch change effect\n\r");
@@ -157,6 +167,10 @@ extern void programDumbRleFile(void);
 
 static const SerialConfig serialConfig = {
   115200,
+};
+
+static const SerialConfig telemetryConfig = {
+  1200,
 };
 
 extern int print_hex(BaseSequentialStream *chp,
@@ -353,6 +367,29 @@ static THD_FUNCTION(gyro_thread, arg) {
   chThdExitS(MSG_OK);
 }
 
+void ir_carrier_setup(void) {
+  //ftm0_ch7
+  // set for 38khz CW modulation
+
+  PWMConfig pwm_config = {
+    KINETIS_SYSCLK_FREQUENCY / 32, // Hz should be 94977472 / 32
+    40, // period
+    NULL,
+    {
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+    },
+  };
+  
+  pwmStart(&PWMD1, &pwm_config);
+  pwmEnableChannel(&PWMD1, 7, 20);
+}
 
 void spiRuntSetup(SPIDriver *spip);
 
@@ -385,8 +422,11 @@ int main(void) {
   palClearPad(IOPORT3, 8); // enable charging by lowering CD pin
   
   palClearPad(IOPORT5, 0); // turn on red LED
+
+  ir_carrier_setup();
   
   sdStart(&SD2, &serialConfig);
+  sdStart(&SD1, &telemetryConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
   
   i2cObjectInit(&I2CD1);
