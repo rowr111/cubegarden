@@ -23,7 +23,6 @@ static void redraw_ui(void) {
   coord_t height;
   font_t font;
 
-  chprintf(stream, "redraw");
   orchardGfxStart();
   // draw the title bar
   font = gdispOpenFont("fixed_5x8");
@@ -64,7 +63,7 @@ static void otelemetry_start(OrchardAppContext *context) {
   buffer[0][0] = CARAT;
 
   redraw_ui();
-  orchardAppTimer(context, 5 * 1000 * 1000, true);
+  orchardAppTimer(context, 1 * 1000 * 1000, true);
 }
 
 void otelemetry_event(OrchardAppContext *context, const OrchardAppEvent *event) {
@@ -76,12 +75,14 @@ void otelemetry_event(OrchardAppContext *context, const OrchardAppEvent *event) 
   if (event->type == timerEvent) {
     // streamRead(TELEMETRY_STREAM, (uint8_t *) &c, 1)
     while( iqReadTimeout(&SD1.iqueue, (uint8_t *) &c, 1, TIME_IMMEDIATE)  != 0 ) {
-      chprintf(stream, "%c", c);
+      // chprintf(stream, "%c", c);
       got_char = 1;
       if (c == '\n') {
+	buffer[line][position] = '\0';
 	line = line + 1;
 	position = 0;
 	line %= SCREEN_HEIGHT_LINES;
+	buffer[line][position] = CARAT;
       } else if ( c == '\r' ) {
 	for( int i = 0; i < SCREEN_HEIGHT_LINES; i++ ) {
 	  for( int j = 0;  j < SCREEN_WIDTH_CHARS; j++ ) {

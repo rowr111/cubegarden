@@ -107,19 +107,23 @@ uint8_t test_switch = 0;
 void sw_proc(eventid_t id) {
 
   (void)id;
-  int16_t voltage = ggVoltage();
-  int16_t soc = ggStateofCharge();
-  int is_charging = isCharging();
-  if (is_charging) {
-    chprintf(TELEMETRY_STREAM, "Chg %dmV %\%", voltage, soc / 10);
-  } else {
-    chprintf(TELEMETRY_STREAM, "%dmV %\%", voltage, soc / 10);
-  }
   
   test_switch = 1; // trigger just for test functions *DO NOT USE FOR REGULAR CODE* it is not thread-safe
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
     chprintf(stream, "switch change effect\n\r");
     effectsNextPattern(0);
+    
+    int16_t voltage = ggVoltage();
+    int16_t soc = ggStateofCharge();
+    int is_charging = isCharging();
+    const struct userconfig *config;
+    config = getConfig();
+  
+    if (is_charging) {
+      chprintf(TELEMETRY_STREAM, "\rCube %d\nChg %dmV\n%d %% \n  \n", config->cfg_address, voltage, soc);
+    } else {
+      chprintf(TELEMETRY_STREAM, "\rCube %d\n%dmV\n%d %% \n  \n", config->cfg_address, voltage, soc);
+    }
   }
   sw_debounce = chVTGetSystemTime();
   // check for press and hold
