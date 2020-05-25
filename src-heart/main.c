@@ -118,6 +118,9 @@ extern void programDumbRleFile(void);
 static const SerialConfig serialConfig = {
   115200,
 };
+static const SerialConfig telemetryConfig = {
+  1200,
+};
 
 extern int print_hex(BaseSequentialStream *chp,
                      const void *block, int count, uint32_t start);
@@ -308,6 +311,7 @@ int main(void) {
   palClearPad(IOPORT5, 0); // turn on red LED
   
   sdStart(&SD4, &serialConfig);
+  sdStart(&SD1, &telemetryConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
   
   i2cObjectInit(&I2CD1);
