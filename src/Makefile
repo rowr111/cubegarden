@@ -134,6 +134,9 @@ include $(LIBFIXMATRIX)/build.mk
 LIBC90TFS = ../C90TFS
 include $(LIBC90TFS)/build.mk
 
+LIBVL53L1 = vl531x
+include $(LIBVL53L1)/build.mk
+
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CSRC = \
@@ -182,6 +185,7 @@ CSRC = \
        $(LIBFIXMATHSRC) \
        $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \
+       $(LIBVL53L1SRC) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -215,6 +219,7 @@ INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
          $(STREAMSINC) $(SHELLINC) $(GFXINC) $(LIBFIXMATHINC) $(LIBC90TFSINC) \
+         vl531x/core vl531x/platform \
          -Isda
 
 #
