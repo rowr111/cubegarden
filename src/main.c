@@ -432,6 +432,14 @@ int main(void) {
   sdStart(&SD2, &serialConfig);
   sdStart(&SD1, &telemetryConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
+
+  palSetPad(IOPORT4, 1);  // take the lidar out of powerdown
+  // why does the call above not work? jam it into the register directly.
+  // portd set toggle = 0x400ff0c4
+  *((unsigned int *) 0x400ff0c8) = 0x2; // portd clear toggle
+  chThdSleepMilliseconds(2);
+  *((unsigned int *) 0x400ff0c4) = 0x2; // portd set toggle
+  chThdSleepMilliseconds(2);
   
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);

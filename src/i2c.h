@@ -7,6 +7,7 @@
 #define FAN5421_ADDR 0x6A
 #define BQ24157_ADDR 0x6A
 #define LC709203_ADDR 0x0B
+#define VL53L1_ADDR  0x29
 
 #define FAN5421_CTL0_ADR 0
 #define FAN5421_CTL1_ADR 1
