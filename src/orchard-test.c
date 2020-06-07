@@ -177,13 +177,21 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
       chprintf(chp, "FAIL\n\r" );
       chsnprintf(prompt, sizeof(prompt), "0x%x", auditval);
       chprintf(chp, "FAIL %s\n\r", prompt );
-      orchardTestPrompt( "FAIL", prompt, -30 );
+      for( i = 0; i < 10; i++ ) {
+	chprintf(chp, "FAIL\n\r" );
+	chThdSleepMilliseconds(100);
+      }
+      orchardTestPrompt( "FAIL", prompt, -10 );
     } else {
       // pass
       chprintf(chp, "PASS\n\r" );
       chsnprintf(prompt, sizeof(prompt), "0x%x", auditval);
       chprintf(chp, "PASS %s\n\r", prompt );
-      orchardTestPrompt( "NO ERRORS", prompt, -30 );
+      for( i = 0; i < 10; i++ ) {
+	chprintf(chp, "PASS\n\r" );
+	chThdSleepMilliseconds(100);
+      }
+      orchardTestPrompt( "NO ERRORS", prompt, -10 );
     }
   }
 
@@ -269,6 +277,11 @@ OrchardTestResult orchardTestPrompt(char *line1, char *line2,
 
     // flash result code 10 times
     for( i = 0; i < 10; i ++ ) {
+      if( green == 255 ) {
+	chprintf(stream, "PASS\n\r" );
+      } else {
+        chprintf(stream, "FAIL\n\r" );
+      }
       test_led_setall( red, green, 0 );
       chThdSleepMilliseconds(500);
       test_led_setall( 0, 0, 0 );
