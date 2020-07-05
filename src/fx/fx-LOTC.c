@@ -68,7 +68,7 @@ static void LOTC(struct effects_config *config) {
   if ( ((superRgbLastTime + superRgbWaitTime) < chVTGetSystemTime()) &&
        (bstate->state != baton_holding) ){
     mastercubeUnresponsive = true;
-    if(loop%10 == true){
+    if(loop%100 == true){
       chprintf(stream, "no color updates from master cube :'(.\n\r");
     }
   }

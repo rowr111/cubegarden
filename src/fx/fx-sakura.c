@@ -83,12 +83,7 @@ static void sakura(struct effects_config *config) {
         //get the color if for some reason it hasn't been gotten
         hue = SakuraLeaf[(uint32_t)rand() % 3];
     }
-    //gentle pulse - setting brightness
-    int brightness = loop%pulselength;
-    brightness = brightness > pulselength/2 ? pulselength - brightness : brightness;
-    float brightperc = (float)brightness/(pulselength/2);
-    brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
-    HsvColor currHSV = {hue, 255, (int)255*brightperc};
+    HsvColor currHSV = {hue, 255, (int)255};
     RgbColor c = HsvToRgb(currHSV); 
     ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
   }

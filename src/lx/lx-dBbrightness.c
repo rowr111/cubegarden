@@ -52,30 +52,17 @@ static void dBbrightness(struct effects_config *config){
   avgLevel = pow(avgLevel, 1.5);
   avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel; //minimum value
 
-  if( avgLevel > 0.9 ) { //it's sparkle time, baby!
-    int i;
-    for( i = 0; i < count; i++ ) {
-      c = currentColors[i];
-      if( ((uint32_t)rand() % (unsigned int) count) < ((unsigned int) (count / 1.33) )) {
-	    c.r = (int)(c.r*avgLevel);
-        c.g = (int)(c.g*avgLevel);
-        c.b = (int)(c.b*avgLevel);
-        ledSetRGB(fb, i, c.r, c.g, c.b, shift);
-      }
-      else
-	      ledSetRGB(fb, i, 0, 0, 0, shift);
-      }
-    }
-    else{
-      int i;
-      for( i = 0; i < count; i++ ) {
-        c = currentColors[i];
-        c.r = (int)(c.r*avgLevel);
-        c.g = (int)(c.g*avgLevel);
-        c.b = (int)(c.b*avgLevel);
-        ledSetRGB(fb, count, (int)(c.r), (int)(c.g), (int)(c.b), shift);
-      }
-    }
+  if(loop%100 ==0){
+    chprintf(stream, "setting to avgLevel: %f.\n\r", avgLevel);
+  }
+  int i;
+  for( i = 0; i < count; i++ ) {
+    c = currentColors[i];
+    c.r = (int)(c.r*avgLevel);
+    c.g = (int)(c.g*avgLevel);
+    c.b = (int)(c.b*avgLevel);
+    ledSetRGB(fb, i, (int)(c.r), (int)(c.g), (int)(c.b), shift);
+  }
 
 }
 
