@@ -20,6 +20,9 @@ extern int32_t __ram1_start__[];
 //int32_t *rx_samples = __ram1__;
 #define rx_samples __ram1_start__
 
+float avg_low_db; //main.c computes the most recent low
+float avg_high_db;//main.c computes the most recent high
+
 int16_t rx_savebuf[NUM_RX_SAMPLES * NUM_RX_BLOCKS];
 uint8_t rx_block = 0;
 

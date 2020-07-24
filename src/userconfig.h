@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    14
+#define CONFIG_VERSION    15
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -18,8 +18,6 @@ typedef struct userconfig {
   uint32_t  cfg_bright_thresh3; //battery charge threshold for dimming, third threshold
   uint32_t  cfg_fx_newcube_time; // duration of a "new cube" notification in interactive effects
   uint8_t   cfg_address;     // radio address
-  uint8_t   cfg_dBbkgd;      // bkg dB threshhold
-  uint8_t   cfg_dBmax;       // max dB threshhold
   uint8_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
@@ -33,8 +31,6 @@ void configClearAutoSex(void);
 void configToggleAutosex(void);
 void configSetChannel(uint32_t channel);
 void configSetAddress(uint8_t address);
-void configSetdBbkgd(uint8_t dBbkgd);
-void configSetdBmax(uint8_t dBmax);
 void configSetBrightThresh(uint32_t bright_thresh);
 void configSetBrightThresh2(uint32_t bright_thresh2);
 void configSetBrightThresh3(uint32_t bright_thresh3);

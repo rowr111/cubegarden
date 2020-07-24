@@ -23,22 +23,22 @@ static void dBbrightness(struct effects_config *config){
   int loop = config->loop; 
   float level;
   Color c;
-  
-  uconfig = getConfig();
-  uint8_t dBbkgd = uconfig->cfg_dBbkgd;
-  uint8_t dBmax = uconfig->cfg_dBmax;
-
 
   scopemode_g = 2; // this selects db mode
 
+  if(loop%50 ==0){ //debugging data:
+    chprintf(stream, "avg_high_db: %f.\n\r", avg_high_db);
+    chprintf(stream, "avg_low_db: %f.\n\r", avg_low_db);
+  }
+
   //there's no Math.max in C so we have to do something like this to limit the min/max
   //max:
-  if(cur_db > dBmax) level = (float)(dBmax - dBbkgd); 
+  if(cur_db > avg_high_db) level = avg_high_db - avg_low_db; 
   //min:
-  if(cur_db - dBbkgd < 1) level = (float)1;
-  else level = (float)(cur_db - dBbkgd);
+  if(cur_db - avg_low_db < 1) level = (float)1;
+  else level = cur_db - avg_low_db;
 
-  level = (level/((float)dBmax-(float)dBbkgd));
+  level = level/(avg_high_db-avg_low_db); 
 
   //now let's smooth this puppy out
   static float avgs[2];
@@ -50,11 +50,9 @@ static void dBbrightness(struct effects_config *config){
   float avgLevel = sum/2;
 
   avgLevel = pow(avgLevel, 1.5);
-  avgLevel = avgLevel < 0.05 ? 0.05 : avgLevel; //minimum value
 
-  if(loop%100 ==0){
-    chprintf(stream, "setting to avgLevel: %f.\n\r", avgLevel);
-  }
+  avgLevel = 0.2 + avgLevel >= 1 ? 1 : 0.2 + avgLevel; //minimum value of 0.2, give overall a nice bump tho
+
   int i;
   for( i = 0; i < count; i++ ) {
     c = currentColors[i];
