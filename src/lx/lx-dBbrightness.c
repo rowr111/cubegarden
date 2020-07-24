@@ -26,7 +26,7 @@ static void dBbrightness(struct effects_config *config){
 
   scopemode_g = 2; // this selects db mode
 
-  if(loop%50 ==0){ //debugging data:
+  if(loop%300 ==0){ //debugging data:
     chprintf(stream, "avg_high_db: %f.\n\r", avg_high_db);
     chprintf(stream, "avg_low_db: %f.\n\r", avg_low_db);
   }
