@@ -21,9 +21,6 @@ static void pulse(struct effects_config *config){
   brightness = brightness > pulselength/2 ? pulselength - brightness : brightness;	
   float brightperc = (float)brightness/(pulselength/2);	
   brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark	
-  if(loop%30 == 0){
-    chprintf(stream, "current brightperc: %f.\n\r", brightperc);
-  }
   int i;
   for( i = 0; i < count; i++ ) {
     c = currentColors[i];
