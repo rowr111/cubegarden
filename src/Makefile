@@ -60,18 +60,19 @@ endif
 # Stack size to be allocated to the Cortex-M process stack. This stack is
 # the stack used by the main() thread.
 ifeq ($(USE_PROCESS_STACKSIZE),)
-  USE_PROCESS_STACKSIZE = 0x300
+  USE_PROCESS_STACKSIZE = 0x600
 endif
 
 # Stack size to the allocated to the Cortex-M main/exceptions stack. This
 # stack is used for processing interrupts and exceptions.
 ifeq ($(USE_EXCEPTIONS_STACKSIZE),)
-  USE_EXCEPTIONS_STACKSIZE = 0x200
+  USE_EXCEPTIONS_STACKSIZE = 0x400
 endif
 
 # Enables the use of FPU on Cortex-M4 (no, softfp, hard).
 ifeq ($(USE_FPU),)
-  USE_FPU = hard
+  USE_FPU = no
+  USE_OPT += -mcpu=cortex-m4 -msoft-float
 #  USE_OPT += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 #  DDEFS += -DCORTEX_USE_FPU=TRUE
 endif
@@ -93,11 +94,11 @@ CHIBIOS_CONTRIB = ../ChibiOS-Contrib
 XZSRC = ..
 
 # Startup files.
-include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k22x.mk
+include $(CHIBIOS_CONTRIB)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_k20d10.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
-include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K22x/platform.mk
-include ../boards/KOSAGI_BM17/board.mk
+include $(CHIBIOS_CONTRIB)/os/hal/ports/KINETIS/K20x/platform.mk
+include ../boards/KOSAGI_CUBE2/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
@@ -109,7 +110,7 @@ include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/shell/shell.mk
 
 # Define linker script file here
-LDSCRIPT= ../ld/MK22FN128.ld
+LDSCRIPT= ../ld/MK22FN512.ld
 
 #cruft from CMSIS-DAP openSDA
 #OPENSDA = opensda
@@ -132,6 +133,9 @@ include $(LIBFIXMATRIX)/build.mk
 #C90TFS Freescale Flash drivers
 LIBC90TFS = ../C90TFS
 include $(LIBC90TFS)/build.mk
+
+LIBVL53L1 = vl531x
+include $(LIBVL53L1)/build.mk
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -181,6 +185,7 @@ CSRC = \
        $(LIBFIXMATHSRC) \
        $(LIBFIXMATRIXSRC) \
        $(LIBC90TFSSRC) \
+       $(LIBVL53L1SRC) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -214,6 +219,7 @@ INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
          $(STREAMSINC) $(SHELLINC) $(GFXINC) $(LIBFIXMATHINC) $(LIBC90TFSINC) \
+         vl531x/core vl531x/platform \
          -Isda
 
 #
@@ -265,7 +271,7 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1  -DTESTER_DEVICE for tester peer
-UDEFS = -DTARGET_MK22F -D__FPU_PRESENT=1 #-DDISABLE_WATCHDOG -DTESTER_DEVICE ## comment out -DDISABLE_WATCHDOG for production # 
+UDEFS = -DCPU_MK20DN512VLK10 -D__FPU_PRESENT=0 -DDISABLE_WATCHDOG -DDISABLE_WDOG # -DTESTER_DEVICE ## comment out -DDISABLE_WATCHDOG for production # 
 
 # Define ASM defines here
 UADEFS =
@@ -277,8 +283,8 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = lib/libm.a lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a 
-#ULIBS = lib/libm.a lib/libc_nano.a lib/libg_nano.a lib/libgcc.a 
+#ULIBS = lib/libm.a lib/armv7e-m-fpu-libgcc.a lib/libc-nano-armv7e-m-fpu.a 
+ULIBS = lib/libm.a lib/libc_nano.a  lib/libgcc.a # lib/libg_nano.a
 
 #
 # End of user defines

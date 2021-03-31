@@ -105,7 +105,7 @@ static void radio_addr(BaseSequentialStream *chp, int argc, char *argv[]) {
 #if 1 // leave this around to simplify specrtum analyzer characterization
 static int should_stop(void) {
   uint8_t bfr[1];
-  return chnReadTimeout(&SD4, bfr, sizeof(bfr), 1);
+  return chnReadTimeout(&SD2, bfr, sizeof(bfr), 1);
 }
 
 void radio_blast(void) {

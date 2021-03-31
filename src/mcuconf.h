@@ -17,7 +17,8 @@
 #ifndef _MCUCONF_H_
 #define _MCUCONF_H_
 
-#define K22x_MCUCONF
+#define K20DN512
+//K20x_MCUCONF
 
 /*
  * HAL driver system settings.
@@ -33,6 +34,8 @@
 #define KINETIS_MCG_MODE            KINETIS_MCG_MODE_PEE
 #define KINETIS_XTAL_FREQUENCY      8000000UL
 #define KINETIS_SYSCLK_FREQUENCY    95977472UL
+#define KINETIS_BUSCLK_FREQUENCY    (95977472UL/2)
+#define KINETIS_FLASHCLK_FREQUENCY  (95977472UL/4)
 #define DEFAULT_SYSTEM_CLOCK        KINETIS_SYSCLK_FREQUENCY
 #define CPU_XTAL32k_CLK_HZ             32768u              /* Value of the external 32k crystal or oscillator clock frequency in Hz */
 // ^^^ correct based on 32.768kHz * 2929 DCO DXM32=1, DRST_DRS=11, FRDIV=000 so divide by 1
@@ -72,16 +75,18 @@
 /*
  * SERIAL driver system settings.
  */
-#define KINETIS_SERIAL_USE_UART3              TRUE
-#define KINETIS_SERIAL_USE_LPUART0            TRUE
+#define KINETIS_SERIAL_USE_UART3              FALSE
+#define KINETIS_SERIAL_USE_LPUART0            FALSE
 #define KINETIS_SERIAL_UART3_PRIORITY         12
 
-#define KINETIS_SERIAL_USE_UART0              FALSE
+#define KINETIS_SERIAL_USE_UART0              TRUE
 #define KINETIS_SERIAL_UART0_PRIORITY         11
-#define KINETIS_SERIAL_USE_UART1              FALSE
+#define KINETIS_SERIAL_USE_UART1              TRUE
 #define KINETIS_SERIAL_UART1_PRIORITY         11
 #define KINETIS_SERIAL_USE_UART2              FALSE
 #define KINETIS_SERIAL_UART2_PRIORITY         11
+
+#define KINETIS_PWM_USE_FTM0                  TRUE
 
 /*
  * I2C driver settings.
@@ -105,7 +110,7 @@
 /*
  * SPI system settings.
  */
-#define KINETIS_SPI_USE_SPI0                    TRUE
+#define KINETIS_SPI_USE_SPI0                    FALSE
 #define KINETIS_SPI_USE_SPI1                    TRUE
 #define KINETIS_SPI_SPI0_IRQ_PRIORITY           5
 #define KINETIS_SPI_SPI1_IRQ_PRIORITY           6
@@ -136,12 +141,12 @@
 #define KINETIS_EXT_PORTE_WIDTH                 0
 #endif
 
-/* MK22 64pin  */
+/* MK20D 80pin  */
 #define KINETIS_EXT_PORTA_WIDTH                 20
 #define KINETIS_EXT_PORTB_WIDTH                 20
 #define KINETIS_EXT_PORTC_WIDTH                 12
 #define KINETIS_EXT_PORTD_WIDTH                 8
-#define KINETIS_EXT_PORTE_WIDTH                 2
+#define KINETIS_EXT_PORTE_WIDTH                 6
 
 #if 0
 /* MK20 144pin  */

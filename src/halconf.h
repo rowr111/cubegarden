@@ -104,14 +104,14 @@
  * @brief   Enables the MMC_SPI subsystem.
  */
 #if !defined(HAL_USE_MMC_SPI) || defined(__DOXYGEN__)
-#define HAL_USE_MMC_SPI             TRUE
+#define HAL_USE_MMC_SPI             FALSE
 #endif
 
 /**
  * @brief   Enables the PWM subsystem.
  */
 #if !defined(HAL_USE_PWM) || defined(__DOXYGEN__)
-#define HAL_USE_PWM                 FALSE
+#define HAL_USE_PWM                 TRUE
 #endif
 
 /**

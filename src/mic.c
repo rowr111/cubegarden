@@ -137,7 +137,7 @@ void micStart(void) {
   writew( &tcd2->BITER_ELINKNO, 1 ); // these two have to match
 
   // configure the DMA mux
-  writeb( &DMAMUX->CHCFG[DMA_I2S], (DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(12)) ); // i2s rx (channel 12) -> DMA channel 2
+  writeb( &DMAMUX->CHCFG[DMA_I2S], (DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(14)) ); // i2s rx (channel 12) -> DMA channel 2
   
   // enable interrupt to dump back buffer to processing buffer
   nvicEnableVector(DMA3_IRQn, KINETIS_I2S_RX_DMA_PRIORITY);

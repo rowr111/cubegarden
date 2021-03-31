@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+// note to future self: CPU hacks for k20d10 support at ~/code/cubegarden/ChibiOS-Contrib/os/common/ext/CMSIS/KINETIS/k20d10.h
 #include "hal.h"
 
 #include "chprintf.h"
@@ -38,7 +39,6 @@
 #include "mic.h"
 #include "paging.h"
 #include "analog.h"
-#include "pir.h"
 #include "gyro.h"
 #include "trigger.h"
 #include "address.h"
@@ -78,8 +78,8 @@ void gyro_irq2(EXTDriver *extp, expchannel_t channel) {
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 1},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, radioInterrupt, PORTE, 5},
+    //    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pir_irq, PORTD, 0},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, sw_irq, PORTA, 4},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq1, PORTA, 18},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gyro_irq2, PORTD, 3},
@@ -102,14 +102,28 @@ void swStart(void) {
   sw_debounce = chVTGetSystemTime();
 }
 
+#define TELEMETRY_STREAM (BaseSequentialStream *)&SD1
 uint8_t test_switch = 0;
 void sw_proc(eventid_t id) {
 
   (void)id;
+  
   test_switch = 1; // trigger just for test functions *DO NOT USE FOR REGULAR CODE* it is not thread-safe
   if( chVTTimeElapsedSinceX(sw_debounce) > 100 ) {
     chprintf(stream, "switch change effect\n\r");
     effectsNextPattern(0);
+    
+    int16_t voltage = ggVoltage();
+    int16_t soc = ggStateofCharge();
+    int is_charging = isCharging();
+    const struct userconfig *config;
+    config = getConfig();
+  
+    if (is_charging) {
+      chprintf(TELEMETRY_STREAM, "\rCube %d\nChg %dmV\n%d %% \n  \n", config->cfg_address, voltage, soc);
+    } else {
+      chprintf(TELEMETRY_STREAM, "\rCube %d\n%dmV\n%d %% \n  \n", config->cfg_address, voltage, soc);
+    }
   }
   sw_debounce = chVTGetSystemTime();
   // check for press and hold
@@ -135,7 +149,7 @@ static const ADCConfig adccfg1 = {
 
 static const SPIConfig spi_config = {
   NULL,
-  IOPORT4,
+  IOPORT5,
   4,
   KINETIS_SPI_TAR_8BIT_FAST
 };
@@ -153,10 +167,14 @@ extern void programDumbRleFile(void);
 
 #define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(1024)
 
-//#define stream (BaseSequentialStream *)&SD4
+//#define stream (BaseSequentialStream *)&SD2
 
 static const SerialConfig serialConfig = {
   115200,
+};
+
+static const SerialConfig telemetryConfig = {
+  1200,
 };
 
 extern int print_hex(BaseSequentialStream *chp,
@@ -209,7 +227,7 @@ unsigned int flash_init = 0;
 
 
 static thread_t *eventThr = NULL;
-static THD_WORKING_AREA(waOrchardEventThread, 0x400);
+static THD_WORKING_AREA(waOrchardEventThread, 0x600);
 // audit May 26, 2019 -- this should leave about 700 bytes margin
 static THD_FUNCTION(orchard_event_thread, arg) {
 
@@ -217,7 +235,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   chRegSetThreadName("Events");
 
   swStart();
-  pirStart();
   gyro_init();
   flashStart();
   orchardTestInit();
@@ -254,13 +271,13 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 
   uiStart();
 
-  spiObjectInit(&SPID1);
+  // spiObjectInit(&SPID1);
 
   // setup drive strengths on SPI1
-  PORTD_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
-  PORTD_PCR5 = 0x703; // pull up enabled, fast slew (clk)
-  PORTD_PCR6 = 0x700; // fast slew (mosi)
-  PORTD_PCR7 = 0x707; // slow slew, pull-up (miso)
+  PORTE_PCR4 = 0x103; // pull up enabled, fast slew  (CS0)
+  PORTE_PCR2 = 0x203; // pull up enabled, fast slew (clk)
+  PORTE_PCR1 = 0x200; // fast slew (mosi)
+  PORTE_PCR3 = 0x207; // slow slew, pull-up (miso)
   
   evtTableInit(orchard_events, 16);
   orchardEventsStart();
@@ -291,7 +308,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableHook(orchard_events, gyro_singletap, singletapchanged);
   evtTableHook(orchard_events, gyro_singletap, test_singletap);
   evtTableHook(orchard_events, gyro_doubletap, doubletapchanged); 
-  evtTableHook(orchard_events, pir_process, pir_proc);
   evtTableHook(orchard_events, sw_process, sw_proc);
   evtTableHook(orchard_events, gyro1_process, gyro1_proc);
   evtTableHook(orchard_events, gyro2_process, gyro2_proc);
@@ -304,7 +320,6 @@ static THD_FUNCTION(orchard_event_thread, arg) {
   evtTableUnhook(orchard_events, gyro2_process, gyro2_proc);
   evtTableUnhook(orchard_events, gyro1_process, gyro1_proc);
   evtTableUnhook(orchard_events, sw_process, sw_proc);
-  evtTableUnhook(orchard_events, pir_process, pir_proc);
   evtTableUnhook(orchard_events, gyro_doubletap, doubletapchanged); 
   evtTableUnhook(orchard_events, gyro_singletap, test_singletap);
   evtTableUnhook(orchard_events, gyro_singletap, singletapchanged);
@@ -317,7 +332,7 @@ static THD_FUNCTION(orchard_event_thread, arg) {
 }
 
 static thread_t *gyroThr = NULL;
-static THD_WORKING_AREA(waGyroThread, 0x200);
+static THD_WORKING_AREA(waGyroThread, 0x400);
 // gyro thread size audit May 28, 2019; about 300 extra bytes available
 static THD_FUNCTION(gyro_thread, arg) {
 
@@ -356,6 +371,29 @@ static THD_FUNCTION(gyro_thread, arg) {
   chThdExitS(MSG_OK);
 }
 
+void ir_carrier_setup(void) {
+  //ftm0_ch7
+  // set for 38khz CW modulation
+
+  PWMConfig pwm_config = {
+    KINETIS_SYSCLK_FREQUENCY / 32, // Hz should be 94977472 / 32
+    40, // period
+    NULL,
+    {
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_DISABLED, NULL},
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+    },
+  };
+  
+  pwmStart(&PWMD1, &pwm_config);
+  pwmEnableChannel(&PWMD1, 7, 20);
+}
 
 void spiRuntSetup(SPIDriver *spip);
 
@@ -388,9 +426,20 @@ int main(void) {
   palClearPad(IOPORT3, 8); // enable charging by lowering CD pin
   
   palClearPad(IOPORT5, 0); // turn on red LED
+
+  ir_carrier_setup();
   
-  sdStart(&SD4, &serialConfig);
+  sdStart(&SD2, &serialConfig);
+  sdStart(&SD1, &telemetryConfig);
   // not to self -- baud rates on other UARTs is kinda hard f'd up due to some XZ hacks to hit 3.125mbps
+
+  palSetPad(IOPORT4, 1);  // take the lidar out of powerdown
+  // why does the call above not work? jam it into the register directly.
+  // portd set toggle = 0x400ff0c4
+  *((unsigned int *) 0x400ff0c8) = 0x2; // portd clear toggle
+  chThdSleepMilliseconds(2);
+  *((unsigned int *) 0x400ff0c4) = 0x2; // portd set toggle
+  chThdSleepMilliseconds(2);
   
   i2cObjectInit(&I2CD1);
   i2cStart(&I2CD1, &i2c_config);
@@ -483,7 +532,7 @@ static OrchardTestResult test_cpu(const char *my_name, OrchardTestType test_type
   case orchardTestPoweron:
   case orchardTestTrivial:
   case orchardTestInteractive:
-    if( SIM->SDID != 0x22000695 ) // just check the CPUID is correct
+    if( SIM->SDID != 0x0000D116 ) // just check the CPUID is correct
       return orchardResultFail;
     else
       return orchardResultPass;
