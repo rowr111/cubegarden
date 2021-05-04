@@ -30,3 +30,5 @@ extern uint8_t dblogptr;
 extern uint16_t mic_processed[];
 extern uint16_t raw_samples[];
 extern float cur_db;
+extern float avg_low_db;
+extern float avg_high_db;

@@ -371,6 +371,75 @@ static THD_FUNCTION(gyro_thread, arg) {
   chThdExitS(MSG_OK);
 }
 
+//to get the avg low and avg high values from the db history array
+void db_get_low_high(float *dbHistory) {
+  int i = 0;
+  int sample_count = 5;
+  float lowest[sample_count]; //lowest sample_count db values
+  float highest[sample_count]; //highest sample_count db values
+  //initialize the arrays
+  for(i = 0; i < sample_count; i++) {	
+    lowest[i] = 150.0;	//arbitrary max value to start with
+  }
+  for(i = 0; i < sample_count; i++) {	
+    highest[i] = 0.0;	
+  }
+
+  //now get arrays of the lowest and highest 5 items
+  for (i = 0; i<100; i++){
+    float current = dbHistory[i];
+    //lowest
+    for(int j=0; j<sample_count; j++){
+      if(current <= lowest[j]){
+        float temp = lowest[j];
+        lowest[j] = current;
+        current = temp;
+      }
+    }
+    //highest
+    current = dbHistory[i];
+    for(int j=0; j<sample_count; j++){
+      if(current >= highest[j]){
+        float temp = highest[j];
+        highest[j] = current;
+        current = temp;
+      }
+    }
+  }
+
+  //get avg_low_db
+  float sum_lows = 0;
+  for(i = 0; i < sample_count; i++) {	
+    sum_lows = sum_lows + lowest[i];
+  }
+  avg_low_db = sum_lows/sample_count;
+
+  //get avg_high_db
+  float sum_highs = 0;
+  for(i = 0; i < sample_count; i++) {	
+    sum_highs = sum_highs + highest[i];
+  }
+  avg_high_db = sum_highs/sample_count;
+}
+
+static thread_t *dblevelsThr = NULL;
+static THD_WORKING_AREA(waDblevelsThr, 0x400);
+static THD_FUNCTION(dblevels_thread, arg){
+  (void)arg;  
+  chRegSetThreadName("dBLevels");
+  float dbHistory[100]; //100 records should be 10 seconds if we sleep 100ms each time
+  int index = 0;
+
+  while (!chThdShouldTerminateX()) {
+    dbHistory[index] = cur_db;
+    index = (index + 1) % 100;
+    db_get_low_high(dbHistory);
+    chThdSleepMilliseconds(100); // give some time for other threads
+  }
+  chSysLock();
+  chThdExitS(MSG_OK);
+}
+
 void ir_carrier_setup(void) {
   //ftm0_ch7
   // set for 38khz CW modulation
@@ -496,6 +565,13 @@ int main(void) {
 			      (NORMALPRIO - 6),
 			      gyro_thread,
 			      NULL);
+
+//start dblevels monitoring thread
+  dblevelsThr = chThdCreateStatic(waDblevelsThr,
+            sizeof(waDblevelsThr),
+            (NORMALPRIO -6),
+            dblevels_thread,
+            NULL);
 
   
   uint32_t init_delay = chVTGetSystemTime();

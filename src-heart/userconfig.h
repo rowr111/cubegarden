@@ -3,7 +3,7 @@
 #define CONFIG_SIGNATURE  0x55434647  // UCFG
 #define CONFIG_BLOCK      1
 #define CONFIG_OFFSET     0
-#define CONFIG_VERSION    15
+#define CONFIG_VERSION    16
 
 typedef struct userconfig {
   uint32_t  signature;
@@ -20,8 +20,6 @@ typedef struct userconfig {
   uint32_t  cfg_timesync_interval;  // interval for timesync, in seconds
   uint32_t  cfg_fx_newcube_time; // duration of a "new cube" notification in interactive effects
   uint8_t   cfg_addressCounter; // radio address
-  uint8_t   cfg_dBbkgd;      // bkg dB threshhold
-  uint8_t   cfg_dBmax;       // max dB threshhold
   uint32_t  cfg_clip_used[MAX_CLIPS];
 } userconfig;
 
@@ -35,8 +33,6 @@ void configClearAutoSex(void);
 void configToggleAutosex(void);
 void configSetChannel(uint32_t channel);
 void configSetAddressCounter(uint8_t addressCounter);
-void configSetdBbkgd(uint8_t dBbkgd);
-void configSetdBmax(uint8_t dBmax);
 void configSetBrightThresh(uint32_t bright_thresh);
 void configSetBrightThresh2(uint32_t bright_thresh2);
 void configSetBrightThresh3(uint32_t bright_thresh3);

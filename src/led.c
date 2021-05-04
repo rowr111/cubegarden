@@ -24,14 +24,20 @@
 #include <math.h>
 
 orchard_effects_end();
+orchard_layers_end();
 
 // static (master-local) effects state
 led_config_def  led_config;
 static effects_config fx_config;
 static uint8_t fx_index;  // current effect
 static uint8_t fx_max;    // max # of effects
+static uint8_t lx_max;    // max # of layers
 static uint8_t fx_previndex; //previous effect
 static uint8_t ledExitRequest = 0;
+
+//very hacky.. todo: make a linked list or something that works better.
+static uint8_t layerActive[10]; //indicating if layers are on or off
+Color currentColors[LED_COUNT];
 
 // global effects state
 uint32_t fx_starttime = 0; //start time for temporary effect
@@ -107,18 +113,26 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
 
   // now setup some basic effects bookkeeping state
   const OrchardEffects *curfx;
+  const OrchardLayers *curlx;
   
   fx_config.hwconfig = &led_config;
   fx_config.count = led_config.pixel_count;
   fx_config.loop = getNetworkTimeMs() / EFFECTS_REDRAW_MS;
 
   curfx = orchard_effects_start();
+  curlx = orchard_layers_start();
   fx_max = 0;
+  lx_max = 0;
   bstate->fx_uses_baton = 0; // need to add this before any effect state transition
   fx_index = 0;
   while( curfx->name ) {
     fx_max++;
     curfx++;
+  }
+  while( curlx->name ) {
+    chprintf(stream, "Found a layer: %s\n\r", curlx->name );
+    lx_max++;
+    curlx++;
   }
   
 }
@@ -182,6 +196,16 @@ Color ledGetColor(void *ptr, int x) {
   c.b = buf[2];
   
   return c;
+}
+
+void getCurrentLEDColors(struct effects_config *config){
+  uint8_t *fb = config->hwconfig->fb;
+  int i;
+  for(i=0; i<LED_COUNT; i++){
+    Color c;
+    c = ledGetColor(fb, i);
+    currentColors[i] = c;
+  }
 }
 
 void ledSetCount(uint32_t count) {
@@ -435,11 +459,13 @@ orchard_effects("safetyPattern", safetyPatternFB, 0);
 
 static void draw_pattern(void) {
   const OrchardEffects *curfx;
+  const OrchardLayers *curlx;
   BatonState *bstate = getBatonState();
   const struct userconfig *config;
   config = getConfig();
   
   curfx = orchard_effects_start();
+  curlx = orchard_layers_start();
 
   fx_config.loop++;
   curfx += fx_index;
@@ -450,6 +476,16 @@ static void draw_pattern(void) {
   }
 
   curfx->computeEffect(&fx_config);
+  getCurrentLEDColors(&fx_config);
+
+  //now let's see what the layers are up to.. see if any of them are on and if so, call them.
+  int i;
+  for(i=0; i<lx_max; i++){
+    if(layerActive[i] == 1){
+      curlx += i;
+      curlx->computeLayer(&fx_config);
+    }
+  }
 }
 
 const char *effectsCurName(void) {
@@ -477,6 +513,25 @@ uint8_t effectsNameLookup(const char *name) {
   }
   
   return 0;  // name not found returns default effect
+}
+
+uint8_t layerNameLookup(const char *name) {
+  uint8_t i;
+  const OrchardLayers *curlx;
+
+  curlx = orchard_layers_start();
+  if( name == NULL ) {
+    return 0;
+  }
+  
+  for( i = 0; i < lx_max; i++ ) {
+    if( strcmp(name, curlx->name) == 0 ) {
+      return i;
+    }
+    curlx++;
+  }
+  
+  return 0;  // name not found returns default layer
 }
 
 // checks to see if the current effect is one of the lightgenes
@@ -550,6 +605,21 @@ void effectsSetPattern(uint8_t index) {
     }
   }
   
+}
+
+void effectsSetLayer(uint8_t index){
+  const OrchardLayers *curlx;
+  curlx = orchard_layers_start();
+  curlx += index;
+  if(layerActive[index] == 1){
+    layerActive[index] = 0;
+    chprintf(stream, "Layer %s has been turned OFF.\n\r", curlx->name);
+  }
+  else
+  {
+    layerActive[index] = 1;
+    chprintf(stream, "Layer %s has been turned ON.\n\r", curlx->name);
+  }
 }
 
 uint8_t effectsGetPattern(void) {
@@ -672,6 +742,17 @@ void listEffects(void) {
   while( curfx->name ) {
     chprintf(stream, "%s\n\r", curfx->name );
     curfx++;
+  }
+}
+
+void listLayers(void) {
+  const OrchardLayers *curlx;
+
+  curlx = orchard_layers_start();
+  
+  while(curlx->name) {
+    chprintf(stream,"%s\n\r", curlx->name );
+    curlx++;
   }
 }
 
