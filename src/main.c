@@ -130,7 +130,7 @@ void sw_proc(eventid_t id) {
   while( !(GPIOA->PDIR & 0x10) ) { // this checks pin 4 on port A being held down
     // for some reason the native abstractions of chibiOS are failing on this pin :-/
     //    chprintf(stream, "debug: PORTA->PCR[4] %08x, GPIOA->PDDR %08x, GPIOA->PDIR %08x \n\r", PORTA->PCR[4], GPIOA->PDDR, GPIOA->PDIR );
-    if( chVTTimeElapsedSinceX(sw_debounce) > 4000 ) {
+    if( chVTTimeElapsedSinceX(sw_debounce) > 2000 ) {
       chprintf(stream, "Shutting down after switch is released...\n\r");
       chargerShipMode();
       chprintf(stream, "Shutdown failed, this statement should be unreachable\n\r");
