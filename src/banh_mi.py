@@ -15,7 +15,7 @@ def run_start(dummy):
     while GPIO.input(GPIO_START) == GPIO.LOW:
         time.sleep(0.1)
         
-    result = subprocess.run(['sudo', '/usr/local/bin/openocd', '-f', 'bcm-rpi-prog.cfg'], timeout=10)
+    result = subprocess.run(['sudo', '/usr/local/bin/openocd', '-f', '/home/pi/code/cubegarden/src/bcm-rpi-prog.cfg'], timeout=10)
             
     print("{}".format(result))
     GPIO.output(GPIO_RUN, 0)
@@ -34,6 +34,11 @@ def main():
     GPIO.setup(GPIO_RUN, GPIO.OUT)
     GPIO.output(GPIO_RUN, 0)
 
+    GPIO.setup(23, GPIO.OUT)
+    GPIO.setup(18, GPIO.OUT)
+    GPIO.output(23, 1)
+    GPIO.output(18, 1)
+    
     GPIO.add_event_detect(GPIO_START, GPIO.FALLING, callback=run_start)
 
     print("hello")
