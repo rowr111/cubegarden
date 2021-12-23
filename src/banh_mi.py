@@ -9,7 +9,12 @@ import time
 GPIO_START=21
 
 def run_start(dummy):
-    print("start pushed")
+    while GPIO.input(GPIO_START) == GPIO.LOW:
+        time.sleep(0.1)
+        
+    result = subprocess.run(['sudo', '/usr/local/bin/openocd', '-f', 'bcm-rpi-prog.cfg'], timeout=10)
+            
+    print("{}".format(result))
     
 def main():
     parser = argparse.ArgumentParser(description="Cubegarden hack driver")
