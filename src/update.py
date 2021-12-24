@@ -74,6 +74,8 @@ def main():
 
     # copy test logs to a restricted user on ci.betrusted.io via pre-loaded private key not in repo
     # scp -o StrictHostKeyChecking=no -i ~/testlogs_pi * testlogs@ci.betrusted.io:
+
+    do_update_cmd(['git', 'pull', 'origin', 'master'], timeout=60)
     
     # copy the latest firmware
     do_update_cmd(['scp', '-o', 'StrictHostKeyChecking=no', '-i', '/home/pi/testlogs_pi', '-r', 'testlogs@ci.betrusted.io:cubes/cube.elf', '/home/pi/code/cubegarden/src/build/cube.elf'], timeout=30)
