@@ -31,14 +31,14 @@ def get_ip_address(ifname):
 logfile=None
 
 def do_update_cmd(cmd, timeout=60, cwd=None):
-    global environment
     global logfile
     cmd_str = ''
     for item in cmd:
          cmd_str += item
          cmd_str += ' '
      
-    result = subprocess.run(cmd, capture_output=True, timeout=timeout, env=environment, cwd=cwd)
+    result = subprocess.run(cmd, timeout=timeout, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(result)
     stdout = result.stdout.decode("utf-8").splitlines()
     stderr = result.stderr.decode("utf-8").splitlines()
     print("do_update_cmd: " + cmd_str)
