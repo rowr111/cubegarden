@@ -36,7 +36,7 @@ static void teacher(struct effects_config *config) {
   float brightperc = (float)brightness/(pulselength/2);
   brightperc = (float)(0.2 + brightperc*0.8); //let's not let the pulse get all the way dark
 
-   HsvColor currHSV = {h.h-(int)hueoffset, h.s, (int)h.v*brightperc};
+   HsvColor currHSV = {h, 255, (int)255*brightperc};
    RgbColor c = HsvToRgb(currHSV); 
    ledSetAllRGB(fb, count, (c.r), (c.g), (c.b), shift);
 
