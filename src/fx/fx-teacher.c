@@ -27,7 +27,7 @@ static void teacher(struct effects_config *config) {
   int count = config->count;
   int loop = config->loop; 
   int pulselength = 100; //length of pulse 
-  static uint16_t h = 242; // hue color
+  static uint16_t h = 151; // hue color
 
   
   //the following code determines brightness level for a pulse:
