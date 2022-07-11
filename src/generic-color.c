@@ -24,7 +24,6 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     int loop = config->loop; 
     static uint16_t myColor[3] = {255, 255, 255};
     static uint16_t hue = 0;
-    float factor = 0.711111111;
 
     if(patternChanged){
         patternChanged = 0;
@@ -47,8 +46,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
         if (i<(int)((float)count/1.25)){
-            HsvColor myhsv = {(int)(colors[hue][0]*factor), (int)(colors[hue][1]*factor), (int)(colors[hue][2]*factor)};
-            RgbColor myrgb = HsvToRgb(myhsv); 
+            HsvColor myrgb = {colors[hue][0], colors[hue][1], colors[hue][2]};
             ledSetRgbColor(fb, (i+coloroffset)%count, myrgb, shift);
         }
         else{

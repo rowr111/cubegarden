@@ -12,7 +12,7 @@
 #ifndef MASTER_BADGE
 
 static void spring(struct effects_config *config) {
-    uint16_t SpringColors[5][3] = {{42,100,100},{206,53,100},{299,43,100},{284,62,100},{118,100,87}};
+    uint16_t SpringColors[5][3] = {{255,180,0},{121,198,255},{254,146,255},{214,97,255},{7,223,0}};
     genericColor(config, SpringColors, 5);
 }
 orchard_effects("spring", spring, 0);
