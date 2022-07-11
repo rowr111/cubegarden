@@ -45,7 +45,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     uint8_t coloroffset = (loop/2) % count;
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
-        if (i<(int)((float)count/1.25)){
+        if (i<(int)((float)count/1.15)){
             RgbColor myrgb = {colors[hue][0], colors[hue][1], colors[hue][2]};
             ledSetRgbColor(fb, (i+coloroffset)%count, myrgb, shift);
         }
