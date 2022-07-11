@@ -30,7 +30,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
         patternChanged = 0;
         //pick the color
         hue = (uint32_t)rand() % numOfColors;
-        chprintf(stream, "starting color: %d %d %d\n\r", colors[hue][0], colors[hue][1], colors[hue][3]);
+        chprintf(stream, "starting color: %d %d %d\n\r", colors[hue][0], colors[hue][1], colors[hue][2]);
     }
     //if tapped, change who you are
     if(singletapped){
@@ -39,7 +39,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
         while(hue == oldhue) {
             hue = (uint32_t)rand() % numOfColors;
         }
-        chprintf(stream, "changed to new color: %d %d %d\n\r", colors[hue][0], colors[hue][1], colors[hue][3]);
+        chprintf(stream, "changed to new color: %d %d %d\n\r", colors[hue][0], colors[hue][1], colors[hue][2]);
     }
 
     //do spin
@@ -47,7 +47,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
         if (i<(int)((float)count/1.25)){
-            HsvColor myhsv = {(int)(colors[hue][0]*factor), (int)(colors[hue][1]*factor), (int)(colors[hue][3]*factor)};
+            HsvColor myhsv = {(int)(colors[hue][0]*factor), (int)(colors[hue][1]*factor), (int)(colors[hue][2]*factor)};
             RgbColor myrgb = HsvToRgb(myhsv); 
             ledSetRgbColor(fb, (i+coloroffset)%count, myrgb, shift);
         }
