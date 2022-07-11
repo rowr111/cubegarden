@@ -22,7 +22,6 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     uint8_t *fb = config->hwconfig->fb;
     int count = config->count;
     int loop = config->loop; 
-    static uint16_t myColor[3] = {255, 255, 255};
     static uint16_t hue = 0;
 
     if(patternChanged){
