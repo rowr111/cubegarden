@@ -12,8 +12,8 @@
 #ifndef MASTER_BADGE
 
 static void rainbow(struct effects_config *config) {
-    uint16_t RainbowColors[6] = {0, 21, 45, 82, 156, 203};
-    genericColor(config, RainbowColors, 6);
+    uint16_t RainbowColors[5][3] = {{42,100,100},{206,53,100},{299,43,100},{284,62,100},{118,100,87}};
+    genericColor(config, RainbowColors, 5);
 }
 orchard_effects("rainbow", rainbow, 0);
 
