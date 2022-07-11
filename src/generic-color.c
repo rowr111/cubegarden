@@ -34,11 +34,11 @@ void genericColor(struct effects_config *config, uint16_t colors[], uint8_t numO
     if(singletapped){
         singletapped = 0;
         hue = colors[(uint32_t)rand() % numOfColors];
-        chprintf(stream, "changed to new color\n\r");
+        chprintf(stream, "changed to new hue: %d\n\r", hue);
     }
 
     //do spin
-    uint8_t coloroffset = (loop/2) % count;
+    uint8_t coloroffset = (loop/4) % count;
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
         if (i<(int)((float)count/1.5)){
