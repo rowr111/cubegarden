@@ -7,9 +7,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-
-#ifndef MASTER_BADGE
-
 #include "analog.h"
 #include "gyro.h"
 #include "gfx.h"
@@ -26,7 +23,6 @@ static void genericColor(struct effects_config *config, uint16_t colors[], uint8
     uint8_t *fb = config->hwconfig->fb;
     int count = config->count;
     int loop = config->loop; 
-    int pulselength = 100; //length of pulse 
     static uint16_t hue = 0;
 
     if(patternChanged){
