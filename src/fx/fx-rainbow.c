@@ -11,14 +11,14 @@
 
 #ifndef MASTER_BADGE
 
-static void spring(struct effects_config *config) {
-    uint16_t SpringColors[5] = {30, 146, 212, 201, 84};
-    genericColor(config, SpringColors, 5);
+static void rainbow(struct effects_config *config) {
+    uint16_t RainbowColors[6] = {0, 21, 45, 82, 156, 203};
+    genericColor(config, RainbowColors, 6);
 }
-orchard_effects("spring", spring, 0);
+orchard_effects("rainbow", rainbow, 0);
 
 #else
-static void spring(struct effects_config *config) {
+static void rainbow(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
@@ -28,5 +28,5 @@ static void spring(struct effects_config *config) {
   // 6 colors in the rainbow
   ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
 }
-orchard_effects("spring", spring, 0);
+orchard_effects("rainbow", rainbow, 0);
 #endif
