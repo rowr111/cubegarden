@@ -1,0 +1,1 @@
+extern void genericColor(struct effects_config *config int colors[] int numOfColors);
