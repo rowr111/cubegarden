@@ -43,6 +43,7 @@
 #include "trigger.h"
 #include "address.h"
 #include "baton.h"
+#include "generic-color.h"
 
 #include "orchard-test.h"
 
