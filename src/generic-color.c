@@ -33,7 +33,10 @@ void genericColor(struct effects_config *config, uint16_t colors[], uint8_t numO
     //if tapped, change who you are
     if(singletapped){
         singletapped = 0;
-        hue = colors[(uint32_t)rand() % numOfColors];
+        uint16_t oldhue = hue;
+        while(hue == oldhue) {
+            hue = colors[(uint32_t)rand() % numOfColors];
+        }
         chprintf(stream, "changed to new hue: %d\n\r", hue);
     }
 
