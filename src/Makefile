@@ -161,6 +161,7 @@ CSRC = \
        hsvrgb.c \
        orchard-math.c \
        genes.c \
+       generic-color.c \
        flash.c \
        storage.c \
        userconfig.c \
