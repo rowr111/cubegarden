@@ -11,14 +11,14 @@
 
 #ifndef MASTER_BADGE
 
-static void rainbow(struct effects_config *config) {
-    uint16_t RainbowColors[6][3] = {{255,0,0},{255,128,0},{240,255,0},{15,255,0},{0,70,206},{153,0,201}};
-    genericColor(config, RainbowColors, 6);
+static void neon(struct effects_config *config) {
+    uint16_t neonColors[5][3] = {{201,255,0},{34,255,0},{0,236,255},{227,0,255},{255,0,129}};
+    genericColor(config, neonColors, 5);
 }
-orchard_effects("rainbow", rainbow, 0);
+orchard_effects("neon", neon, 0);
 
 #else
-static void rainbow(struct effects_config *config) {
+static void neon(struct effects_config *config) {
   uint8_t *fb = config->hwconfig->fb;
   int count = config->count;
   int loop = config->loop;
@@ -28,5 +28,5 @@ static void rainbow(struct effects_config *config) {
   // 6 colors in the rainbow
   ledSetAllRgbColor(fb, count, vividRainbow[(loop / 30) % 6], shift);
 }
-orchard_effects("rainbow", rainbow, 0);
+orchard_effects("neon", neon, 0);
 #endif
