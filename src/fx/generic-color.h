@@ -1,1 +1,1 @@
-extern void genericColor(struct effects_config config, uint16_t colors[], uint_8 numOfColors);
+extern void genericColor(struct effects_config config, uint16_t colors[], uint8_t numOfColors);

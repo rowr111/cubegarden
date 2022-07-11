@@ -22,7 +22,7 @@ upon single tap, switch who you are
 */
 
 
-static void genericColor(struct effects_config config, uint16_t colors[], uint_8 numOfColors) {
+static void genericColor(struct effects_config config, uint16_t colors[], uint8_t numOfColors) {
     uint8_t *fb = config->hwconfig->fb;
     int count = config->count;
     int loop = config->loop; 
