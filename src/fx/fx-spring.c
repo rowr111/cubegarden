@@ -17,7 +17,7 @@
 #include "trigger.h"
 
 static void spring(struct effects_config *config) {
-    uint16_t SpringColors[5] = {42, 206, 299, 284, 118};
+    uint16_t SpringColors[5] = {30, 146, 212, 201, 84};
     genericColor(config, SpringColors, 5);
 }
 orchard_effects("spring", spring, 0);
