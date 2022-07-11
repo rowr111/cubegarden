@@ -24,7 +24,7 @@ void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t n
     int loop = config->loop; 
     static uint16_t myColor[3] = {255, 255, 255};
     static uint16_t hue = 0;
-    float factor = 0.711111111
+    float factor = 0.711111111;
 
     if(patternChanged){
         patternChanged = 0;
