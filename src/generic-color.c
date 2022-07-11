@@ -38,10 +38,10 @@ void genericColor(struct effects_config *config, uint16_t colors[], uint8_t numO
     }
 
     //do spin
-    uint8_t coloroffset = (loop/4) % count;
+    uint8_t coloroffset = (loop/2) % count;
     RgbColor white = {255, 255, 255}; //white as default
     for(int i = 0; i<count; i++){
-        if (i<(int)((float)count/1.5)){
+        if (i<(int)((float)count/1.25)){
             HsvColor myhsv = {hue, 255, 255};
             RgbColor myrgb = HsvToRgb(myhsv); 
             ledSetRgbColor(fb, (i+coloroffset)%count, myrgb, shift);
