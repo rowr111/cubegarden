@@ -146,13 +146,10 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
         }
       }
       if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
-        for( i = 0; i < MTUNE_RETRIES; i++ ) {
-          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse");
-          radioAcquire(radioDriver);
-          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-          radioRelease(radioDriver);
-          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
-        }
+        chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse");
+        radioAcquire(radioDriver);
+        radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+        radioRelease(radioDriver);
       }
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 120 ? 120 : timesync + 1; // don't go more than 2 minutes without a timesync
@@ -163,13 +160,10 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
     }
     if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
       if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
-        for( i = 0; i < MTUNE_RETRIES; i++ ) {
-          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness");
-          radioAcquire(radioDriver);
-          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-          radioRelease(radioDriver);
-          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
-        }
+        chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness");
+        radioAcquire(radioDriver);
+        radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+        radioRelease(radioDriver);
       }
       if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
