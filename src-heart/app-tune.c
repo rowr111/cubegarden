@@ -13,6 +13,8 @@
 static uint8_t line = 0;
 static uint32_t timesync = 0;
 static uint32_t newcube = 0;
+static uint8_t dBbrightnessOn = 0;
+static uint8_t gentlepulseOn = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -35,7 +37,7 @@ static void redraw_ui(void) {
                      tmp, font, Black, justifyCenter);
 
    // 5th line: dB bkgnd threshold setting
-  chsnprintf(uiStr, sizeof(uiStr), "set gentle pulse on/off");
+  chsnprintf(uiStr, sizeof(uiStr), "gentle pulse: %d", gentlepulseOn);
   if( line == LINE_SETGENTLEPULSE ) {
     gdispFillArea(0, height*(LINE_SETGENTLEPULSE+1), width, height, White);
     draw_color = Black;
@@ -46,7 +48,7 @@ static void redraw_ui(void) {
 		     uiStr, font, draw_color, justifyLeft);
 
   // 4th line: dB reactive setting
-  chsnprintf(uiStr, sizeof(uiStr), "set DB reactive on/off");
+  chsnprintf(uiStr, sizeof(uiStr), "DB reactive: %d", dBbrightnessOn);
   if( line == LINE_SETDBREACTIVE ) {
     gdispFillArea(0, height*(LINE_SETDBREACTIVE+1), width, height, White);
     draw_color = Black;
@@ -133,23 +135,43 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
           chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
         }
       }
-    }
-    
-    if(event->key.code == keyRight  && (event->key.flags != keyUp)){
-      if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
+      else if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
-          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness");
+          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness %d", dBbrightnessOn);
           radioAcquire(radioDriver);
           radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
           radioRelease(radioDriver);
           chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
         }
       }
-      if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
-        chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse");
-        radioAcquire(radioDriver);
-        radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-        radioRelease(radioDriver);
+      else if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
+        for( i = 0; i < MTUNE_RETRIES; i++ ) {
+          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse %d", gentlepulseOn);
+          radioAcquire(radioDriver);
+          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+          radioRelease(radioDriver);
+          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+        }
+      }
+
+    }
+    
+    if(event->key.code == keyRight  && (event->key.flags != keyUp)){
+      if(line == LINE_SETDBREACTIVE) {
+        if(dBbrightnessOn == 0){
+          dBbrightnessOn = 1;
+        }
+        else{
+          dBbrightnessOn = 0;
+        }
+      }
+      if(line == LINE_SETGENTLEPULSE) {
+        if(gentlepulseOn == 0){
+          gentlepulseOn = 1;
+        }
+        else{
+          gentlepulseOn = 0;
+        }
       }
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 120 ? 120 : timesync + 1; // don't go more than 2 minutes without a timesync
@@ -159,19 +181,20 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       }
     }
     if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
-      if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
-        chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness");
-        radioAcquire(radioDriver);
-        radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-        radioRelease(radioDriver);
+      if(line == LINE_SETDBREACTIVE) {
+        if(dBbrightnessOn == 0){
+          dBbrightnessOn = 1;
+        }
+        else{
+          dBbrightnessOn = 0;
+        }
       }
-      if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
-        for( i = 0; i < MTUNE_RETRIES; i++ ) {
-          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse");
-          radioAcquire(radioDriver);
-          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
-          radioRelease(radioDriver);
-          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+      if(line == LINE_SETGENTLEPULSE) {
+        if(gentlepulseOn == 0){
+          gentlepulseOn = 1;
+        }
+        else{
+          gentlepulseOn = 0;
         }
       }
       if(line == LINE_TIMESYNC ) {

@@ -607,19 +607,12 @@ void effectsSetPattern(uint8_t index) {
   
 }
 
-void effectsSetLayer(uint8_t index){
+void effectsSetLayer(uint8_t index, uint8_t on){
   const OrchardLayers *curlx;
   curlx = orchard_layers_start();
   curlx += index;
-  if(layerActive[index] == 1){
-    layerActive[index] = 0;
-    chprintf(stream, "Layer %s has been turned OFF.\n\r", curlx->name);
-  }
-  else
-  {
-    layerActive[index] = 1;
-    chprintf(stream, "Layer %s has been turned ON.\n\r", curlx->name);
-  }
+  layerActive[index] = on;
+  chprintf(stream, "Layer %s has been set to %d.\n\r", curlx->name, on);
 }
 
 uint8_t effectsGetPattern(void) {

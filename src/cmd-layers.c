@@ -27,8 +27,8 @@ void lxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     listLayers();
   }
 
-  else if (!strcasecmp(argv[0], "use") && argc == 2) {
-    effectsSetLayer(layerNameLookup(argv[1]));
+  else if (!strcasecmp(argv[0], "use") && argc == 3) {
+    effectsSetLayer(layerNameLookup(argv[1]), argv[2]);
   }
   return;
 }
