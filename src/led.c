@@ -34,6 +34,7 @@ static uint8_t fx_max;    // max # of effects
 static uint8_t lx_max;    // max # of layers
 static uint8_t fx_previndex; //previous effect
 static uint8_t ledExitRequest = 0;
+static uint8_t debug_state = 0;
 
 //very hacky.. todo: make a linked list or something that works better.
 static uint8_t layerActive[10]; //indicating if layers are on or off
@@ -463,6 +464,11 @@ static void draw_pattern(void) {
   BatonState *bstate = getBatonState();
   const struct userconfig *config;
   config = getConfig();
+
+  if (debug_state != 0) {
+    debug_state = 0;
+    chprintf(stream, "loop %d, count %d\n\r", fx_config.loop, fx_config.count);
+  }
   
   curfx = orchard_effects_start();
   curlx = orchard_layers_start();
@@ -486,6 +492,10 @@ static void draw_pattern(void) {
       curlx->computeLayer(&fx_config);
     }
   }
+}
+
+void effectsDebug(void) {
+  debug_state = 1;
 }
 
 const char *effectsCurName(void) {
@@ -521,17 +531,17 @@ uint8_t layerNameLookup(const char *name) {
 
   curlx = orchard_layers_start();
   if( name == NULL ) {
-    return 0;
+    return 255;
   }
   
   for( i = 0; i < lx_max; i++ ) {
-    if( strcmp(name, curlx->name) == 0 ) {
+    if( strncmp(name, curlx->name, 16) == 0 ) {
       return i;
     }
     curlx++;
   }
   
-  return 0;  // name not found returns default layer
+  return 255;  // name not found returns invalid layer
 }
 
 // checks to see if the current effect is one of the lightgenes
@@ -607,7 +617,7 @@ void effectsSetPattern(uint8_t index) {
   
 }
 
-void effectsSetLayer(uint8_t index, uint8_t on){
+void effectsSetLayer(uint8_t index, uint8_t on) {
   const OrchardLayers *curlx;
   curlx = orchard_layers_start();
   curlx += index;
@@ -742,9 +752,10 @@ void listLayers(void) {
   const OrchardLayers *curlx;
 
   curlx = orchard_layers_start();
-  
+  int index = 0;
   while(curlx->name) {
-    chprintf(stream,"%s\n\r", curlx->name );
+    chprintf(stream,"%s is %d\n\r", curlx->name, layerActive[index] );
+    index ++;
     curlx++;
   }
 }
