@@ -4,12 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "generic-color.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
 #ifndef MASTER_BADGE
+#include "generic-color.h"
 
 static void neon(struct effects_config *config) {
     uint16_t neonColors[5][3] = {{201,255,0},{34,255,0},{0,236,255},{227,0,255},{255,0,129}};

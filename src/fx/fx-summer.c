@@ -4,12 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "generic-color.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
 #ifndef MASTER_BADGE
+#include "generic-color.h"
 
 static void summer(struct effects_config *config) {
     uint16_t summerColors[5][3] = {{255,89,143},{253,138,94},{224,227,0},{1,221,221},{0,191,175}};

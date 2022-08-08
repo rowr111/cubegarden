@@ -4,12 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "generic-color.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
 #ifndef MASTER_BADGE
+#include "generic-color.h"
 
 static void halloween(struct effects_config *config) {
     uint16_t halloweenColors[4][3] = {{255,154,0},{9,255,0},{201,0,255},{251,250,244}};

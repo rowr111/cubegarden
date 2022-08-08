@@ -4,12 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "generic-color.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
 #ifndef MASTER_BADGE
+#include "generic-color.h"
 
 static void spring(struct effects_config *config) {
     uint16_t SpringColors[5][3] = {{255,180,0},{121,198,255},{254,146,255},{214,97,255},{7,223,0}};
