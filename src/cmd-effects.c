@@ -27,6 +27,7 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "    hsvsat [uint8_t]  set saturation of base HSV colors"NL);
     chprintf(chp, "    hsvvalue [uint8_t]  set brightness (value) of base HSV colors"NL);
     chprintf(chp, "    layout [uint8_t]  1=donut, 2=rows of 10, 3=rows of 5"NL);
+    chprintf(chp, "    debug        print the current loop state to console"NL);
     return;
   }
 
@@ -72,6 +73,9 @@ void fxCommand(BaseSequentialStream *chp, int argc, char *argv[])
     else if (cube_layout == 3) {
        chprintf(chp, "cube layout updated to rows of 5 (5 offsets).\n\r");
      }
+  }
+  else if (!strcasecmp(argv[0], "debug")) {
+    effectsDebug();
   }
   return;
 }
