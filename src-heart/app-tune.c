@@ -120,13 +120,13 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
     } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR) || (event->key.code == keyBottomR)) ) {
       // this is the "A" key or "B" key
       // if "B" key transmit all the params
-    if(line == LINE_TIMESYNC || event->key.code == keyBottomR) {
-        // this is just a local commit
-        if(timesync != config->cfg_timesync_interval) {
-          configSetTimeSyncInterval(timesync);
-        }
-      } 
-      else if(line == LINE_NEWCUBE || event->key.code == keyBottomR) {
+      if(line == LINE_TIMESYNC || event->key.code == keyBottomR) {
+          // this is just a local commit
+          if(timesync != config->cfg_timesync_interval) {
+            configSetTimeSyncInterval(timesync);
+          }
+        } 
+      if(line == LINE_NEWCUBE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
           chsnprintf(effect_cmd, sizeof(effect_cmd), "tune newcube %d", newcube);
           radioAcquire(radioDriver);
@@ -135,7 +135,7 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
           chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
         }
       }
-      else if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
+      if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
           chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness %d", dBbrightnessOn);
           radioAcquire(radioDriver);
@@ -144,7 +144,7 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
           chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
         }
       }
-      else if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
+      if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
           chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse %d", gentlepulseOn);
           radioAcquire(radioDriver);
@@ -153,7 +153,6 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
           chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
         }
       }
-
     }
     
     if(event->key.code == keyRight  && (event->key.flags != keyUp)){
