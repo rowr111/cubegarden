@@ -139,6 +139,11 @@ baton_return_type passBaton(baton_strategy_type strategy, uint8_t address, uint3
   if( bstate.state == baton_not_holding )
     return baton_not_holding;
 
+  // if there aren't any cubes to pass the baton to, don't even try
+  if (maxActualCubes < 2) {
+    return baton_holding;
+  }
+
   bstate.state = baton_passing;
   bstate.strategy = strategy;
   bstate.retry_interval = retry;
