@@ -4,12 +4,12 @@
 #include "orchard-effects.h"
 #include "chprintf.h"
 #include "stdlib.h"
-#include "generic-color.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
 #ifndef MASTER_BADGE
+#include "generic-color.h"
 
 static void fall(struct effects_config *config) {
     uint16_t fallColors[5][3] = {{255,176,14},{239,105,8},{218,68,0},{162,2,0},{128,0,3}};
