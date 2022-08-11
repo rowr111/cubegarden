@@ -4,13 +4,17 @@
 #include "radio.h"
 #include <string.h>
 
-#define NUM_LINES 2
+#define NUM_LINES 4
+#define LINE_SETGENTLEPULSE 3
+#define LINE_SETDBREACTIVE 2
 #define LINE_NEWCUBE 1
 #define LINE_TIMESYNC 0
 
 static uint8_t line = 0;
 static uint32_t timesync = 0;
 static uint32_t newcube = 0;
+static uint8_t dBbrightnessOn = 0;
+static uint8_t gentlepulseOn = 0;
 
 static void redraw_ui(void) {
   char tmp[] = "Tuning Cubes";
@@ -31,6 +35,28 @@ static void redraw_ui(void) {
   gdispFillArea(0, 0, width, height, White);
   gdispDrawStringBox(0, 0, width, height,
                      tmp, font, Black, justifyCenter);
+
+   // 5th line: dB bkgnd threshold setting
+  chsnprintf(uiStr, sizeof(uiStr), "gentle pulse: %d", gentlepulseOn);
+  if( line == LINE_SETGENTLEPULSE ) {
+    gdispFillArea(0, height*(LINE_SETGENTLEPULSE+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_SETGENTLEPULSE+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
+
+  // 4th line: dB reactive setting
+  chsnprintf(uiStr, sizeof(uiStr), "DB reactive: %d", dBbrightnessOn);
+  if( line == LINE_SETDBREACTIVE ) {
+    gdispFillArea(0, height*(LINE_SETDBREACTIVE+1), width, height, White);
+    draw_color = Black;
+  } else {
+    draw_color = White;
+  }
+  gdispDrawStringBox(0, height*(LINE_SETDBREACTIVE+1), width, height,
+		     uiStr, font, draw_color, justifyLeft);
 
   // timesync interval
   chsnprintf(uiStr, sizeof(uiStr), "timesync interval: %d", timesync);
@@ -94,15 +120,33 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
     } else if( (event->key.flags == keyDown) && ((event->key.code == keyTopR) || (event->key.code == keyBottomR)) ) {
       // this is the "A" key or "B" key
       // if "B" key transmit all the params
-    if(line == LINE_TIMESYNC || event->key.code == keyBottomR) {
-        // this is just a local commit
-        if(timesync != config->cfg_timesync_interval) {
-          configSetTimeSyncInterval(timesync);
-        }
-      } 
-      else if(line == LINE_NEWCUBE || event->key.code == keyBottomR) {
+      if(line == LINE_TIMESYNC || event->key.code == keyBottomR) {
+          // this is just a local commit
+          if(timesync != config->cfg_timesync_interval) {
+            configSetTimeSyncInterval(timesync);
+          }
+        } 
+      if(line == LINE_NEWCUBE || event->key.code == keyBottomR) {
         for( i = 0; i < MTUNE_RETRIES; i++ ) {
           chsnprintf(effect_cmd, sizeof(effect_cmd), "tune newcube %d", newcube);
+          radioAcquire(radioDriver);
+          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+          radioRelease(radioDriver);
+          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+        }
+      }
+      if(line == LINE_SETDBREACTIVE || event->key.code == keyBottomR) {
+        for( i = 0; i < MTUNE_RETRIES; i++ ) {
+          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use dBbrightness %d", dBbrightnessOn);
+          radioAcquire(radioDriver);
+          radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
+          radioRelease(radioDriver);
+          chThdSleepMilliseconds(MTUNE_RETRY_DELAY);	  
+        }
+      }
+      if(line == LINE_SETGENTLEPULSE || event->key.code == keyBottomR) {
+        for( i = 0; i < MTUNE_RETRIES; i++ ) {
+          chsnprintf(effect_cmd, sizeof(effect_cmd), "lx use pulse %d", gentlepulseOn);
           radioAcquire(radioDriver);
           radioSend(radioDriver, RADIO_BROADCAST_ADDRESS, radio_prot_forward, strlen(effect_cmd) + 1, effect_cmd);
           radioRelease(radioDriver);
@@ -112,6 +156,22 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
     }
     
     if(event->key.code == keyRight  && (event->key.flags != keyUp)){
+      if(line == LINE_SETDBREACTIVE) {
+        if(dBbrightnessOn == 0){
+          dBbrightnessOn = 1;
+        }
+        else{
+          dBbrightnessOn = 0;
+        }
+      }
+      if(line == LINE_SETGENTLEPULSE) {
+        if(gentlepulseOn == 0){
+          gentlepulseOn = 1;
+        }
+        else{
+          gentlepulseOn = 0;
+        }
+      }
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 120 ? 120 : timesync + 1; // don't go more than 2 minutes without a timesync
       }
@@ -120,6 +180,22 @@ static void mtune_event(OrchardAppContext *context, const OrchardAppEvent *event
       }
     }
     if(event->key.code == keyLeft  && (event->key.flags != keyUp)){
+      if(line == LINE_SETDBREACTIVE) {
+        if(dBbrightnessOn == 0){
+          dBbrightnessOn = 1;
+        }
+        else{
+          dBbrightnessOn = 0;
+        }
+      }
+      if(line == LINE_SETGENTLEPULSE) {
+        if(gentlepulseOn == 0){
+          gentlepulseOn = 1;
+        }
+        else{
+          gentlepulseOn = 0;
+        }
+      }
       if(line == LINE_TIMESYNC ) {
 	timesync = timesync == 1 ? 1 : timesync - 1; // don't go below once per second
       }

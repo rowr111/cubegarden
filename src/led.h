@@ -117,11 +117,13 @@ void effectsSetPattern(uint8_t);
 void effectsSetTempPattern(uint8_t);
 void effectsCheckExpiredTempPattern(void);
 uint8_t effectsGetPattern(void);
+void effectsDebug(void);
 void setShift(uint8_t s);
 uint8_t getShift(void);
 uint8_t getCubeLayoutOffset(uint8_t);
 void effectsNextPattern(int skipstrobe);
 void effectsPrevPattern(int skipstrobe);
+void effectsSetLayer(uint8_t index, uint8_t on);
 
 void uiLedGet(uint8_t index, Color *c);
 void uiLedSet(uint8_t index, Color c);

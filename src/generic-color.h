@@ -1,0 +1,1 @@
+void genericColor(struct effects_config *config, uint16_t colors[][3], uint8_t numOfColors);
