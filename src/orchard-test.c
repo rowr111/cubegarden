@@ -100,6 +100,13 @@ void orchardTestRunAll(BaseSequentialStream *chp, OrchardTestType test_type) {
       chThdSleepMilliseconds(100);
     }
   }
+
+  for( i = 0; i < 3; i++ ) {
+     test_led_setall( 148, 0, 211 );
+     chThdSleepMilliseconds(500);
+     test_led_setall( 0, 0, 0 );
+     chThdSleepMilliseconds(500);
+  }
   
   while(cur_test->test_function) {
     test_result = cur_test->test_function(cur_test->test_name, test_type);
