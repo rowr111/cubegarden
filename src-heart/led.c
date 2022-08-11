@@ -23,6 +23,8 @@
 
 orchard_effects_end();
 
+#define BRIGHTSCALE 4 // divides brightness by this amount to avoid blinding the user
+
 extern void ledUpdate(uint8_t *fb, uint32_t len);
 
 // static (master-local) effects state
@@ -524,12 +526,12 @@ static void blendFbs(void) {
   uint8_t i;
   // UI FB + effects FB blend (just do a saturating add)
   for( i = 0; i < led_config.ui_pixels * 3; i ++ ) {
-    led_config.final_fb[i] = satadd_8(led_config.fb[i], led_config.ui_fb[i]);
+    led_config.final_fb[i] = satadd_8(led_config.fb[i], led_config.ui_fb[i]) / BRIGHTSCALE;
   }
 
   // copy over the remainder of the effects FB that extends beyond UI FB
   for( i = led_config.ui_pixels * 3; i < led_config.max_pixels * 3; i++ ) {
-    led_config.final_fb[i] = led_config.fb[i];
+    led_config.final_fb[i] = led_config.fb[i] / BRIGHTSCALE;
   }
   if( ledExitRequest ) {
     for( i = 0; i < led_config.max_pixels * 3; i++ ) {
