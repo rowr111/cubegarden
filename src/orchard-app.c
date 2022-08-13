@@ -642,8 +642,8 @@ static void handle_chargecheck_timeout(eventid_t id) {
     if( !was_charging ) {
       stashed_shift = getShift();
       was_charging = 1;
-      chprintf(stream, "BATTERY: dimming for charging, shift was %d now %d\n\r", stashed_shift, 6 );
-      setShift(6); // dim greatly for faster charging
+      chprintf(stream, "BATTERY: dimming for charging, shift was %d now %d\n\r", stashed_shift, 5 );
+      setShift(5); // dim greatly for faster charging
     }
   } else {
     if( was_charging ) {
