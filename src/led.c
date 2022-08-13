@@ -37,7 +37,7 @@ static uint8_t ledExitRequest = 0;
 static uint8_t debug_state = 0;
 
 //very hacky.. todo: make a linked list or something that works better.
-static uint8_t layerActive[10]; //indicating if layers are on or off
+static uint8_t layerActive[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //indicating if layers are on or off
 Color currentColors[LED_COUNT];
 
 // global effects state
@@ -132,6 +132,9 @@ void ledStart(uint32_t leds, uint8_t *o_fb, uint32_t ui_leds, uint8_t *o_ui_fb)
   }
   while( curlx->name ) {
     chprintf(stream, "Found a layer: %s\n\r", curlx->name );
+    if (strncmp(curlx->name, "dBbrightness", 12) == 0) {
+	layerActive[lx_max] = 1;
+    }
     lx_max++;
     curlx++;
   }
